@@ -7,11 +7,13 @@
     <style>
         :root {
             --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
             --text-color: #333;
             --bg-color: #fff;
             --section-bg: #f8f9fa;
             --border-color: #e9ecef;
             --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --hover-color: #1557b0;
         }
 
         * {
@@ -28,7 +30,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -36,13 +38,28 @@
         header {
             text-align: center;
             padding: 3rem 0;
-            background: linear-gradient(135deg, var(--primary-color), #4285f4);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="rgba(255,255,255,0.05)"/></svg>');
+            opacity: 0.1;
         }
 
         .logo-container {
             margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
         }
 
         .logo {
@@ -52,24 +69,39 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             background: white;
             padding: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
         }
 
         h1 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
         }
 
         .last-updated {
             font-size: 0.9rem;
             opacity: 0.9;
+            position: relative;
+            z-index: 1;
         }
 
         .section {
             background: var(--section-bg);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 2rem;
             margin-bottom: 2rem;
             box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         h2 {
@@ -78,6 +110,18 @@
             font-size: 1.8rem;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary-color);
+            margin-right: 12px;
+            border-radius: 2px;
         }
 
         .important {
@@ -86,6 +130,23 @@
             padding: 1.5rem;
             margin: 1.5rem 0;
             border-radius: 0 8px 8px 0;
+            position: relative;
+        }
+
+        .important::before {
+            content: '!';
+            position: absolute;
+            top: -12px;
+            left: -12px;
+            width: 24px;
+            height: 24px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
         }
 
         ul {
@@ -95,6 +156,7 @@
 
         li {
             margin: 0.5rem 0;
+            padding-left: 1rem;
         }
 
         .permission-grid {
@@ -109,11 +171,23 @@
             padding: 1.5rem;
             border-radius: 8px;
             box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .permission-item:hover {
+            transform: translateY(-2px);
         }
 
         .permission-item h3 {
             color: var(--primary-color);
             margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .permission-item h3::before {
+            content: '🔒';
+            margin-right: 8px;
         }
 
         .contact-info {
@@ -128,10 +202,42 @@
             color: var(--primary-color);
             text-decoration: none;
             font-weight: 500;
+            transition: color 0.3s ease;
         }
 
         .contact-info a:hover {
-            text-decoration: underline;
+            color: var(--hover-color);
+        }
+
+        .table-of-contents {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .table-of-contents ul {
+            list-style: none;
+        }
+
+        .table-of-contents a {
+            color: var(--primary-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 0;
+            transition: color 0.3s ease;
+        }
+
+        .table-of-contents a:hover {
+            color: var(--hover-color);
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(26,115,232,0.1), rgba(66,133,244,0.1));
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 500;
         }
 
         @media (max-width: 600px) {
@@ -150,6 +256,10 @@
             .section {
                 padding: 1.5rem;
             }
+
+            .permission-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -165,12 +275,28 @@
     </header>
 
     <div class="container">
-        <section class="section">
-            <h2>1. Introduction</h2>
-            <p>JIRA URL Wizard is committed to protecting your privacy. This privacy policy explains our data collection, use, and protection practices for the Chrome extension.</p>
+        <section class="section table-of-contents">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#introduction">1. Introduction</a></li>
+                <li><a href="#information-collection">2. Information Collection</a></li>
+                <li><a href="#local-storage">3. Local Storage Usage</a></li>
+                <li><a href="#permissions">4. Required Permissions</a></li>
+                <li><a href="#data-security">5. Data Security</a></li>
+                <li><a href="#user-rights">6. Your Rights and Control</a></li>
+                <li><a href="#changes">7. Changes to Privacy Policy</a></li>
+                <li><a href="#contact">8. Contact Information</a></li>
+                <li><a href="#compliance">9. Compliance</a></li>
+            </ul>
         </section>
 
-        <section class="section">
+        <section id="introduction" class="section">
+            <h2>1. Introduction</h2>
+            <p>JIRA URL Wizard is committed to protecting your privacy. This privacy policy explains our data collection, use, and protection practices for the Chrome extension.</p>
+            <p>Our extension is designed with privacy in mind, operating entirely locally within your browser without transmitting any data to external servers.</p>
+        </section>
+
+        <section id="information-collection" class="section">
             <h2>2. Information Collection</h2>
             <div class="important">
                 <h3>We Do Not Collect:</h3>
@@ -186,50 +312,55 @@
                     <li>Website content</li>
                 </ul>
             </div>
+            <p>Our extension operates on a <span class="highlight">privacy-first</span> principle, ensuring that no sensitive or personal information is collected or transmitted.</p>
         </section>
 
-        <section class="section">
+        <section id="local-storage" class="section">
             <h2>3. Local Storage Usage</h2>
             <p>The extension stores the following information locally in your browser:</p>
             <ul>
                 <li>Environment configuration preferences</li>
                 <li>URL patterns for different environments</li>
                 <li>UI preferences</li>
+                <li>Recently generated URLs (limited to last 10)</li>
+                <li>Custom environment templates</li>
             </ul>
-            <p><strong>Important:</strong> This data never leaves your browser and is not transmitted to any external servers.</p>
+            <div class="important">
+                <p><strong>Important:</strong> This data never leaves your browser and is not transmitted to any external servers. All data is stored locally using your browser's storage API.</p>
+            </div>
         </section>
 
-        <section class="section">
+        <section id="permissions" class="section">
             <h2>4. Required Permissions</h2>
             <div class="permission-grid">
                 <div class="permission-item">
                     <h3>activeTab</h3>
-                    <p>To read the current tab's URL for transformation</p>
+                    <p>To read the current tab's URL for transformation. Only activated when you explicitly interact with the extension.</p>
                 </div>
                 <div class="permission-item">
                     <h3>storage</h3>
-                    <p>To save your environment configurations locally</p>
+                    <p>To save your environment configurations locally. All data remains in your browser.</p>
                 </div>
                 <div class="permission-item">
                     <h3>tabs</h3>
-                    <p>To manage URL transformations across tabs</p>
+                    <p>To manage URL transformations across tabs. Used only for core functionality.</p>
                 </div>
                 <div class="permission-item">
                     <h3>contextMenus</h3>
-                    <p>To provide right-click menu functionality</p>
+                    <p>To provide right-click menu functionality for quick access to features.</p>
                 </div>
                 <div class="permission-item">
                     <h3>clipboardWrite</h3>
-                    <p>To copy generated URLs</p>
+                    <p>To copy generated URLs. Only writes to clipboard, never reads from it.</p>
                 </div>
                 <div class="permission-item">
                     <h3>host</h3>
-                    <p>To access and transform JIRA URLs</p>
+                    <p>To access and transform JIRA URLs. Limited to URL transformation only.</p>
                 </div>
             </div>
         </section>
 
-        <section class="section">
+        <section id="data-security" class="section">
             <h2>5. Data Security</h2>
             <p>We maintain security through:</p>
             <ul>
@@ -237,25 +368,41 @@
                 <li>No external data transmission</li>
                 <li>No third-party service integration</li>
                 <li>No analytics or tracking</li>
+                <li>Regular security updates</li>
+                <li>Transparent permission usage</li>
             </ul>
+            <div class="important">
+                <p>All data processing occurs locally within your browser, ensuring maximum security and privacy.</p>
+            </div>
         </section>
 
-        <section class="section">
+        <section id="user-rights" class="section">
             <h2>6. Your Rights and Control</h2>
             <p>You have complete control over your data:</p>
             <ul>
                 <li>Clear all data by uninstalling the extension</li>
                 <li>Reset preferences through extension settings</li>
                 <li>No data persistence after removal</li>
+                <li>Export your settings at any time</li>
+                <li>Choose which features to enable</li>
             </ul>
+            <p>We believe in <span class="highlight">transparency and user control</span> over their data.</p>
         </section>
 
-        <section class="section">
+        <section id="changes" class="section">
             <h2>7. Changes to Privacy Policy</h2>
-            <p>We will notify users of any privacy policy changes through the extension's update notes and this page.</p>
+            <p>We will notify users of any privacy policy changes through:</p>
+            <ul>
+                <li>Extension update notes</li>
+                <li>This privacy policy page</li>
+                <li>GitHub repository updates</li>
+            </ul>
+            <div class="important">
+                <p>We are committed to maintaining transparency about any changes to our privacy practices.</p>
+            </div>
         </section>
 
-        <section class="section">
+        <section id="contact" class="section">
             <h2>8. Contact Information</h2>
             <div class="contact-info">
                 <p>For privacy-related questions, please contact us through:</p>
@@ -263,17 +410,23 @@
                     <li><a href="https://github.com/kcharfi24/JIRA-URL-Wizard/issues" target="_blank">GitHub Issues</a></li>
                     <li><a href="https://chrome.google.com/webstore/detail/jira-url-wizard" target="_blank">Chrome Web Store</a></li>
                 </ul>
+                <p style="margin-top: 1rem;">We aim to respond to all privacy-related inquiries within 48 hours.</p>
             </div>
         </section>
 
-        <section class="section">
+        <section id="compliance" class="section">
             <h2>9. Compliance</h2>
             <p>This extension complies with:</p>
             <ul>
                 <li>Chrome Web Store Developer Program Policies</li>
                 <li>GDPR principles</li>
                 <li>Browser extension privacy best practices</li>
+                <li>Data protection regulations</li>
+                <li>User privacy rights</li>
             </ul>
+            <div class="important">
+                <p>We regularly review and update our privacy practices to ensure compliance with the latest regulations and best practices.</p>
+            </div>
         </section>
     </div>
 </body>
