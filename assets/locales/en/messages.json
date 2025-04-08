@@ -1,0 +1,266 @@
+{
+  "extensionName": {
+    "message": "JIRA URL Wizard",
+    "description": "Name of the extension."
+  },
+  "extensionDescription": {
+    "message": "Example using locales + i18n!",
+    "description": "Description of the extension."
+  },
+  "popup": {
+    "message": "Logic is the beginning of wisdom, not the end. - $PLASMO_PUBLIC_QUOTE_AUTHOR",
+    "description": "Popup message."
+  },
+  "qrGenerator": {
+    "message": "QR Code Generator",
+    "description": "Title of the QR code generator section."
+  },
+  "enterUrl": {
+    "message": "Enter URL",
+    "description": "Label for URL input field."
+  },
+  "qrSize": {
+    "message": "QR Code Size",
+    "description": "Label for QR code size slider."
+  },
+  "scanQr": {
+    "message": "Scan QR code to access this URL",
+    "description": "Instruction text for scanning QR code."
+  },
+  "clickToCopy": {
+    "message": "Click QR Code to copy image",
+    "description": "Instruction text for copying QR code."
+  },
+  "settings": {
+    "message": "Settings",
+    "description": "Settings section title."
+  },
+  "theme": {
+    "message": "Theme",
+    "description": "Theme settings label."
+  },
+  "themeOptions": {
+    "message": "Light dark system",
+    "description": "Theme options text."
+  },
+  "language": {
+    "message": "Language",
+    "description": "Language settings label."
+  },
+  "integrateLogo": {
+    "message": "Integrate logo image within generated QR codes (if applicable)",
+    "description": "Logo integration setting label."
+  },
+  "useMarkdown": {
+    "message": "Use Markdown formatting when copying generated content (if applicable)",
+    "description": "Markdown formatting setting label."
+  },
+  "urlPatternDescription": {
+    "message": "Define URL patterns (regex) to help identify JIRA tabs. Used for features like extracting ticket IDs.",
+    "description": "Description of URL pattern settings."
+  },
+  "urlPreview": {
+    "message": "URL Preview",
+    "description": "Title of URL preview section."
+  },
+  "urlPattern": {
+    "message": "URL Pattern",
+    "description": "Label for URL pattern field."
+  },
+  "dynamicFields": {
+    "message": "Dynamic Fields",
+    "description": "Label for dynamic fields section."
+  },
+  "regexPatterns": {
+    "message": "Regex Patterns",
+    "description": "Label for regex patterns section."
+  },
+  "separators": {
+    "message": "Separators",
+    "description": "Label for separators section."
+  },
+  "urlStructure": {
+    "message": "URL Structure",
+    "description": "Label for URL structure section."
+  },
+  "urlPatternRules": {
+    "message": "URL Pattern Rules",
+    "description": "Title of URL pattern rules section."
+  },
+  "baseUrlRequired": {
+    "message": "Base URL Required",
+    "description": "Label for base URL required rule."
+  },
+  "baseUrlRequiredDescription": {
+    "message": "The pattern must include a base URL component",
+    "description": "Description of base URL required rule."
+  },
+  "issuePrefixRequired": {
+    "message": "Issue Prefix Required",
+    "description": "Label for issue prefix required rule."
+  },
+  "issuePrefixRequiredDescription": {
+    "message": "The pattern must include an issue prefix component",
+    "description": "Description of issue prefix required rule."
+  },
+  "ticketNumberRequired": {
+    "message": "Ticket Number Required",
+    "description": "Label for ticket number required rule."
+  },
+  "ticketNumberRequiredDescription": {
+    "message": "The pattern must include a ticket number component",
+    "description": "Description of ticket number required rule."
+  },
+  "noAdjacentSeparators": {
+    "message": "No Adjacent Separators",
+    "description": "Label for no adjacent separators rule."
+  },
+  "noAdjacentSeparatorsDescription": {
+    "message": "The pattern cannot have two separator components next to each other",
+    "description": "Description of no adjacent separators rule."
+  },
+  "noLeadingSymbols": {
+    "message": "No Leading Symbols",
+    "description": "Label for no leading symbols rule."
+  },
+  "noLeadingSymbolsDescription": {
+    "message": "The URL cannot start with symbols or dots",
+    "description": "Description of no leading symbols rule."
+  },
+  "hideRules": {
+    "message": "Hide Rules",
+    "description": "Label for hide rules button."
+  },
+  "advancedSettings": {
+    "message": "Advanced Settings",
+    "description": "Title of advanced settings section."
+  },
+  "prefixesAndTicketTypes": {
+    "message": "Prefixes & Ticket Types",
+    "description": "Title of prefixes and ticket types section."
+  },
+  "prefixesDescription": {
+    "message": "Define project prefixes (e.g., PROJ) and optional ticket types (e.g., BUG). Press Enter to add.",
+    "description": "Description of prefixes and ticket types section."
+  },
+  "issuePrefixes": {
+    "message": "Issue Prefixes",
+    "description": "Label for issue prefixes input."
+  },
+  "addPrefix": {
+    "message": "Add prefix + Enter",
+    "description": "Placeholder for prefix input."
+  },
+  "ticketTypes": {
+    "message": "Ticket Types (Optional)",
+    "description": "Label for ticket types input."
+  },
+  "addTicketType": {
+    "message": "Add ticket type + Enter",
+    "description": "Placeholder for ticket type input."
+  },
+  "baseUrlsDescription": {
+    "message": "Enter base URLs for different environments (e.g., dev.jira.com). The key (e.g., 'dev') is used as a label.",
+    "description": "Description of base URLs section."
+  },
+  "baseUrlPlaceholder": {
+    "message": "e.g., my-env.example.com",
+    "description": "Placeholder for base URL input."
+  },
+  "urlStructureDescription": {
+    "message": "Build your custom JIRA URL structure by dragging and dropping components. The pattern defines how your JIRA ticket IDs are converted to URLs.",
+    "description": "Description of URL structure section."
+  },
+  "jiraPatternsDescription": {
+    "message": "Define URL patterns (regex) to help identify JIRA tabs. Used for features like extracting ticket IDs.",
+    "description": "Description of JIRA patterns section."
+  },
+  "patternPlaceholder": {
+    "message": "^https://jira\\.example\\.com/browse/PROJ-\\d+",
+    "description": "Placeholder for pattern input."
+  },
+  "importSettings": {
+    "message": "Import Settings",
+    "description": "Label for import settings button."
+  },
+  "exportSettings": {
+    "message": "Export Settings",
+    "description": "Label for export settings button."
+  },
+  "editPattern": {
+    "message": "Edit Pattern",
+    "description": "Label for edit pattern button."
+  },
+  "removePattern": {
+    "message": "Remove Pattern",
+    "description": "Label for remove pattern button."
+  },
+  "removeItem": {
+    "message": "Remove $1",
+    "description": "Label for remove item button."
+  },
+  "toastPrefixEmpty": {
+    "message": "Prefix cannot be empty",
+    "description": "Error message when prefix is empty."
+  },
+  "toastPrefixInvalid": {
+    "message": "Prefix can only contain letters and numbers",
+    "description": "Error message when prefix is invalid."
+  },
+  "toastPrefixExists": {
+    "message": "This prefix already exists",
+    "description": "Error message when prefix already exists."
+  },
+  "toastTicketTypeEmpty": {
+    "message": "Ticket type cannot be empty",
+    "description": "Error message when ticket type is empty."
+  },
+  "toastTicketTypeInvalid": {
+    "message": "Ticket type can only contain letters and numbers",
+    "description": "Error message when ticket type is invalid."
+  },
+  "toastTicketTypeExists": {
+    "message": "This ticket type already exists",
+    "description": "Error message when ticket type already exists."
+  },
+  "toastSettingsSaved": {
+    "message": "Settings saved successfully!",
+    "description": "Success message when settings are saved."
+  },
+  "toastChangesReset": {
+    "message": "Changes reset",
+    "description": "Info message when changes are reset."
+  },
+  "toastSettingsExported": {
+    "message": "Settings exported successfully!",
+    "description": "Success message when settings are exported."
+  },
+  "toastExportError": {
+    "message": "Error exporting settings",
+    "description": "Error message when settings export fails."
+  },
+  "toastImportError": {
+    "message": "Error importing settings: $1",
+    "description": "Error message when settings import fails."
+  },
+  "toastFileReadError": {
+    "message": "Error reading file",
+    "description": "Error message when file read fails."
+  },
+  "toastPatternEmpty": {
+    "message": "Pattern cannot be empty.",
+    "description": "Error message when pattern is empty."
+  },
+  "toastPatternInvalid": {
+    "message": "Invalid regex syntax. Pattern not saved.",
+    "description": "Error message when pattern is invalid."
+  },
+  "toastPatternUpdated": {
+    "message": "Pattern updated. Remember to save overall settings.",
+    "description": "Info message when pattern is updated."
+  },
+  "toastPatternRemoved": {
+    "message": "Pattern removed. Remember to save overall settings.",
+    "description": "Info message when pattern is removed."
+  }
+}
