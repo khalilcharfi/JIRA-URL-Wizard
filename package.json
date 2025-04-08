@@ -33,6 +33,10 @@
   "manifest": {
     "name": "__MSG_extensionName__",
     "default_locale": "en",
+    "permissions": [
+      "tabs",
+      "storage"
+    ],
     "host_permissions": [
       "https://*/*"
     ]
