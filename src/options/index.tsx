@@ -947,31 +947,8 @@ const IndexOptions = () => {
                     {advancedSettingsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </summary>
                 <div className="p-4 space-y-6">
-                    <section id="url-structure" className="mb-10">
-                        <div id="url-structure-header" className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header">
-                            <h3 id="url-structure-heading" className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                                <span>URL Structure</span>
-                                <InfoPopup
-                                    text="Build your custom JIRA URL structure by dragging and dropping components. The pattern defines how your JIRA ticket IDs are converted to URLs."
-                                    darkMode={document.documentElement.classList.contains('dark')}
-                                />
-                            </h3>
-                        </div>
-                        <URLComponentBuilder
-                            prefixes={tempSettings.prefixes}
-                            ticketTypes={tempSettings.ticketTypes}
-                            urls={tempSettings.urls}
-                            urlStructure={tempSettings.urlStructure}
-                            onSavePattern={(pattern) => {
-                                setTempSettings(prev => ({
-                                    ...prev,
-                                    urlStructure: pattern
-                                }));
-                            }}
-                        />
-                    </section>
 
-                    <section id="jira-patterns-section" className="mb-10">
+                <section id="jira-patterns-section" className="mb-10">
                         <div
                             id="jira-patterns-header"
                             className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header">
@@ -1198,6 +1175,29 @@ const IndexOptions = () => {
                                 </p>
                             )}
                         </div>
+                    </section>
+                    <section id="url-structure" className="mb-10">
+                        <div id="url-structure-header" className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header">
+                            <h3 id="url-structure-heading" className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                <span>URL Builder</span>
+                                <InfoPopup
+                                    text="Build your custom JIRA URL structure by dragging and dropping components. The pattern defines how your JIRA ticket IDs are converted to URLs."
+                                    darkMode={document.documentElement.classList.contains('dark')}
+                                />
+                            </h3>
+                        </div>
+                        <URLComponentBuilder
+                            prefixes={tempSettings.prefixes}
+                            ticketTypes={tempSettings.ticketTypes}
+                            urls={tempSettings.urls}
+                            urlStructure={tempSettings.urlStructure}
+                            onSavePattern={(pattern) => {
+                                setTempSettings(prev => ({
+                                    ...prev,
+                                    urlStructure: pattern
+                                }));
+                            }}
+                        />
                     </section>
                 </div>
             </details>
