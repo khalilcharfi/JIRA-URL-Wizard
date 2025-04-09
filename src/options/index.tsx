@@ -19,6 +19,11 @@ import {DEFAULT_TOAST_TIMEOUT_MS} from "~src/utils/utils";
 import { DEFAULT_SETTINGS } from "~src/shared/settings"
 import type { SettingsStorage, JiraPattern } from "~src/shared/settings"
 
+// First, let's update the JiraPattern type to include the enabled property
+interface CustomJiraPattern extends JiraPattern {
+  enabled?: boolean;
+}
+
 // Custom hook for chrome.storage.sync - Ensure this is defined and uncommented
 function useStorage<T>(key: string, defaultValue: T): [T, (value: T) => void] {
   const [value, setValue] = useState<T>(defaultValue)
@@ -75,11 +80,12 @@ const Label: React.FC<{
   id: string
   htmlFor?: string
   children: React.ReactNode
-}> = ({ id, htmlFor, children }) => (
+  className?: string
+}> = ({ id, htmlFor, children, className = "" }) => (
   <label
     id={id}
     htmlFor={htmlFor}
-    className={`block text-sm font-medium mb-1.5 options-section__label text-gray-600 dark:text-gray-300`}>
+    className={`block text-sm font-medium mb-1.5 options-section__label text-gray-600 dark:text-gray-300 ${className}`}>
     {children}
   </label>
 )
@@ -218,58 +224,52 @@ const DebouncedTextInput: React.FC<DebouncedTextInputProps> = ({
   );
 };
 
-const ToggleSwitch: React.FC<
-  React.InputHTMLAttributes<HTMLInputElement> & { label: string }
-> = ({ label, id, ...props }) => (
-  <div className="flex items-center justify-between w-full">
-    <label
-      htmlFor={id}
-      className={`block text-sm font-medium text-gray-700 dark:text-gray-300`}>
-      {label}
-    </label>
-    <div className="relative inline-flex items-center">
-      <button
-        id={id}
-        role="switch"
-        type="button"
-        tabIndex={0}
-        aria-checked={props.checked}
-        onClick={(e) => {
-          e.preventDefault();
-          props.onChange?.({
-            target: { checked: !props.checked }
-          } as React.ChangeEvent<HTMLInputElement>);
-        }}
-        className={`relative inline-flex items-center cursor-pointer w-11 h-6 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-          props.checked 
-            ? 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600' 
-            : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
-        }`}
+const Toggle: React.FC<{
+  id: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+  'aria-label'?: string;
+}> = ({ id, checked, onCheckedChange, disabled, className, ...props }) => {
+  return (
+    <div className={`inline-flex ${className || ''}`}>
+      <label 
+        htmlFor={id}
+        className="relative inline-block w-10 h-5 cursor-pointer"
       >
-        <span className="sr-only">Use setting</span>
-        <span className={`absolute left-1 top-1 w-4 h-4 rounded-full transition-transform duration-200 ease-in-out shadow-sm ${
-          props.checked 
-            ? 'translate-x-5 bg-white shadow-md' 
-            : 'bg-gray-400 dark:bg-gray-500'
-        }`}>
-          {props.checked ? (
-            <svg fill="currentColor" viewBox="0 0 12 12" className="w-3 h-3 m-0.5">
-              <path d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414zm3.414 2l4-4-1.414-1.414-4 4 1.414 1.414z" />
-            </svg>
-          ) : (
-            <svg fill="none" viewBox="0 0 12 12" className="w-3 h-3 m-0.5">
-              <path d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-        </span>
-      </button>
+        <input
+          id={id}
+          type="checkbox"
+          className="sr-only"
+          checked={checked}
+          onChange={(e) => onCheckedChange(e.target.checked)}
+          disabled={disabled}
+          {...props}
+        />
+        <div 
+          className={`w-10 h-5 rounded-full transition-colors ${
+            checked 
+              ? 'bg-blue-600 dark:bg-blue-500' 
+              : 'bg-gray-200 dark:bg-gray-600'
+          } ${
+            disabled ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          <div 
+            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+              checked ? 'translate-x-5' : 'translate-x-0'
+            }`} 
+          />
+        </div>
+      </label>
     </div>
-  </div>
-)
+  );
+};
 
 interface PatternEditorFormProps {
-  patternData: { pattern: string } | null;
-  setPatternData: React.Dispatch<React.SetStateAction<{ pattern: string } | null>>;
+  patternData: CustomJiraPattern | null;
+  setPatternData: React.Dispatch<React.SetStateAction<CustomJiraPattern | null>>;
   isCurrentPatternValid: boolean;
   isPreviewMatch: boolean;
   handleSavePattern: () => void;
@@ -338,7 +338,10 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
     setIsGeneratingFromUrl(!isGeneratingFromUrl);
     // Reset pattern data when switching modes
     if (patternData) {
-      setPatternData({ pattern: "" });
+      setPatternData({ 
+        pattern: "", 
+        enabled: patternData.enabled !== false
+      });
       setSampleUrl("");
     }
   };
@@ -347,17 +350,21 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
   const handleUrlInputChange = (newValue: string) => {
     setSampleUrl(newValue);
     if (!newValue.trim()) {
-      setPatternData({ pattern: "" });
+      setPatternData({ 
+        pattern: "", 
+        enabled: patternData?.enabled !== false
+      });
       return;
     }
 
     const generatedPattern = generateRegexFromUrl(newValue);
     if (generatedPattern) {
-      setPatternData({ pattern: generatedPattern });
+      setPatternData({ 
+        pattern: generatedPattern, 
+        enabled: patternData?.enabled !== false
+      });
     }
   };
-
-  const formId = index === -1 ? "jira-patterns-add-form" : `pattern-edit-form-${index}`;
 
   return (
     <div className="p-4 pt-2">
@@ -393,12 +400,12 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
         // URL Input for generating pattern
         <div className="mb-3">
           <label
-            htmlFor={`${formId}-url-input`}
+            htmlFor={`url-input-${index}`}
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Sample JIRA URL
           </label>
           <input
-            id={`${formId}-url-input`}
+            id={`url-input-${index}`}
             type="url"
             className="block w-full px-3 py-2 border rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:border-blue-500 focus:ring-blue-500 border-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600"
             value={sampleUrl}
@@ -475,6 +482,21 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
         </div>
       )}
 
+      <div className="flex items-center mb-4">
+        <input
+          id={`pattern-enabled-${index}`}
+          type="checkbox"
+          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700"
+          checked={patternData?.enabled !== false}
+          onChange={(e) => setPatternData(prev => ({ ...(prev || { pattern: "" }), enabled: e.target.checked }))}
+        />
+        <label
+          htmlFor={`pattern-enabled-${index}`}
+          className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+          Enable this pattern
+        </label>
+      </div>
+
       <div className="flex gap-3 justify-end mt-4">
         <Button
           variant="secondary"
@@ -496,6 +518,20 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
   );
 };
 
+// Add the getUrlDescription helper function before the IndexOptions component
+function getUrlDescription(key: string): string {
+  const descriptions: Record<string, string> = {
+    bo: "Backend Office Tool",
+    desktop: "Desktop web interface",
+    mobile: "Mobile web interface",
+    drupal7: "Legacy CMS system",
+    drupal9: "Current CMS system",
+    // Add more descriptions as needed
+  };
+  
+  return descriptions[key] || "";
+}
+
 const IndexOptions = () => {
   const [settings, setSettings] = useStorage<SettingsStorage>(
     "jiraUrlWizardSettings",
@@ -516,12 +552,11 @@ const IndexOptions = () => {
   const [editingPatternIndex, setEditingPatternIndex] = useState<number | null>(
     null
   )
-  const [editingPatternData, setEditingPatternData] = useState<{
-    pattern: string
-  } | null>(null)
+  const [editingPatternData, setEditingPatternData] = useState<CustomJiraPattern | null>(null)
   const [isCurrentPatternValid, setIsCurrentPatternValid] = useState(true)
   const [isPreviewMatch, setIsPreviewMatch] = useState(false)
   const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false)
+  const [baseUrlChanges, setBaseUrlChanges] = useState<boolean>(false);
 
   useEffect(() => {
     if (settings) {
@@ -601,11 +636,51 @@ const IndexOptions = () => {
   };
 
   const handleUrlChange = useCallback((key: string, value: string) => {
-    setTempSettings((prev) => ({
-      ...prev,
-      urls: { ...prev.urls, [key]: value }
-    }))
-  }, [])
+    // Strip out http:// or https:// if present
+    const cleanValue = value.replace(/^(https?:\/\/)/, '');
+    
+    setTempSettings((prev) => {
+      const newUrls = { ...prev.urls, [key]: cleanValue };
+      // Check if any URL value has changed
+      const hasChanged = Object.entries(newUrls).some(
+        ([k, v]) => v !== (settings?.urls || {})[k]
+      );
+      setBaseUrlChanges(hasChanged);
+      return { ...prev, urls: newUrls };
+    });
+  }, [settings]);
+
+  // Add a custom paste handler for the URL inputs
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    // Get pasted content
+    const pastedText = event.clipboardData.getData('text');
+    // Check if it contains a protocol
+    if (pastedText.match(/^https?:\/\//)) {
+      // Extract the URL without the protocol
+      const match = pastedText.match(/^https?:\/\/(.+)/);
+      if (match && match[1]) {
+        // Get the input element
+        const input = event.currentTarget;
+        // Stop the default paste operation
+        event.preventDefault();
+        // Insert the stripped URL at cursor position
+        const cursorPos = input.selectionStart || 0;
+        const textBeforeCursor = input.value.substring(0, cursorPos);
+        const textAfterCursor = input.value.substring(cursorPos);
+        const newValue = textBeforeCursor + match[1] + textAfterCursor;
+        
+        // Set the value - need to use a custom method due to using DebouncedTextInput
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype, "value"
+        )?.set;
+        if (nativeInputValueSetter) {
+          nativeInputValueSetter.call(input, newValue);
+          // Trigger an input event to update internal state
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    }
+  };
 
   const handleSettingChange = useCallback(
     (key: keyof SettingsStorage, value: any) => {
@@ -835,11 +910,13 @@ const IndexOptions = () => {
   const handleEditPattern = (index: number | null) => {
     if (index === null) {
       setEditingPatternIndex(-1)
-      setEditingPatternData({ pattern: "" })
+      setEditingPatternData({ pattern: "", enabled: true })
     } else {
       setEditingPatternIndex(index)
+      const pattern = tempSettings.jiraPatterns[index] as CustomJiraPattern
       setEditingPatternData({
-        pattern: tempSettings.jiraPatterns[index]?.pattern || ""
+        pattern: pattern.pattern || "",
+        enabled: pattern.enabled !== false
       })
     }
   }
@@ -851,38 +928,41 @@ const IndexOptions = () => {
     setIsPreviewMatch(false)
   }
 
-  const handleSavePattern = () => {
-    if (editingPatternIndex === null || !editingPatternData) return
+  const handleSavePattern = (index?: number) => {
+    if (editingPatternIndex === null || !editingPatternData) return;
 
-    const newPattern = editingPatternData.pattern.trim()
+    const newPattern = editingPatternData.pattern.trim();
 
     if (!newPattern) {
-      showToast("Pattern cannot be empty.", "error")
-      return
+      showToast("Pattern cannot be empty.", "error");
+      return;
     }
 
     try {
-      new RegExp(newPattern)
+      new RegExp(newPattern);
     } catch (e) {
-      showToast("Invalid Regex Syntax. Pattern not saved.", "error")
-      return
+      showToast("Invalid Regex Syntax. Pattern not saved.", "error");
+      return;
     }
 
     setTempSettings((prev) => {
-      const updatedPatterns = [...(prev.jiraPatterns || [])]
-      const newPatternData = { pattern: newPattern }
+      const updatedPatterns = [...(prev.jiraPatterns || [])] as CustomJiraPattern[];
+      const newPatternData: CustomJiraPattern = { 
+        pattern: newPattern,
+        enabled: editingPatternData.enabled !== false 
+      };
 
       if (editingPatternIndex === -1) {
-        updatedPatterns.push(newPatternData)
+        updatedPatterns.push(newPatternData);
       } else {
-        updatedPatterns[editingPatternIndex] = newPatternData
+        updatedPatterns[editingPatternIndex] = newPatternData;
       }
-      return { ...prev, jiraPatterns: updatedPatterns }
-    })
+      return { ...prev, jiraPatterns: updatedPatterns };
+    });
 
-    handleCancelEditPattern()
-    showToast("Pattern updated. Remember to save overall settings.", "info")
-  }
+    handleCancelEditPattern();
+    showToast("Pattern updated. Remember to save overall settings.", "info");
+  };
 
   const handleRemovePattern = (indexToRemove: number) => {
     const patternToRemove = tempSettings.jiraPatterns[indexToRemove]?.pattern
@@ -901,12 +981,43 @@ const IndexOptions = () => {
     }
   }
 
+  const handleTogglePattern = (index: number, enabled: boolean) => {
+    setTempSettings(prev => {
+      const updatedPatterns = [...prev.jiraPatterns] as CustomJiraPattern[];
+      updatedPatterns[index] = {
+        ...updatedPatterns[index],
+        enabled
+      };
+      return {
+        ...prev,
+        jiraPatterns: updatedPatterns
+      };
+    });
+    
+    showToast("Pattern " + (enabled ? "enabled" : "disabled") + ". Remember to save overall settings.", "info");
+  };
+
   console.log(
     "Current Pattern:",
     editingPatternData?.pattern,
     "Is Button Disabled:",
     !editingPatternData?.pattern.trim()
   )
+
+  // Add resetBaseUrlChanges and saveBaseUrlChanges functions
+  const resetBaseUrlChanges = useCallback(() => {
+    if (settings?.urls) {
+      setTempSettings(prev => ({ ...prev, urls: { ...settings.urls } }));
+      setBaseUrlChanges(false);
+      showToast("URL changes reset", "info");
+    }
+  }, [settings, showToast]);
+
+  const saveBaseUrlChanges = useCallback(() => {
+    setSettings(tempSettings);
+    setBaseUrlChanges(false);
+    showToast("URL changes saved successfully!", "success");
+  }, [tempSettings, setSettings, showToast]);
 
   if (!settings || !tempSettings) {
     return (
@@ -1042,11 +1153,28 @@ const IndexOptions = () => {
           <div className="grid grid-cols-1 gap-10">
             <Section id="general-settings-section">
               <SectionHeading id="general-settings-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 dark:text-gray-400">
+                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
                 General Settings
               </SectionHeading>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 items-start">
                 <InputGroup className="flex flex-col">
-                  <Label id="theme-label">Theme</Label>
+                  <Label id="theme-label" className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4"></circle>
+                      <path d="M12 2v2"></path>
+                      <path d="M12 20v2"></path>
+                      <path d="m4.93 4.93 1.41 1.41"></path>
+                      <path d="m17.66 17.66 1.41 1.41"></path>
+                      <path d="M2 12h2"></path>
+                      <path d="M20 12h2"></path>
+                      <path d="m6.34 17.66-1.41 1.41"></path>
+                      <path d="m19.07 4.93-1.41 1.41"></path>
+                    </svg>
+                    Theme
+                  </Label>
                   <div
                     className={`flex space-x-1 rounded-lg p-1 bg-gray-200/50 dark:bg-gray-700/50`}>
                     {(["light", "dark", "system"] as const).map(
@@ -1061,6 +1189,31 @@ const IndexOptions = () => {
                           size="sm"
                           className={`flex-1 capitalize transition-all duration-150 ${tempSettings.theme === themeOption ? "shadow-sm" : "text-gray-500 hover:bg-white hover:text-gray-800 hover:shadow-sm dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-gray-100"}`}
                           onClick={() => handleThemeChange(themeOption)}>
+                          {themeOption === "light" && (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                              <circle cx="12" cy="12" r="4"></circle>
+                              <path d="M12 2v2"></path>
+                              <path d="M12 20v2"></path>
+                              <path d="m4.93 4.93 1.41 1.41"></path>
+                              <path d="m17.66 17.66 1.41 1.41"></path>
+                              <path d="M2 12h2"></path>
+                              <path d="M20 12h2"></path>
+                              <path d="m6.34 17.66-1.41 1.41"></path>
+                              <path d="m19.07 4.93-1.41 1.41"></path>
+                            </svg>
+                          )}
+                          {themeOption === "dark" && (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                            </svg>
+                          )}
+                          {themeOption === "system" && (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                              <rect width="20" height="14" x="2" y="3" rx="2"></rect>
+                              <line x1="8" x2="16" y1="21" y2="21"></line>
+                              <line x1="12" x2="12" y1="17" y2="21"></line>
+                            </svg>
+                          )}
                           {themeOption}
                         </Button>
                       )
@@ -1069,7 +1222,15 @@ const IndexOptions = () => {
                 </InputGroup>
 
                 <InputGroup className="flex flex-col">
-                  <Label id="language-label" htmlFor="language-select">
+                  <Label id="language-label" htmlFor="language-select" className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m5 8 6 6"></path>
+                      <path d="m4 14 6-6 2-3"></path>
+                      <path d="M2 5h12"></path>
+                      <path d="M7 2h1"></path>
+                      <path d="m22 22-5-10-5 10"></path>
+                      <path d="M14 18h6"></path>
+                    </svg>
                     Language
                   </Label>
                   <div className="relative">
@@ -1089,31 +1250,60 @@ const IndexOptions = () => {
                     </select>
                     <div
                       className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400`}>
-                      <Languages size={16} />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 9 6 6 6-6"></path>
+                      </svg>
                     </div>
                   </div>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Choose your preferred interface language</p>
                 </InputGroup>
 
-                <InputGroup className="md:col-span-2 pt-2">
-                  <ToggleSwitch
-                    id="integrate-qr-image"
-                    label="Integrate logo image within generated QR codes (if applicable)"
-                    checked={tempSettings.integrateQrImage}
-                    onChange={(e) =>
-                      handleSettingChange("integrateQrImage", e.target.checked)
-                    }
-                  />
-                </InputGroup>
-                <InputGroup className="md:col-span-2 pt-2">
-                  <ToggleSwitch
-                    id="use-markdown-copy"
-                    label="Use Markdown formatting when copying generated content (if applicable)"
-                    checked={tempSettings.useMarkdownCopy}
-                    onChange={(e) =>
-                      handleSettingChange("useMarkdownCopy", e.target.checked)
-                    }
-                  />
-                </InputGroup>
+                <div className="mb-5 options-section__input-group md:col-span-2 pt-3 pb-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label htmlFor="integrate-logo-qr" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
+                          <path d="M9 14.5a4 4 0 1 0 0-9 4 4 0 0 0 0 9Z"></path>
+                          <path d="M9 5.5V9"></path>
+                          <path d="M6.5 7.5h5"></path>
+                          <rect width="13" height="13" x="8" y="8" rx="2"></rect>
+                          <path d="m22 14-4-4"></path>
+                        </svg>
+                        Integrate logo image within generated QR codes
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Embed your logo in the center of QR codes (if applicable)</p>
+                    </div>
+                    <Toggle
+                      id="integrate-logo-qr"
+                      checked={tempSettings.integrateQrImage}
+                      onCheckedChange={(checked) => handleSettingChange("integrateQrImage", checked)}
+                      aria-label="Integrate logo within QR codes"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-5 options-section__input-group md:col-span-2 pt-3 pb-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label htmlFor="use-markdown-copy" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+                          <path d="M8 11h8"></path>
+                          <path d="M8 15h5"></path>
+                        </svg>
+                        Use Markdown formatting when copying generated content
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Copy content as Markdown format instead of plain text (if applicable)</p>
+                    </div>
+                    <Toggle
+                      id="use-markdown-copy"
+                      checked={tempSettings.useMarkdownCopy}
+                      onCheckedChange={(checked) => handleSettingChange("useMarkdownCopy", checked)}
+                      aria-label="Use Markdown when copying"
+                    />
+                  </div>
+                </div>
               </div>
             </Section>
 
@@ -1144,26 +1334,45 @@ const IndexOptions = () => {
             <Section id="base-urls-section">
               <SectionHeading
                 id="base-urls-heading"
-                infoText="Enter base URLs for different environments (e.g., dev.jira.com). The key (e.g., 'dev') is used as a label.">
+                infoText="Enter base URLs for different environments. All URLs use HTTPS protocol.">
                 Base URLs
               </SectionHeading>
-              <div className="space-y-5 options-section__group-container">
+              
+              <div className="space-y-4">
                 {Object.entries(tempSettings.urls).map(([key, value]) => (
-                  <InputGroup key={key} className="mb-0">
-                    <Label
-                      id={`base-url-label-${key}`}
-                      htmlFor={`base-url-input-${key}`}>
-                      {key.charAt(0).toUpperCase() + key.slice(1)}
-                    </Label>
-                    <DebouncedTextInput
-                      id={`base-url-input-${key}`}
-                      initialValue={value}
-                      onSave={(newValue) => handleUrlChange(key, newValue)}
-                      placeholder="e.g., my-env.example.com"
-                    />
-                  </InputGroup>
+                  <div key={key} className="flex flex-col space-y-1">
+                    <InputGroup className="relative">
+                      <Label
+                        id={`base-url-label-${key}`}
+                        htmlFor={`base-url-input-${key}`}
+                        className="font-medium">
+                        {key.charAt(0).toUpperCase() + key.slice(1)}
+                      </Label>
+                      
+                      <div className="flex rounded-md overflow-hidden">
+                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
+                          https://
+                        </span>
+                        <DebouncedTextInput
+                          id={`base-url-input-${key}`}
+                          initialValue={value}
+                          onSave={(newValue) => handleUrlChange(key, newValue)}
+                          placeholder="my-env.example.com"
+                          className="flex-1 min-w-0 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500"
+                          aria-describedby={`url-description-${key}`}
+                          onPaste={handlePaste}
+                        />
+          
+                      </div>
+                      
+                      <p id={`url-description-${key}`} className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {getUrlDescription(key)}
+                      </p>
+                    </InputGroup>
+                  </div>
                 ))}
               </div>
+        
             </Section>
 
             <details
@@ -1211,7 +1420,7 @@ const IndexOptions = () => {
                                 className="text-md font-semibold options-form__heading">
                                 Add New Pattern
                               </h4>
-                              {/* Added visual indicators for form state */}
+                              {/* Added visual indicator for form state */}
                               {!isCurrentPatternValid && (
                                 <span className="text-xs text-red-500 dark:text-red-400 animate-pulse">
                                   Invalid pattern
@@ -1238,7 +1447,7 @@ const IndexOptions = () => {
 
                         <div className="space-y-3 text-sm">
                             {tempSettings.jiraPatterns?.length > 0 ? (
-                                tempSettings.jiraPatterns.map((jp, index) => (
+                                (tempSettings.jiraPatterns as CustomJiraPattern[]).map((jp, index) => (
                                     <div
                                         key={`pattern-${index}`}
                                         className={`rounded-md border mb-3 options-form ${
@@ -1270,7 +1479,7 @@ const IndexOptions = () => {
                                               setPatternData={setEditingPatternData}
                                               isCurrentPatternValid={isCurrentPatternValid}
                                               isPreviewMatch={isPreviewMatch}
-                                              handleSavePattern={handleSavePattern}
+                                              handleSavePattern={() => handleSavePattern(index)}
                                               handleCancelEditPattern={handleCancelEditPattern}
                                               index={index}
                                               Button={Button}
@@ -1282,10 +1491,22 @@ const IndexOptions = () => {
                                                 className="flex justify-between items-center gap-4 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 group">
                                                 <div
                                                     id={`pattern-readonly-view-text-container-${index}`}
-                                                    className="flex-1 min-w-0">
+                                                    className="flex-1 min-w-0 flex items-center">
+                                                    <Toggle 
+                                                      id={`pattern-toggle-${index}`}
+                                                      checked={jp.enabled !== false}
+                                                      onCheckedChange={(checked) => handleTogglePattern(index, checked)}
+                                                      disabled={editingPatternIndex !== null}
+                                                      aria-label={`Enable or disable pattern ${jp.pattern}`}
+                                                      className="mr-3"
+                                                    />
                                                     <p
                                                         id={`pattern-readonly-view-text-${index}`}
-                                                        className="font-mono text-sm break-all text-gray-700 dark:text-gray-300">
+                                                        className={`font-mono text-sm break-all ${
+                                                          jp.enabled !== false 
+                                                            ? 'text-gray-700 dark:text-gray-300' 
+                                                            : 'text-gray-400 dark:text-gray-500'
+                                                        }`}>
                                                         {jp.pattern}
                                                     </p>
                                                 </div>
@@ -1329,8 +1550,8 @@ const IndexOptions = () => {
                         </div>
                     </section>
                     <section id="url-structure" className="mb-10">
-                        <div id="url-structure-header" className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header">
-                            <h3 id="url-structure-heading" className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <div id="url-structure-header" className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <h3 id="jira-patterns-heading" className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
                                 <span>URL Builder</span>
                                 <InfoPopup
                                     text="Build your custom JIRA URL structure by dragging and dropping components. The pattern defines how your JIRA ticket IDs are converted to URLs."
