@@ -267,6 +267,235 @@ const ToggleSwitch: React.FC<
   </div>
 )
 
+interface PatternEditorFormProps {
+  patternData: { pattern: string } | null;
+  setPatternData: React.Dispatch<React.SetStateAction<{ pattern: string } | null>>;
+  isCurrentPatternValid: boolean;
+  isPreviewMatch: boolean;
+  handleSavePattern: () => void;
+  handleCancelEditPattern: () => void;
+  index: number;
+  Button: React.FC<
+    React.ButtonHTMLAttributes<HTMLButtonElement> & {
+      variant?: "primary" | "secondary" | "danger" | "ghost";
+      size?: "sm" | "md";
+    }
+  >;
+}
+
+const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
+  patternData,
+  setPatternData,
+  isCurrentPatternValid,
+  isPreviewMatch,
+  handleSavePattern,
+  handleCancelEditPattern,
+  index,
+  Button
+}) => {
+  const [isGeneratingFromUrl, setIsGeneratingFromUrl] = useState(false);
+  const [sampleUrl, setSampleUrl] = useState("");
+
+  // Helper function to generate regex from a URL
+  const generateRegexFromUrl = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      const origin = urlObj.origin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const path = urlObj.pathname;
+      const searchParams = urlObj.searchParams;
+
+      // Case 1: /browse/KEY-123 format
+      const browseMatch = path.match(/^(.*?\/browse\/)([A-Z][A-Z0-9]+)-\d+$/i);
+      if (browseMatch) {
+        const basePath = browseMatch[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const projectKey = browseMatch[2];
+        return `^${origin}${basePath}${projectKey}-\\d+(?:[?#]|$)`;
+      }
+
+      // Case 2: URLs with selectedIssue=KEY-123 in query params
+      const selectedIssue = searchParams.get('selectedIssue');
+      if (selectedIssue) {
+        const issueMatch = selectedIssue.match(/^([A-Z][A-Z0-9]+)-\d+$/i);
+        if (issueMatch) {
+          const projectKey = issueMatch[1];
+          const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          return `^${origin}${escapedPath}(?:\\?.*)?(?:&|\\?)selectedIssue=${projectKey}-\\d+`;
+        }
+      }
+
+      // Fallback to a less specific pattern
+      console.warn("Could not generate a specific pattern for URL, using basic origin/path match:", url);
+      return `^${origin}${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*`;
+
+    } catch (e) {
+      console.error("Error parsing URL for regex generation:", e);
+      return null;
+    }
+  };
+
+  // Handle toggle between direct regex input and URL generation
+  const handleModeToggle = () => {
+    setIsGeneratingFromUrl(!isGeneratingFromUrl);
+    // Reset pattern data when switching modes
+    if (patternData) {
+      setPatternData({ pattern: "" });
+      setSampleUrl("");
+    }
+  };
+
+  // Handle URL input change when in URL generation mode
+  const handleUrlInputChange = (newValue: string) => {
+    setSampleUrl(newValue);
+    if (!newValue.trim()) {
+      setPatternData({ pattern: "" });
+      return;
+    }
+
+    const generatedPattern = generateRegexFromUrl(newValue);
+    if (generatedPattern) {
+      setPatternData({ pattern: generatedPattern });
+    }
+  };
+
+  const formId = index === -1 ? "jira-patterns-add-form" : `pattern-edit-form-${index}`;
+
+  return (
+    <div className="p-4 pt-2">
+      {/* Toggle Switch for pattern input mode */}
+      <div className="flex items-center mb-4">
+        <label htmlFor={`generate-mode-toggle-${index}`} className="text-sm font-medium mr-3 text-gray-600 dark:text-gray-300 cursor-pointer">
+          Enter Regex Directly
+        </label>
+        <button
+          type="button"
+          id={`generate-mode-toggle-${index}`}
+          role="switch"
+          aria-checked={isGeneratingFromUrl}
+          onClick={handleModeToggle}
+          className={`${
+            isGeneratingFromUrl ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+          } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900`}
+        >
+          <span className="sr-only">Use URL generation</span>
+          <span
+            aria-hidden="true"
+            className={`${
+              isGeneratingFromUrl ? 'translate-x-5' : 'translate-x-0'
+            } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+          />
+        </button>
+        <label htmlFor={`generate-mode-toggle-${index}`} className="text-sm font-medium ml-3 text-gray-600 dark:text-gray-300 cursor-pointer">
+          Generate from Sample URL
+        </label>
+      </div>
+
+      {isGeneratingFromUrl ? (
+        // URL Input for generating pattern
+        <div className="mb-3">
+          <label
+            htmlFor={`${formId}-url-input`}
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Sample JIRA URL
+          </label>
+          <input
+            id={`${formId}-url-input`}
+            type="url"
+            className="block w-full px-3 py-2 border rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:border-blue-500 focus:ring-blue-500 border-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            value={sampleUrl}
+            onChange={(e) => handleUrlInputChange(e.target.value)}
+            placeholder="e.g., https://jira.example.com/browse/PROJ-123"
+            autoFocus
+          />
+        </div>
+      ) : (
+        // Direct Regex Input
+        <div className="mb-3">
+          <label
+            htmlFor={`pattern-input-${index}`}
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Pattern
+          </label>
+          <div className="relative">
+            <input
+              id={`pattern-input-${index}`}
+              type="text"
+              className={`block w-full px-3 py-2 border rounded-md shadow-sm text-sm font-mono 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 
+                ${!isCurrentPatternValid 
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-700' 
+                  : isPreviewMatch
+                    ? 'border-green-300 focus:border-green-500 focus:ring-green-500 dark:border-green-700'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600'
+                } dark:bg-gray-700 dark:text-white`}
+              value={patternData?.pattern || ""}
+              onChange={(e) => 
+                setPatternData((prev) => ({ 
+                  ...(prev || { pattern: "" }), 
+                  pattern: e.target.value 
+                }))
+              }
+              placeholder="Enter pattern (e.g., ^https://jira\.example\.com/browse/PROJ-\d+)"
+              autoFocus
+            />
+            {/* Visual validation indicator */}
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              {!isCurrentPatternValid && (
+                <span className="text-red-500 dark:text-red-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                </span>
+              )}
+              {isCurrentPatternValid && isPreviewMatch && (
+                <span className="text-green-500 dark:text-green-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5"></path>
+                  </svg>
+                </span>
+              )}
+            </div>
+          </div>
+          {!isCurrentPatternValid && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Please enter a valid regular expression pattern
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Generated Pattern Display (only in URL mode) */}
+      {isGeneratingFromUrl && patternData?.pattern && (
+        <div className="mt-2 p-2 mb-3 bg-green-50 dark:bg-green-900/30 rounded border border-green-200 dark:border-green-700">
+          <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">Generated Pattern:</p>
+          <code className="block text-sm font-mono text-green-700 dark:text-green-400 break-all select-all">
+            {patternData.pattern}
+          </code>
+        </div>
+      )}
+
+      <div className="flex gap-3 justify-end mt-4">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleCancelEditPattern}
+          className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleSavePattern}
+          disabled={!patternData?.pattern || !isCurrentPatternValid}
+          className={!isCurrentPatternValid ? 'opacity-50 cursor-not-allowed' : ''}>
+          {index === -1 ? 'Add Pattern' : 'Save Changes'}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const IndexOptions = () => {
   const [settings, setSettings] = useStorage<SettingsStorage>(
     "jiraUrlWizardSettings",
@@ -973,173 +1202,96 @@ const IndexOptions = () => {
                         </div>
 
                         {editingPatternIndex === -1 && (
-                            <div
-                                id="jira-patterns-add-form"
-                                className={`p-4 rounded-md border mb-6 options-form options-form--add bg-gray-50 border-gray-200 dark:bg-gray-700/50 dark:border-gray-600`}>
-                                <h4
-                                    id="jira-patterns-add-form-heading"
-                                    className="text-md font-semibold mb-4 options-form__heading">
-                                    Add New Pattern
-                                </h4>
-                                <div className="space-y-4 options-form__body">
-                                    <InputGroup className="mb-0">
-                                        <Label
-                                            id="jira-patterns-add-form-pattern-label"
-                                            htmlFor="jira-patterns-add-form-pattern-input">
-                                            Pattern (Regex)
-                                        </Label>
-                                        <DebouncedTextInput
-                                            id="jira-patterns-add-form-pattern-input"
-                                            initialValue={editingPatternData?.pattern || ""}
-                                            onSave={(newValue) => 
-                                               setEditingPatternData((prev) => ({ 
-                                                 ...(prev || { pattern: "" }), 
-                                                 pattern: newValue 
-                                               }))
-                                            }
-                                            className={`font-mono text-sm ${!isCurrentPatternValid ? "border-red-500 dark:border-red-400 ring-1 ring-red-500" : ""}`}
-                                            placeholder="^https://jira\.example\.com/browse/PROJ-\d+"
-                                            autoFocus
-                                        />
-                                    </InputGroup>
-                                    <div
-                                        id="jira-patterns-add-form-validation"
-                                        className="mt-1 text-xs options-form__validation">
-                                        {!isCurrentPatternValid ? (
-                                            <p
-                                                id="jira-patterns-add-form-validation-error"
-                                                className="text-red-500 dark:text-red-400 options-form__validation-error">
-                                                Invalid Regex Syntax
-                                            </p>
-                                        ) : editingPatternData?.pattern ? (
-                                            <p
-                                                id="jira-patterns-add-form-validation-match"
-                                                className={`${isPreviewMatch ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400"} options-form__validation-match`}>
-                                                {isPreviewMatch ? "Matches" : "Does not match"}{" "}
-                                                generated sample URL based on current settings.
-                                            </p>
-                                        ) : (
-                                            <p
-                                                id="jira-patterns-add-form-validation-prompt"
-                                                className="text-gray-500 dark:text-gray-400 options-form__validation-prompt">
-                                                Enter a pattern to see preview.
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                                <div
-                                    id="jira-patterns-add-form-actions"
-                                    className="flex justify-end space-x-2 mt-5 options-form__actions">
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        id="jira-patterns-add-form-cancel-button"
-                                        onClick={handleCancelEditPattern}>
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        variant="primary"
-                                        size="sm"
-                                        id="jira-patterns-add-form-save-button"
-                                        onClick={handleSavePattern}>
-                                        Save Pattern
-                                    </Button>
-                                </div>
+                          <div
+                            id="jira-patterns-add-form"
+                            className="rounded-md border mb-6 options-form bg-gray-50 border-gray-200 dark:bg-gray-700/50 dark:border-gray-600">
+                            <div className="flex justify-between items-center p-4 pb-2">
+                              <h4
+                                id="jira-patterns-add-form-heading"
+                                className="text-md font-semibold options-form__heading">
+                                Add New Pattern
+                              </h4>
+                              {/* Added visual indicators for form state */}
+                              {!isCurrentPatternValid && (
+                                <span className="text-xs text-red-500 dark:text-red-400 animate-pulse">
+                                  Invalid pattern
+                                </span>
+                              )}
+                              {isCurrentPatternValid && isPreviewMatch && (
+                                <span className="text-xs text-green-600 dark:text-green-400">
+                                  Pattern matches preview
+                                </span>
+                              )}
                             </div>
+                            <PatternEditorForm
+                              patternData={editingPatternData}
+                              setPatternData={setEditingPatternData}
+                              isCurrentPatternValid={isCurrentPatternValid}
+                              isPreviewMatch={isPreviewMatch}
+                              handleSavePattern={handleSavePattern}
+                              handleCancelEditPattern={handleCancelEditPattern}
+                              index={-1}
+                              Button={Button}
+                            />
+                          </div>
                         )}
 
                         <div className="space-y-3 text-sm">
                             {tempSettings.jiraPatterns?.length > 0 ? (
                                 tempSettings.jiraPatterns.map((jp, index) => (
                                     <div
-                                        key={`pattern-item-${index}`}
-                                        className={`rounded-lg border transition-all duration-200 ${editingPatternIndex === index ? "bg-blue-50 border-blue-400 shadow-inner dark:bg-gray-700 dark:border-blue-500" : "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:hover:bg-gray-700"}`}>
+                                        key={`pattern-${index}`}
+                                        className={`rounded-md border mb-3 options-form ${
+                                          editingPatternIndex === index 
+                                            ? 'options-form--editing bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' 
+                                            : 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700'
+                                        }`}>
+                                        
                                         {editingPatternIndex === index ? (
-                                            <div
-                                                id={`pattern-edit-form-${index}`}
-                                                className="p-4 space-y-4 options-form options-form--edit">
-                                                <InputGroup className="mb-0">
-                                                    <Label
-                                                        id={`pattern-edit-form-pattern-label-${index}`}
-                                                        htmlFor={`pattern-edit-form-pattern-input-${index}`}>
-                                                        Edit Pattern (Regex)
-                                                    </Label>
-                                                    <DebouncedTextInput
-                                                        id={`pattern-edit-form-pattern-input-${index}`}
-                                                        initialValue={editingPatternData?.pattern || ""}
-                                                        onSave={(newValue) => 
-                                                           setEditingPatternData((prev) => ({ 
-                                                             ...(prev || { pattern: "" }), 
-                                                             pattern: newValue 
-                                                           }))
-                                                        }
-                                                        className={`font-mono text-sm ${!isCurrentPatternValid ? "border-red-500 dark:border-red-400 ring-1 ring-red-500" : ""}`}
-                                                        placeholder="^https://jira\.example\.com/browse/PROJ-\d+"
-                                                        autoFocus
-                                                    />
-                                                </InputGroup>
-                                                <div
-                                                    id={`pattern-edit-form-validation-${index}`}
-                                                    className="mt-1 text-xs options-form__validation">
-                                                    {!isCurrentPatternValid ? (
-                                                        <p
-                                                            id={`pattern-edit-form-validation-error-${index}`}
-                                                            className="text-red-500 dark:text-red-400 options-form__validation-error">
-                                                            Invalid Regex Syntax
-                                                        </p>
-                                                    ) : editingPatternData?.pattern ? (
-                                                        <p
-                                                            id={`pattern-edit-form-validation-match-${index}`}
-                                                            className={`${isPreviewMatch ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400"} options-form__validation-match`}>
-                                                            {isPreviewMatch
-                                                                ? "Matches"
-                                                                : "Does not match"}{" "}
-                                                            generated sample URL based on current
-                                                            settings.
-                                                        </p>
-                                                    ) : (
-                                                        <p
-                                                            id={`pattern-edit-form-validation-prompt-${index}`}
-                                                            className="text-gray-500 dark:text-gray-400 options-form__validation-prompt">
-                                                            Enter a pattern to see preview.
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <div
-                                                    id={`pattern-edit-form-actions-${index}`}
-                                                    className="flex justify-end space-x-2 mt-4 options-form__actions">
-                                                    <Button
-                                                        variant="secondary"
-                                                        size="sm"
-                                                        id={`pattern-edit-form-cancel-button-${index}`}
-                                                        onClick={handleCancelEditPattern}>
-                                                        Cancel
-                                                    </Button>
-                                                    <Button
-                                                        variant="primary"
-                                                        size="sm"
-                                                        id={`pattern-edit-form-save-button-${index}`}
-                                                        onClick={handleSavePattern}>
-                                                        Save Pattern
-                                                    </Button>
-                                                </div>
+                                          <>
+                                            <div className="flex justify-between items-center p-4 pb-2">
+                                              <h4 className="text-md font-semibold options-form__heading">
+                                                Edit Pattern
+                                              </h4>
+                                              {/* Added visual indicators for form state */}
+                                              {!isCurrentPatternValid && (
+                                                <span className="text-xs text-red-500 dark:text-red-400 animate-pulse">
+                                                  Invalid pattern
+                                                </span>
+                                              )}
+                                              {isCurrentPatternValid && isPreviewMatch && (
+                                                <span className="text-xs text-green-600 dark:text-green-400">
+                                                  Pattern matches preview
+                                                </span>
+                                              )}
                                             </div>
+                                            <PatternEditorForm
+                                              patternData={editingPatternData}
+                                              setPatternData={setEditingPatternData}
+                                              isCurrentPatternValid={isCurrentPatternValid}
+                                              isPreviewMatch={isPreviewMatch}
+                                              handleSavePattern={handleSavePattern}
+                                              handleCancelEditPattern={handleCancelEditPattern}
+                                              index={index}
+                                              Button={Button}
+                                            />
+                                          </>
                                         ) : (
                                             <div
                                                 id={`pattern-readonly-view-${index}`}
-                                                className="flex justify-between items-center gap-4 p-3">
+                                                className="flex justify-between items-center gap-4 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 group">
                                                 <div
                                                     id={`pattern-readonly-view-text-container-${index}`}
                                                     className="flex-1 min-w-0">
                                                     <p
                                                         id={`pattern-readonly-view-text-${index}`}
-                                                        className={`font-mono text-sm break-all text-gray-700 dark:text-gray-300`}>
+                                                        className="font-mono text-sm break-all text-gray-700 dark:text-gray-300">
                                                         {jp.pattern}
                                                     </p>
                                                 </div>
                                                 <div
                                                     id={`pattern-readonly-view-actions-${index}`}
-                                                    className="flex gap-1 flex-shrink-0">
+                                                    className="flex gap-1 flex-shrink-0 opacity-70 group-hover:opacity-100">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -1158,7 +1310,7 @@ const IndexOptions = () => {
                                                         disabled={editingPatternIndex !== null}
                                                         title="Remove Pattern"
                                                         aria-label="Remove Pattern"
-                                                        className={`focus:ring-red-500 hover:bg-red-100 hover:text-red-600 focus:ring-offset-gray-50 dark:hover:bg-red-800/30 dark:hover:text-red-400 dark:focus:ring-offset-gray-700`}>
+                                                        className="focus:ring-red-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-800/30 dark:hover:text-red-400">
                                                         <X size={16} />
                                                     </Button>
                                                 </div>
