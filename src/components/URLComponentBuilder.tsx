@@ -98,23 +98,33 @@ interface ItemProps {
 const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({ 
     id, component, isUsed, allAvailableComponents 
 }) => {
+    const isDynamicField = ['ticket-type', 'issue-prefix', 'base-url'].includes(component.type);
+    const isDisabled = isDynamicField && isUsed;
+
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: id,
         data: { type: 'available', componentData: component },
-        disabled: isUsed && ['ticket-type', 'issue-prefix', 'base-url'].includes(component.type),
+        disabled: isDisabled,
     });
 
     const style = isDragging ? { opacity: 0.5, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' } : undefined;
     const itemStyle = getComponentStyle(component.type);
-    const isDynamicAndUsed = ['ticket-type', 'issue-prefix', 'base-url'].includes(component.type) && isUsed;
 
-    if (isDynamicAndUsed) {
+    if (isDisabled) {
         return (
             <div
+                role="button"
+                tabIndex={-1}
+                aria-disabled="true"
                 title={`${component.description} (already in pattern)`}
-                className={`relative py-1.5 px-3 rounded-lg select-none shadow-sm transition-all duration-150 group cursor-not-allowed opacity-50 ${itemStyle}`}
+                className={`relative py-1.5 px-3 rounded-lg select-none shadow-sm transition-all opacity-40 ${itemStyle} border-dashed cursor-not-allowed filter grayscale`}
             >
                 <ItemContent component={component} />
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-5 dark:bg-opacity-20 rounded-lg">
+                    <div className="text-xs font-medium px-1.5 py-0.5 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 rounded shadow-sm border border-gray-200 dark:border-gray-700">
+                        Already used
+                    </div>
+                </div>
             </div>
         );
     }
@@ -280,22 +290,41 @@ const URLPreview: React.FC<{
     validationResults,
     validationRules
 }) => {
-    const allRulesValid = validationRules.every(rule => validationResults[rule.id]?.valid ?? false);
+    const allPatternRulesValid = validationRules.every(rule => validationResults[rule.id]?.valid ?? false);
     
     if (Object.entries(urls).length > 0) {
         return (
-            <>
+            <div className="space-y-2">
                 {Object.entries(urls).map(([key, value]) => {
                     const constructedUrl = buildUrlForBase(value, pattern.map(id => String(id)));
-                    const isValid = urlValidationResults[key];
+                    const isUrlValid = urlValidationResults[key] ?? false;
+                    const displayValid = allPatternRulesValid && isUrlValid;
+                    
                     return (
-                        <div key={key} className={`rounded-md p-3 border ${
-                            allRulesValid
+                        <div key={key} className={`relative rounded-md p-3 border transition-colors duration-150 ${
+                            displayValid
                                 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/40' 
-                                : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/40'
+                                : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/40'
                         }`}>
                             <div className="flex justify-between items-center mb-1">
-                                <div className="font-medium text-sm text-gray-700 dark:text-gray-300">{key}</div>
+                                <div className="font-medium text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                                    {key}
+                                    {!displayValid && (
+                                        <Tooltip text={!allPatternRulesValid ? "Pattern structure is invalid" : "Generated URL is invalid (check TLD, characters, etc.)"}>
+                                            <AlertTriangle size={14} className="ml-2 text-red-500 dark:text-red-400" />
+                                        </Tooltip>
+                                    )}
+                                </div>
+                                <button 
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText(constructedUrl)}
+                                  disabled={!displayValid}
+                                  className={`p-1 rounded text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity`}
+                                  aria-label={`Copy ${key} URL`}
+                                  title={displayValid ? `Copy ${key} URL` : "Cannot copy invalid URL"}
+                                >
+                                    <Copy size={14} />
+                                </button>
                             </div>
                             <div className="font-mono text-xs break-all text-gray-700 dark:text-gray-300">
                                 {constructedUrl || 'Add components to generate URL'}
@@ -303,18 +332,43 @@ const URLPreview: React.FC<{
                         </div>
                     );
                 })}
-            </>
+            </div>
         );
     }
     
+    // Fallback preview if no base URLs are defined
+    const constructedUrl = buildUrlForBase(undefined, pattern.map(id => String(id)));
+    const isFallbackUrlValid = urlValidationResults['fallback'] ?? false;
+    const displayValid = allPatternRulesValid && isFallbackUrlValid;
+
     return (
-        <div className={`rounded-md p-3 border ${
-            allRulesValid
+        <div className={`relative rounded-md p-3 border transition-colors duration-150 ${
+            displayValid
                 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/40' 
-                : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/40'
+                : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/40'
         }`}>
+            <div className="flex justify-between items-center mb-1">
+                <div className="font-medium text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                    Example Preview
+                     {!displayValid && (
+                        <Tooltip text={!allPatternRulesValid ? "Pattern structure is invalid" : "Generated URL is invalid (check TLD, characters, etc.)"}>
+                            <AlertTriangle size={14} className="ml-2 text-red-500 dark:text-red-400" />
+                        </Tooltip>
+                    )}
+                </div>
+                 <button 
+                  type="button"
+                  onClick={() => navigator.clipboard.writeText(constructedUrl)}
+                  disabled={!displayValid}
+                  className={`p-1 rounded text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity`}
+                  aria-label={`Copy Example URL`}
+                  title={displayValid ? `Copy Example URL` : "Cannot copy invalid URL"}
+                >
+                    <Copy size={14} />
+                </button>
+            </div>
             <div className="font-mono text-xs break-all text-gray-700 dark:text-gray-300">
-                {buildUrlForBase(undefined, pattern.map(id => String(id))) || 'Add components to generate URL'}
+                {constructedUrl || 'Add components to generate URL'}
             </div>
         </div>
     );
@@ -489,6 +543,50 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
             }
         },
         {
+            id: 'valid-tld',
+            name: 'Valid Top-Level Domain (TLD)',
+            description: 'Ensures the domain part ends with a valid TLD (e.g., .com, .org). Checked in URL Preview.',
+            validate: (pattern: string[]) => {
+                let structuralIssueFound = false;
+                const baseUrlIndex = pattern.findIndex(id => getBaseComponentData(id, allAvailableComponents)?.type === 'base-url');
+                
+                if (baseUrlIndex !== -1) {
+                    // Find the end of the domain part (first slash after base URL or end of pattern)
+                    let domainEndIndex = pattern.findIndex((id, index) => index > baseUrlIndex && getBaseComponentData(id, allAvailableComponents)?.id === 'sep-slash');
+                    if (domainEndIndex === -1) {
+                        domainEndIndex = pattern.length; // No slash found, domain goes to the end
+                    }
+                    
+                    // Check components within the potential domain part (after base-url)
+                    for (let i = baseUrlIndex + 1; i < domainEndIndex; i++) {
+                        const currentComp = getBaseComponentData(pattern[i], allAvailableComponents);
+                        const prevComp = getBaseComponentData(pattern[i-1], allAvailableComponents);
+
+                        // Check 1: Is numeric regex directly after base-url or after a dot?
+                        if (currentComp?.id === 'regex-numeric' && 
+                            (prevComp?.type === 'base-url' || prevComp?.id === 'sep-dot')) {
+                            structuralIssueFound = true;
+                            break;
+                        }
+                        // Check 2: Is ticket-type or issue-prefix inside the domain part?
+                        if (currentComp?.type === 'ticket-type' || currentComp?.type === 'issue-prefix') {
+                             structuralIssueFound = true;
+                             break;
+                        }
+                    }
+                }
+                
+                // This rule primarily provides structural feedback.
+                // The actual URL validation (including TLD check based on base URL value) happens in the preview.
+                return { 
+                    valid: !structuralIssueFound, 
+                    message: structuralIssueFound 
+                        ? "Pattern structure might lead to an invalid domain/TLD. Check URL previews carefully."
+                        : undefined
+                }; 
+            }
+        },
+        {
             id: 'no-adjacent-separators',
             name: 'No Adjacent Separators',
             description: 'The pattern cannot have two separator components next to each other',
@@ -503,6 +601,26 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                     }
                 }
                 return { valid: isValid, message: isValid ? undefined : 'Avoid placing separators directly next to each other' };
+            }
+        },
+        {
+            id: 'no-adjacent-regex',
+            name: 'No Adjacent Regex Patterns',
+            description: 'Cannot place two regex patterns next to each other',
+            validate: (pattern: string[]) => {
+                let isValid = true;
+                for (let i = 0; i < pattern.length - 1; i++) {
+                    const current = getBaseComponentData(pattern[i], allAvailableComponents);
+                    const next = getBaseComponentData(pattern[i + 1], allAvailableComponents);
+                    if (current?.type === 'regex' && next?.type === 'regex') {
+                        isValid = false;
+                        break;
+                    }
+                }
+                return { 
+                    valid: isValid, 
+                    message: isValid ? undefined : 'Avoid placing regex patterns directly next to each other' 
+                };
             }
         },
         {
@@ -544,6 +662,11 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     
     // URL Building and validation functions
     const validateUrl = useCallback((url: string) => {
+        // Check for invalid starting characters like @
+        if (/^@/.test(url)) {
+            return false;
+        }
+        
         // Simple and focused URL validation regex
         const urlRegex = /\b((https?|ftp):\/\/)?((([a-zA-Z0-9\-_]+\.)+[a-zA-Z]{2,})|(localhost)|(\d{1,3}(\.\d{1,3}){3}))(:\d+)?(\/[^\s]*)?(\?[^\s#]*)?(#[^\s]*)?\b/;
         
@@ -555,7 +678,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         // Extract the hostname part
         let hostname = url;
         try {
-            const urlObj = new URL(url);
+            const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
             hostname = urlObj.hostname;
         } catch (e) {
             // If URL parsing fails, try to extract hostname manually
@@ -570,6 +693,22 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         for (const part of parts) {
             // Check if any part starts with a dot or hyphen
             if (part.startsWith('.') || part.startsWith('-')) {
+                return false;
+            }
+            
+            // Check for invalid characters in domain parts
+            if (!/^[a-zA-Z0-9\-_]+$/.test(part)) {
+                return false;
+            }
+        }
+
+        // Check for valid TLD (Top-Level Domain)
+        if (parts.length > 1) {
+            const tld = parts[parts.length - 1];
+            
+            // Valid TLDs should only contain letters (a-z)
+            // This will catch invalid TLDs like .de12345
+            if (!/^[a-z]{2,}$/.test(tld)) {
                 return false;
             }
         }
@@ -767,16 +906,14 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                     const overIndex = pattern.indexOf(over.id);
                     
                     // Calculate if we should place before or after the target
-                    const overRect = over.rect.current?.translated; // Access translated ClientRect
-                    const activeRect = active.rect.current?.translated; // Access translated ClientRect
+                    // Safely access properties from event.delta, as rect might be complex
+                    const deltaX = event.delta.x;
+                    const overNode = over.data.current?.nodeRef?.current;
                     
-                    if (!overRect || !activeRect) {
-                        // Fallback - add after the target
-                        newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
-                    } else {
-                        // Determine if we should place before or after based on where the cursor is
-                        const isBeforeTarget = activeRect.left < overRect.left + (overRect.width / 2);
-                        
+                    if (overNode) {
+                        const overRect = overNode.getBoundingClientRect();
+                        const isBeforeTarget = deltaX < 0; // Simplified logic: if dragging left, place before
+
                         if (isBeforeTarget) {
                             // Add before the target
                             newPattern = [...pattern.slice(0, overIndex), uniqueId, ...pattern.slice(overIndex)];
@@ -784,6 +921,9 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                             // Add after the target
                             newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
                         }
+                    } else {
+                         // Fallback - add after the target if node rect unavailable
+                        newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
                     }
                 }
             }
@@ -886,7 +1026,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                     </div>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                    Build your custom JIRA URL structure by dragging and dropping components. This pattern defines how your JIRA ticket IDs will be transformed into URLs.
+                    Build your custom JIRA URL structure by dragging and dropping components. This pattern defines how your JIRA ticket IDs will be transformed into URLs. Ensure patterns create valid URLs (correct TLDs, no invalid starting characters) and avoid placing regex patterns consecutively.
                 </div>
                 
                 {showRules && (
@@ -1009,6 +1149,27 @@ const useDraggable = ({ id, data, disabled = false }: DraggableOptions) => {
     });
     
     return { attributes, listeners, setNodeRef, isDragging };
+};
+
+
+// Then, add a basic Tooltip component implementation
+const Tooltip: React.FC<{ text: string; children: React.ReactElement }> = ({ text, children }) => {
+  const [show, setShow] = useState(false);
+
+  return (
+    <div 
+      className="relative inline-block"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded z-10 whitespace-nowrap">
+          {text}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default URLComponentBuilder;

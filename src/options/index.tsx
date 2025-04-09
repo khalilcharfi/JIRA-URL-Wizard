@@ -9,7 +9,8 @@ import {
   Save,
   Settings,
   Upload,
-  X
+  X,
+  Eye
 } from "lucide-react"
 import React, { useCallback, useEffect, useMemo, useState, useRef } from "react"
 import InfoPopup from "~src/components/InfoPopup";
@@ -18,6 +19,11 @@ import {DEFAULT_TOAST_TIMEOUT_MS} from "~src/utils/utils";
 // Import the shared settings definitions
 import { DEFAULT_SETTINGS } from "~src/shared/settings"
 import type { SettingsStorage, JiraPattern } from "~src/shared/settings"
+import { QRCode } from 'react-qrcode-logo';
+// Add import for marked
+import { marked } from 'marked';
+// Import the MarkdownRenderer component
+import MarkdownRenderer from "../components/MarkdownRenderer";
 
 // First, let's update the JiraPattern type to include the enabled property
 interface CustomJiraPattern extends JiraPattern {
@@ -234,8 +240,8 @@ const Toggle: React.FC<{
 }> = ({ id, checked, onCheckedChange, disabled, className, ...props }) => {
   return (
     <div className={`inline-flex ${className || ''}`}>
-      <label 
-        htmlFor={id}
+    <label
+      htmlFor={id}
         className="relative inline-block w-10 h-5 cursor-pointer"
       >
         <input
@@ -262,7 +268,7 @@ const Toggle: React.FC<{
             }`} 
           />
         </div>
-      </label>
+    </label>
     </div>
   );
 };
@@ -275,12 +281,6 @@ interface PatternEditorFormProps {
   handleSavePattern: () => void;
   handleCancelEditPattern: () => void;
   index: number;
-  Button: React.FC<
-    React.ButtonHTMLAttributes<HTMLButtonElement> & {
-      variant?: "primary" | "secondary" | "danger" | "ghost";
-      size?: "sm" | "md";
-    }
-  >;
 }
 
 const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
@@ -290,8 +290,7 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
   isPreviewMatch,
   handleSavePattern,
   handleCancelEditPattern,
-  index,
-  Button
+  index
 }) => {
   const [isGeneratingFromUrl, setIsGeneratingFromUrl] = useState(false);
   const [sampleUrl, setSampleUrl] = useState("");
@@ -373,8 +372,8 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
         <label htmlFor={`generate-mode-toggle-${index}`} className="text-sm font-medium mr-3 text-gray-600 dark:text-gray-300 cursor-pointer">
           Enter Regex Directly
         </label>
-        <button
-          type="button"
+      <button
+        type="button"
           id={`generate-mode-toggle-${index}`}
           role="switch"
           aria-checked={isGeneratingFromUrl}
@@ -452,18 +451,18 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="15" y1="9" x2="9" y2="15"></line>
                     <line x1="9" y1="9" x2="15" y2="15"></line>
-                  </svg>
+            </svg>
                 </span>
-              )}
+          )}
               {isCurrentPatternValid && isPreviewMatch && (
                 <span className="text-green-500 dark:text-green-400">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 6L9 17l-5-5"></path>
                   </svg>
-                </span>
+        </span>
               )}
-            </div>
-          </div>
+    </div>
+  </div>
           {!isCurrentPatternValid && (
             <p className="mt-1 text-xs text-red-600 dark:text-red-400">
               Please enter a valid regular expression pattern
@@ -498,21 +497,19 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
       </div>
 
       <div className="flex gap-3 justify-end mt-4">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleCancelEditPattern}
-          className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+        <button
+          type="button"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1 text-sm border focus:ring-blue-500 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-offset-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 dark:focus:ring-offset-gray-900 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+          onClick={handleCancelEditPattern}>
           Cancel
-        </Button>
-        <Button
-          variant="primary"
-          size="sm"
+        </button>
+        <button
+          type="button"
+          className={`inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1 text-sm bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 ${!isCurrentPatternValid ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={handleSavePattern}
-          disabled={!patternData?.pattern || !isCurrentPatternValid}
-          className={!isCurrentPatternValid ? 'opacity-50 cursor-not-allowed' : ''}>
+          disabled={!patternData?.pattern || !isCurrentPatternValid}>
           {index === -1 ? 'Add Pattern' : 'Save Changes'}
-        </Button>
+        </button>
       </div>
     </div>
   );
@@ -557,6 +554,7 @@ const IndexOptions = () => {
   const [isPreviewMatch, setIsPreviewMatch] = useState(false)
   const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false)
   const [baseUrlChanges, setBaseUrlChanges] = useState<boolean>(false);
+  const [showPreviewDemo, setShowPreviewDemo] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -1019,6 +1017,77 @@ const IndexOptions = () => {
     showToast("URL changes saved successfully!", "success");
   }, [tempSettings, setSettings, showToast]);
 
+  // Add the generateMarkdownOutput function inside IndexOptions, before the return statement
+  const generateMarkdownOutput = useCallback((): string => {
+    // Use saved settings for all relevant parts
+    const { urls, prefixes, ticketTypes, urlStructure } = settings;
+    const examplePrefix = prefixes[0] || 'PROJECT'; // Use first prefix or fallback
+
+    // Helper to construct URL and shorten link text
+    const createLink = (key: string, path: string = '', query: string = '', linkTextPrefix: string = '') => {
+        const baseUrlValue = urls[key];
+        if (!baseUrlValue) return `${linkTextPrefix} → N/A (URL not configured)`;
+        
+        const fullUrl = `https://${baseUrlValue}${path}${query}`;
+        return `${linkTextPrefix} → ${fullUrl}`;
+    };
+
+    // Build Markdown String section by section using the helper
+    let markdown = `🌐 Frontend Environments\n\n`;
+    markdown += createLink('bo', '', '', 'Back Office Tool') + '\n\n';
+    markdown += createLink('mobile', '', '', 'Mobile Version') + '\n\n';
+    markdown += createLink('desktop', '', '', 'Desktop Version') + '\n\n';
+    
+    markdown += `📝 CMS Environments\n\n`;
+    markdown += `⏳ Drupal 7\n\n`; // Added emoji
+    markdown += createLink('drupal7', '', '', 'Base CMS') + '\n\n';
+    markdown += createLink('drupal7', '/fahrradversicherung', '?deviceoutput=desktop', 'Desktop View') + '\n\n';
+    markdown += createLink('drupal7', '/fahrradversicherung', '?deviceoutput=mobile', 'Mobile View') + '\n\n';
+    
+    markdown += `✨ Drupal 9\n\n`; // Added emoji
+    markdown += createLink('drupal9', '/fahrradversicherung', '', 'Desktop View') + '\n\n';
+    markdown += createLink('drupal9', '/fahrradversicherung', '', 'Mobile View') + '\n\n';
+
+    // Placeholder for URL structure part - This function doesn't seem to use urlStructure or ticketTypes currently
+    // If needed, add logic here to incorporate urlStructure and ticketTypes
+
+    return markdown;
+  }, [settings.urls, settings.prefixes, settings.ticketTypes, settings.urlStructure]); // Depend on saved settings
+
+  const generatePlainTextOutput = useCallback((): string => {
+    // Use saved settings for all relevant parts
+    const { urls, prefixes, ticketTypes, urlStructure } = settings; 
+
+    // Helper to construct URL for plain text
+    const createPlainTextLine = (key: string, labelPrefix: string, path: string = '', query: string = '') => {
+        const baseUrlValue = urls[key];
+        if (!baseUrlValue) return `${labelPrefix} → N/A (URL not configured)`;
+        
+        const fullUrl = `https://${baseUrlValue}${path}${query}`;
+        return `${labelPrefix} → ${fullUrl}`;
+    };
+
+    let text = `🌐 Frontend Environments\n\n`;
+    text += createPlainTextLine('bo', 'Back Office Tool') + '\n\n';
+    text += createPlainTextLine('mobile', 'Mobile Version') + '\n\n';
+    text += createPlainTextLine('desktop', 'Desktop Version') + '\n\n';
+    
+    text += `📝 CMS Environments\n\n`;
+    text += `⏳ Drupal 7\n\n`; // Added emoji
+    text += createPlainTextLine('drupal7', 'Base CMS') + '\n\n';
+    text += createPlainTextLine('drupal7', 'Desktop View', '/fahrradversicherung', '?deviceoutput=desktop') + '\n\n';
+    text += createPlainTextLine('drupal7', 'Mobile View', '/fahrradversicherung', '?deviceoutput=mobile') + '\n\n';
+    
+    text += `✨ Drupal 9\n\n`; // Added emoji
+    text += createPlainTextLine('drupal9', 'Desktop View', '/fahrradversicherung') + '\n\n';
+    text += createPlainTextLine('drupal9', 'Mobile View', '/fahrradversicherung') + '\n\n';
+
+    // Placeholder for URL structure part - This function doesn't seem to use urlStructure or ticketTypes currently
+    // If needed, add logic here to incorporate urlStructure and ticketTypes
+
+    return text;
+  }, [settings.urls, settings.prefixes, settings.ticketTypes, settings.urlStructure]); // Depend on saved settings
+
   if (!settings || !tempSettings) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -1275,7 +1344,7 @@ const IndexOptions = () => {
                     </div>
                     <Toggle
                       id="integrate-logo-qr"
-                      checked={tempSettings.integrateQrImage}
+                    checked={tempSettings.integrateQrImage}
                       onCheckedChange={(checked) => handleSettingChange("integrateQrImage", checked)}
                       aria-label="Integrate logo within QR codes"
                     />
@@ -1283,28 +1352,132 @@ const IndexOptions = () => {
                 </div>
 
                 <div className="mb-5 options-section__input-group md:col-span-2 pt-3 pb-3 border-t border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <label htmlFor="use-markdown-copy" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
-                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
-                          <path d="M8 11h8"></path>
-                          <path d="M8 15h5"></path>
-                        </svg>
-                        Use Markdown formatting when copying generated content
-                      </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Copy content as Markdown format instead of plain text (if applicable)</p>
+  <div className="flex items-center justify-between">
+    <div className="flex-1">
+      <label htmlFor="use-markdown-copy" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+          <path d="M8 11h8"></path>
+          <path d="M8 15h5"></path>
+        </svg>
+        Use Markdown formatting when copying generated content
+      </label>
+      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Copy content as Markdown format instead of plain text (if applicable)</p>
+    </div>
+    <Toggle
+      id="use-markdown-copy"
+      checked={tempSettings.useMarkdownCopy}
+      onCheckedChange={(checked) => handleSettingChange("useMarkdownCopy", checked)}
+      aria-label="Use Markdown when copying"
+    />
+  </div>
+</div>
+
+                {/* Preview Demo Button */}
+                <div className="md:col-span-2 pt-3 border-t border-gray-100 dark:border-gray-700 hidden">
+                  <Button 
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowPreviewDemo(prev => !prev)} // Toggle the preview state
+                    className="w-full justify-center"
+                    aria-expanded={showPreviewDemo} // Add aria-expanded for accessibility
+                  >
+                    <Eye size={16} className="mr-2"/>
+                    {showPreviewDemo ? 'Hide' : 'Preview'} Toggle Effects
+                  </Button>
+                </div>
+              </div> 
+              {/* End of grid */}
+
+              {/* Preview Demo Section (Conditional) */}
+              {showPreviewDemo && (
+                <div className="mt-4 p-4 rounded-md border bg-gray-50 dark:bg-gray-700/50 dark:border-gray-600">
+                  <div className="space-y-4">
+                    {/* QR Code Logo Demo - Updated with react-qrcode-logo */}
+                    <div>
+                      <h5 className="text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">QR Code Logo Integration Preview:</h5>
+                      <div className="flex flex-col items-center justify-center p-4 rounded border bg-white dark:bg-gray-800 dark:border-gray-600 min-h-[150px]">
+                        <QRCode 
+                          value="https://example-jira.com/browse/EXAMPLE-123" // Sample QR value
+                          size={100} // Adjust size as needed
+                          qrStyle="dots"
+                          eyeRadius={5}
+                          // Conditional logo props
+                          logoImage={tempSettings.integrateQrImage 
+                            ? "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23007bff'/%3E%3Ctext x='50' y='55' font-size='20' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif' font-weight='bold'%3ELOGO%3C/text%3E%3C/svg%3E" // Simple SVG placeholder logo
+                            : undefined}
+                          logoWidth={tempSettings.integrateQrImage ? 25 : undefined}
+                          logoHeight={tempSettings.integrateQrImage ? 25 : undefined}
+                          logoOpacity={tempSettings.integrateQrImage ? 1 : undefined}
+                          logoPadding={tempSettings.integrateQrImage ? 2 : 0}
+                          logoPaddingStyle={tempSettings.integrateQrImage ? 'circle' : 'square'}
+                          removeQrCodeBehindLogo={tempSettings.integrateQrImage}
+                          />
+                        <p className={`mt-3 text-center text-xs font-medium ${tempSettings.integrateQrImage ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                         Logo Integration Preview: {tempSettings.integrateQrImage ? 'ON' : 'OFF'}
+                       </p>
+                      </div>
                     </div>
-                    <Toggle
-                      id="use-markdown-copy"
-                      checked={tempSettings.useMarkdownCopy}
-                      onCheckedChange={(checked) => handleSettingChange("useMarkdownCopy", checked)}
-                      aria-label="Use Markdown when copying"
-                    />
+
+                    {/* Markdown/Plain Text Copy Demo - Updated to show only active mode */}
+                    <div>
+                      <h5 className="text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">Copy Format Preview (Based on current settings):</h5>
+                      <div className="text-xs">
+                        {tempSettings.useMarkdownCopy ? (
+                          // Show Markdown Preview when active
+                          <div className={`p-2 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30`}>
+                             <p className={`font-semibold mb-1 text-blue-800 dark:text-blue-300`}>
+                               Markdown Format is Active
+                             </p>
+                            {/* Use MarkdownRenderer with generated markdown */}
+                            <MarkdownRenderer 
+                              markdownText={generateMarkdownOutput()} 
+                              className="prose prose-sm dark:prose-invert max-w-none text-[11px] leading-snug"
+                            />
+                            <div className="mt-2 text-right">
+                               <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(generateMarkdownOutput());
+                                    showToast("Generated Markdown copied!", "success");
+                                  }}
+                                  className="text-xs"
+                               >
+                                 Copy Preview
+                               </Button>
+                             </div>
+                          </div>
+                        ) : (
+                          // Show Plain Text Preview when active
+                          <div className={`p-2 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30`}>
+                            <p className={`font-semibold mb-1 text-blue-800 dark:text-blue-300`}>
+                              Plain Text Format is Active
+                            </p>
+                            <pre className="whitespace-pre-wrap font-mono text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed">
+                              {generatePlainTextOutput()}
+                            </pre>
+                            <div className="mt-2 text-right">
+                               <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(generatePlainTextOutput());
+                                    showToast("Generated Plain Text copied!", "success");
+                                  }}
+                                  className="text-xs"
+                               >
+                                 Copy Preview
+                               </Button>
+                             </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </Section>
 
             <Section id="prefixes-section">
@@ -1342,21 +1515,21 @@ const IndexOptions = () => {
                 {Object.entries(tempSettings.urls).map(([key, value]) => (
                   <div key={key} className="flex flex-col space-y-1">
                     <InputGroup className="relative">
-                      <Label
-                        id={`base-url-label-${key}`}
+                    <Label
+                      id={`base-url-label-${key}`}
                         htmlFor={`base-url-input-${key}`}
                         className="font-medium">
-                        {key.charAt(0).toUpperCase() + key.slice(1)}
-                      </Label>
+                      {key.charAt(0).toUpperCase() + key.slice(1)}
+                    </Label>
                       
                       <div className="flex rounded-md overflow-hidden">
                         <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
                           https://
                         </span>
-                        <DebouncedTextInput
-                          id={`base-url-input-${key}`}
-                          initialValue={value}
-                          onSave={(newValue) => handleUrlChange(key, newValue)}
+                    <DebouncedTextInput
+                      id={`base-url-input-${key}`}
+                      initialValue={value}
+                      onSave={(newValue) => handleUrlChange(key, newValue)}
                           placeholder="my-env.example.com"
                           className="flex-1 min-w-0 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500"
                           aria-describedby={`url-description-${key}`}
@@ -1368,7 +1541,7 @@ const IndexOptions = () => {
                       <p id={`url-description-${key}`} className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         {getUrlDescription(key)}
                       </p>
-                    </InputGroup>
+                  </InputGroup>
                   </div>
                 ))}
               </div>
@@ -1411,15 +1584,15 @@ const IndexOptions = () => {
                         </div>
 
                         {editingPatternIndex === -1 && (
-                          <div
-                            id="jira-patterns-add-form"
+                            <div
+                                id="jira-patterns-add-form"
                             className="rounded-md border mb-6 options-form bg-gray-50 border-gray-200 dark:bg-gray-700/50 dark:border-gray-600">
                             <div className="flex justify-between items-center p-4 pb-2">
-                              <h4
-                                id="jira-patterns-add-form-heading"
+                                <h4
+                                    id="jira-patterns-add-form-heading"
                                 className="text-md font-semibold options-form__heading">
-                                Add New Pattern
-                              </h4>
+                                    Add New Pattern
+                                </h4>
                               {/* Added visual indicator for form state */}
                               {!isCurrentPatternValid && (
                                 <span className="text-xs text-red-500 dark:text-red-400 animate-pulse">
@@ -1430,8 +1603,8 @@ const IndexOptions = () => {
                                 <span className="text-xs text-green-600 dark:text-green-400">
                                   Pattern matches preview
                                 </span>
-                              )}
-                            </div>
+                                        )}
+                                    </div>
                             <PatternEditorForm
                               patternData={editingPatternData}
                               setPatternData={setEditingPatternData}
@@ -1440,9 +1613,8 @@ const IndexOptions = () => {
                               handleSavePattern={handleSavePattern}
                               handleCancelEditPattern={handleCancelEditPattern}
                               index={-1}
-                              Button={Button}
                             />
-                          </div>
+                            </div>
                         )}
 
                         <div className="space-y-3 text-sm">
@@ -1472,8 +1644,8 @@ const IndexOptions = () => {
                                                 <span className="text-xs text-green-600 dark:text-green-400">
                                                   Pattern matches preview
                                                 </span>
-                                              )}
-                                            </div>
+                                                    )}
+                                                </div>
                                             <PatternEditorForm
                                               patternData={editingPatternData}
                                               setPatternData={setEditingPatternData}
@@ -1482,7 +1654,6 @@ const IndexOptions = () => {
                                               handleSavePattern={() => handleSavePattern(index)}
                                               handleCancelEditPattern={handleCancelEditPattern}
                                               index={index}
-                                              Button={Button}
                                             />
                                           </>
                                         ) : (
