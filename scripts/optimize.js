@@ -77,6 +77,18 @@ async function optimizeCssFiles() {
   }
 }
 
+// Process Image files using shell script
+async function optimizeImageFiles() {
+  console.log('Optimizing Image files using shell script...');
+  const scriptPath = path.join(__dirname, 'optimize-images.sh');
+  
+  try {
+    execSync(`"${scriptPath}" "${BUILD_DIR}"`, { stdio: 'inherit' });
+  } catch (error) {
+    console.error('Error running image optimization script:', error.message);
+  }
+}
+
 // Main optimization function
 async function optimize() {
   console.log('Starting post-build optimization...');
@@ -91,6 +103,7 @@ async function optimize() {
   await optimizeJsFiles();
   await optimizeHtmlFiles();
   await optimizeCssFiles();
+  await optimizeImageFiles();
   
   console.log('Post-build optimization completed successfully!');
 }
