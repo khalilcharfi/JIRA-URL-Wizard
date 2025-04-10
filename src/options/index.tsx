@@ -1217,7 +1217,7 @@ const IndexOptions = () => {
         </div>
       )}
 
-      <header className="sticky top-0 z-10 flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+      <header className="sticky top-0 z-50 flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto p-3 md:p-4 flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-2 options-header__title-group">
             <Settings className="w-5 h-5 text-blue-500 options-header__icon" />

@@ -31,7 +31,7 @@ html, body {
 /* Enhanced styles for ticket-type components */
 [data-component-type="ticket-type"] {
   position: relative !important;
-  z-index: 50 !important; /* Very high z-index to ensure it's on top */
+  z-index: 30 !important; /* Lower z-index to ensure it doesn't overlap the header */
   cursor: grab !important;
   user-select: none !important;
   touch-action: none !important; /* Critical for touch devices */
@@ -45,7 +45,7 @@ html, body {
   opacity: 0.8 !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
   transform: scale(1.05) !important;
-  z-index: 100 !important;
+  z-index: 40 !important; /* Lower this z-index as well, but still higher than base */
 }
 
 /* Custom styling for ticket type to make it more prominent */

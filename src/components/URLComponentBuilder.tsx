@@ -246,7 +246,7 @@ const PatternItem: React.FC<ItemProps & {
         transition: isCurrentlyDragging ? 'none' : transition,
         opacity: isItemBeingDragged && !isOverlay ? 0.4 : 1,
         boxShadow: isCurrentlyDragging ? '0 4px 12px rgba(0,0,0,0.2)' : undefined,
-        zIndex: isCurrentlyDragging ? 10 : undefined,
+        zIndex: isCurrentlyDragging ? 5 : undefined,
     };
 
     const itemStyle = getComponentStyle(component.type);
@@ -1374,7 +1374,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                             validationRules={validationRules}
                         />
                         
-                        <DragOverlay dropAnimation={dropAnimation}>
+                        <DragOverlay dropAnimation={dropAnimation} style={{ zIndex: 40 }}>
                             {activeId && activeComponent ? (
                                 activeType === 'available' ? (
                                     <div 
@@ -1415,7 +1415,7 @@ const Tooltip: React.FC<{ text: string; children: React.ReactElement }> = ({ tex
     >
       {children}
       {show && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded z-10 whitespace-nowrap">
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded z-30 whitespace-nowrap">
           {text}
         </div>
       )}
