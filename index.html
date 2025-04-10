@@ -5,191 +5,652 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JIRA URL Wizard - Privacy Policy</title>
     <style>
+        :root {
+            --primary-color: #0052CC;
+            --primary-light: #E9F2FF;
+            --secondary-color: #42526E;
+            --accent-color: #FF5630;
+            --text-color: #172B4D;
+            --text-light: #5E6C84;
+            --border-color: #DFE1E6;
+            --bg-light: #F4F5F7;
+            --white: #FFFFFF;
+            --success: #36B37E;
+            --warning: #FFAB00;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
-            max-width: 800px;
+            color: var(--text-color);
+            background-color: #FAFBFC;
+        }
+        
+        .container {
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
-            color: #333;
         }
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-        h1 {
+        
+        header {
             text-align: center;
+            padding: 30px 0;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-        h2 {
-            margin-top: 30px;
-            border-bottom: 1px solid #eee;
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .header-content img {
+            width: 64px;
+            height: 64px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .last-updated {
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 10px;
+        }
+        
+        .toc {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .toc h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
         }
+        
+        .toc ul {
+            list-style-type: none;
+        }
+        
+        .toc li {
+            margin-bottom: 8px;
+        }
+        
+        .toc a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        
+        .toc a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        
+        .toc-icon {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        section {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        h2 svg {
+            margin-right: 10px;
+        }
+        
         h3 {
-            margin-top: 20px;
-            color: #34495e;
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            margin: 20px 0 10px;
         }
-        .last-updated {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            margin-bottom: 30px;
+        
+        p, ul, ol {
+            margin-bottom: 15px;
+            color: var(--text-color);
         }
-        .permission {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
+        
+        ul, ol {
+            padding-left: 25px;
         }
-        .permission h4 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
+        
+        li {
+            margin-bottom: 8px;
         }
-        .permission p {
-            margin: 5px 0;
-        }
+        
         .data-type {
-            background: #f1f8ff;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+            background-color: var(--primary-light);
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .data-type h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        
+        .permission {
+            background-color: var(--bg-light);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .permission h4 {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            margin: 0 0 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .permission h4 svg {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        .purpose {
+            background-color: var(--primary-light);
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        strong {
+            color: var(--secondary-color);
+        }
+        
+        .important-note {
+            background-color: #FFEBE6;
+            border-left: 4px solid var(--accent-color);
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .important-note strong {
+            color: var(--accent-color);
+        }
+        
+        .back-to-top {
+            display: inline-block;
+            background-color: var(--bg-light);
+            color: var(--secondary-color);
+            padding: 5px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+        
+        .back-to-top:hover {
+            background-color: var(--border-color);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            section {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+            }
+        }
+        
+        .collapsible-section {
+            margin-bottom: 15px;
+        }
+        
+        .collapsible-header {
+            background-color: var(--bg-light);
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        
+        .collapsible-header:hover {
+            background-color: var(--border-color);
+        }
+        
+        .collapsible-content {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            display: none;
+            background-color: var(--white);
+        }
+        
+        .collapsible-header.active + .collapsible-content {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <h1>JIRA URL Wizard Privacy Policy</h1>
-    <p class="last-updated">Last updated: April 10, 2024</p>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <img src="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png" alt="JIRA URL Wizard Icon">
+                <h1>JIRA URL Wizard Privacy Policy</h1>
+            </div>
+            <p class="last-updated">Last updated: April 10, 2024</p>
+        </header>
+        
+        <div class="toc" id="toc">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                Table of Contents
+            </h2>
+            <ul>
+                <li>
+                    <a href="#introduction">
+                        <span class="toc-icon">📌</span>
+                        Introduction
+                    </a>
+                </li>
+                <li>
+                    <a href="#information">
+                        <span class="toc-icon">🔍</span>
+                        Information We Collect
+                    </a>
+                </li>
+                <li>
+                    <a href="#permissions">
+                        <span class="toc-icon">🔒</span>
+                        Detailed Permission Usage
+                    </a>
+                </li>
+                <li>
+                    <a href="#storage">
+                        <span class="toc-icon">💾</span>
+                        Data Storage and Security
+                    </a>
+                </li>
+                <li>
+                    <a href="#rights">
+                        <span class="toc-icon">👤</span>
+                        Your Rights and Controls
+                    </a>
+                </li>
+                <li>
+                    <a href="#retention">
+                        <span class="toc-icon">⏱️</span>
+                        Data Retention
+                    </a>
+                </li>
+                <li>
+                    <a href="#changes">
+                        <span class="toc-icon">📝</span>
+                        Changes to This Privacy Policy
+                    </a>
+                </li>
+                <li>
+                    <a href="#contact">
+                        <span class="toc-icon">✉️</span>
+                        Contact Us
+                    </a>
+                </li>
+                <li>
+                    <a href="#compliance">
+                        <span class="toc-icon">⚖️</span>
+                        Compliance with Laws
+                    </a>
+                </li>
+                <li>
+                    <a href="#third-party">
+                        <span class="toc-icon">🔗</span>
+                        Third-Party Services
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <section id="introduction">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                1. Introduction
+            </h2>
+            <p>JIRA URL Wizard ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome extension. We take your privacy seriously and are transparent about our data practices.</p>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="information">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                2. Information We Collect
+            </h2>
+            <p>JIRA URL Wizard collects and stores the following information locally on your device:</p>
+            
+            <div class="data-type">
+                <h3>2.1 Configuration Data</h3>
+                <ul>
+                    <li>JIRA environment configurations (URLs, names, authentication details)</li>
+                    <li>Custom environment settings and preferences</li>
+                    <li>User interface preferences (theme, layout, etc.)</li>
+                </ul>
+            </div>
 
-    <h2>1. Introduction</h2>
-    <p>JIRA URL Wizard ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome extension. We take your privacy seriously and are transparent about our data practices.</p>
+            <div class="data-type">
+                <h3>2.2 Ticket Data</h3>
+                <ul>
+                    <li>Saved ticket information (ticket IDs, descriptions)</li>
+                    <li>Ticket categorization and organization</li>
+                    <li>Quick access ticket lists</li>
+                </ul>
+            </div>
 
-    <h2>2. Information We Collect</h2>
-    <p>JIRA URL Wizard collects and stores the following information locally on your device:</p>
+            <div class="data-type">
+                <h3>2.3 Usage Data</h3>
+                <ul>
+                    <li>Extension settings and preferences</li>
+                    <li>Last accessed environments</li>
+                    <li>User-defined shortcuts and hotkeys</li>
+                </ul>
+            </div>
+
+            <div class="important-note">
+                <strong>Important:</strong> All data is stored locally in your browser's storage and is not transmitted to any external servers.
+            </div>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="permissions">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                3. Detailed Permission Usage
+            </h2>
+            <p>JIRA URL Wizard requires the following permissions to function properly. Here's a detailed explanation of why each permission is needed:</p>
+
+            <div class="collapsible-section">
+                <div class="collapsible-header">
+                    <h4>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                        storage
+                    </h4>
+                    <span>+</span>
+                </div>
+                <div class="collapsible-content">
+                    <p class="purpose"><strong>Purpose:</strong> To save your configurations and preferences locally</p>
+                    <p><strong>Usage:</strong> This permission allows the extension to:</p>
+                    <ul>
+                        <li>Save your JIRA environment configurations</li>
+                        <li>Store your ticket information</li>
+                        <li>Remember your preferences and settings</li>
+                        <li>Maintain your quick access lists</li>
+                    </ul>
+                    <p><strong>Data Handling:</strong> All data is stored locally using Chrome's storage API. No data is sent to external servers.</p>
+                </div>
+            </div>
+
+            <div class="collapsible-section">
+                <div class="collapsible-header">
+                    <h4>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                        tabs
+                    </h4>
+                    <span>+</span>
+                </div>
+                <div class="collapsible-content">
+                    <p class="purpose"><strong>Purpose:</strong> To detect and interact with JIRA tabs</p>
+                    <p><strong>Usage:</strong> This permission enables the extension to:</p>
+                    <ul>
+                        <li>Detect when you're on a JIRA page</li>
+                        <li>Extract ticket information from the current tab</li>
+                        <li>Generate appropriate URLs for different environments</li>
+                        <li>Switch between JIRA instances</li>
+                    </ul>
+                    <p><strong>Data Handling:</strong> The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored.</p>
+                </div>
+            </div>
+
+            <div class="collapsible-section">
+                <div class="collapsible-header">
+                    <h4>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        activeTab
+                    </h4>
+                    <span>+</span>
+                </div>
+                <div class="collapsible-content">
+                    <p class="purpose"><strong>Purpose:</strong> To access the current tab's URL when generating ticket links</p>
+                    <p><strong>Usage:</strong> This permission allows the extension to:</p>
+                    <ul>
+                        <li>Read the current tab's URL when you click the extension icon</li>
+                        <li>Generate appropriate ticket links based on the current context</li>
+                        <li>Provide quick access to related tickets</li>
+                    </ul>
+                    <p><strong>Data Handling:</strong> The extension only accesses the active tab when you explicitly interact with it. No background tab access occurs.</p>
+                </div>
+            </div>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="storage">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+                4. Data Storage and Security
+            </h2>
+            <p>All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We implement the following security measures:</p>
+            <ul>
+                <li>All data is encrypted using Chrome's built-in storage encryption</li>
+                <li>No data is transmitted to external servers</li>
+                <li>No tracking or analytics services are used</li>
+                <li>Regular security audits of the codebase</li>
+                <li>Secure handling of sensitive information</li>
+            </ul>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="rights">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                5. Your Rights and Controls
+            </h2>
+            <p>You have complete control over your data:</p>
+            <ul>
+                <li>Access your stored data through the extension's options page</li>
+                <li>Delete your stored data at any time</li>
+                <li>Export your configurations for backup</li>
+                <li>Import configurations from other devices</li>
+                <li>Reset all settings to default</li>
+            </ul>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="retention">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                6. Data Retention
+            </h2>
+            <p>Your data is stored locally on your device until you:</p>
+            <ul>
+                <li>Explicitly delete it through the extension's options</li>
+                <li>Uninstall the extension</li>
+                <li>Clear your browser data</li>
+            </ul>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="changes">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                7. Changes to This Privacy Policy
+            </h2>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by:</p>
+            <ul>
+                <li>Posting the new Privacy Policy on this page</li>
+                <li>Updating the "Last updated" date</li>
+                <li>Notifying users through the extension's update mechanism</li>
+            </ul>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="contact">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                8. Contact Us
+            </h2>
+            <p>If you have any questions about this Privacy Policy, please contact us:</p>
+            <ul>
+                <li>Through the extension's GitHub repository</li>
+                <li>Via the Chrome Web Store support section</li>
+            </ul>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="compliance">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                9. Compliance with Laws
+            </h2>
+            <p>JIRA URL Wizard complies with:</p>
+            <ul>
+                <li>Chrome Web Store Developer Program Policies</li>
+                <li>General Data Protection Regulation (GDPR)</li>
+                <li>California Consumer Privacy Act (CCPA)</li>
+                <li>Children's Online Privacy Protection Act (COPPA)</li>
+            </ul>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <section id="third-party">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+                10. Third-Party Services
+            </h2>
+            <p>JIRA URL Wizard does not use any third-party services that collect or process user data. All functionality is self-contained within the extension.</p>
+            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+        </section>
+        
+        <footer>
+            <p>© 2024 JIRA URL Wizard. All rights reserved.</p>
+        </footer>
+    </div>
     
-    <div class="data-type">
-        <h3>2.1 Configuration Data</h3>
-        <ul>
-            <li>JIRA environment configurations (URLs, names, authentication details)</li>
-            <li>Custom environment settings and preferences</li>
-            <li>User interface preferences (theme, layout, etc.)</li>
-        </ul>
-    </div>
-
-    <div class="data-type">
-        <h3>2.2 Ticket Data</h3>
-        <ul>
-            <li>Saved ticket information (ticket IDs, descriptions)</li>
-            <li>Ticket categorization and organization</li>
-            <li>Quick access ticket lists</li>
-        </ul>
-    </div>
-
-    <div class="data-type">
-        <h3>2.3 Usage Data</h3>
-        <ul>
-            <li>Extension settings and preferences</li>
-            <li>Last accessed environments</li>
-            <li>User-defined shortcuts and hotkeys</li>
-        </ul>
-    </div>
-
-    <p><strong>Important:</strong> All data is stored locally in your browser's storage and is not transmitted to any external servers.</p>
-
-    <h2>3. Detailed Permission Usage</h2>
-    <p>JIRA URL Wizard requires the following permissions to function properly. Here's a detailed explanation of why each permission is needed:</p>
-
-    <div class="permission">
-        <h4>storage</h4>
-        <p><strong>Purpose:</strong> To save your configurations and preferences locally</p>
-        <p><strong>Usage:</strong> This permission allows the extension to:</p>
-        <ul>
-            <li>Save your JIRA environment configurations</li>
-            <li>Store your ticket information</li>
-            <li>Remember your preferences and settings</li>
-            <li>Maintain your quick access lists</li>
-        </ul>
-        <p><strong>Data Handling:</strong> All data is stored locally using Chrome's storage API. No data is sent to external servers.</p>
-    </div>
-
-    <div class="permission">
-        <h4>tabs</h4>
-        <p><strong>Purpose:</strong> To detect and interact with JIRA tabs</p>
-        <p><strong>Usage:</strong> This permission enables the extension to:</p>
-        <ul>
-            <li>Detect when you're on a JIRA page</li>
-            <li>Extract ticket information from the current tab</li>
-            <li>Generate appropriate URLs for different environments</li>
-            <li>Switch between JIRA instances</li>
-        </ul>
-        <p><strong>Data Handling:</strong> The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored.</p>
-    </div>
-
-    <div class="permission">
-        <h4>activeTab</h4>
-        <p><strong>Purpose:</strong> To access the current tab's URL when generating ticket links</p>
-        <p><strong>Usage:</strong> This permission allows the extension to:</p>
-        <ul>
-            <li>Read the current tab's URL when you click the extension icon</li>
-            <li>Generate appropriate ticket links based on the current context</li>
-            <li>Provide quick access to related tickets</li>
-        </ul>
-        <p><strong>Data Handling:</strong> The extension only accesses the active tab when you explicitly interact with it. No background tab access occurs.</p>
-    </div>
-
-    <h2>4. Data Storage and Security</h2>
-    <p>All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We implement the following security measures:</p>
-    <ul>
-        <li>All data is encrypted using Chrome's built-in storage encryption</li>
-        <li>No data is transmitted to external servers</li>
-        <li>No tracking or analytics services are used</li>
-        <li>Regular security audits of the codebase</li>
-        <li>Secure handling of sensitive information</li>
-    </ul>
-
-    <h2>5. Your Rights and Controls</h2>
-    <p>You have complete control over your data:</p>
-    <ul>
-        <li>Access your stored data through the extension's options page</li>
-        <li>Delete your stored data at any time</li>
-        <li>Export your configurations for backup</li>
-        <li>Import configurations from other devices</li>
-        <li>Reset all settings to default</li>
-    </ul>
-
-    <h2>6. Data Retention</h2>
-    <p>Your data is stored locally on your device until you:</p>
-    <ul>
-        <li>Explicitly delete it through the extension's options</li>
-        <li>Uninstall the extension</li>
-        <li>Clear your browser data</li>
-    </ul>
-
-    <h2>7. Changes to This Privacy Policy</h2>
-    <p>We may update this Privacy Policy from time to time. We will notify you of any changes by:</p>
-    <ul>
-        <li>Posting the new Privacy Policy on this page</li>
-        <li>Updating the "Last updated" date</li>
-        <li>Notifying users through the extension's update mechanism</li>
-    </ul>
-
-    <h2>8. Contact Us</h2>
-    <p>If you have any questions about this Privacy Policy, please contact us:</p>
-    <ul>
-        <li>By email: [Your Contact Email]</li>
-        <li>Through the extension's GitHub repository</li>
-        <li>Via the Chrome Web Store support section</li>
-    </ul>
-
-    <h2>9. Compliance with Laws</h2>
-    <p>JIRA URL Wizard complies with:</p>
-    <ul>
-        <li>Chrome Web Store Developer Program Policies</li>
-        <li>General Data Protection Regulation (GDPR)</li>
-        <li>California Consumer Privacy Act (CCPA)</li>
-        <li>Children's Online Privacy Protection Act (COPPA)</li>
-    </ul>
-
-    <h2>10. Third-Party Services</h2>
-    <p>JIRA URL Wizard does not use any third-party services that collect or process user data. All functionality is self-contained within the extension.</p>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle collapsible sections
+            const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+            
+            collapsibleHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    
+                    if (content.style.display === 'block') {
+                        content.style.display = 'none';
+                        this.querySelector('span').textContent = '+';
+                    } else {
+                        content.style.display = 'block';
+                        this.querySelector('span').textContent = '-';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
-</html> 
+</html>
