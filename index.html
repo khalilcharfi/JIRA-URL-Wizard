@@ -3,604 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - JIRA URL Wizard</title>
+    <title>JIRA URL Wizard - Privacy Policy</title>
     <style>
-        :root {
-            --primary-color: #0052CC;
-            --secondary-color: #0065FF;
-            --accent-color: #36B37E;
-            --text-color: #172B4D;
-            --text-light: #6B778C;
-            --bg-color: #F4F5F7;
-            --card-bg: #FFFFFF;
-            --shadow: 0 2px 8px rgba(9, 30, 66, 0.1);
-            --border-radius: 8px;
-            --transition: 0.25s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Smooth scroll for in-page links */
-        html {
-            scroll-behavior: smooth;
-            scroll-padding-top: 80px;
-        }
-
-        /* Header and Navigation */
-        header {
-            background-color: var(--card-bg);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 1rem 0;
-        }
-
-        .header-container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: 20px;
+            color: #333;
         }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        h1, h2 {
+            color: #2c3e50;
         }
-
-        .logo {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-            transition: transform var(--transition);
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
         }
-
-        .logo:hover {
-            transform: scale(1.05);
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
         }
-
-        .title-container h1 {
-            font-size: 1.5rem;
-            margin: 0;
-        }
-
         .last-updated {
-            font-size: 0.8rem;
-            color: var(--text-light);
-        }
-
-        /* Main Container */
-        .main-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 2rem;
-        }
-
-        /* Table of Contents */
-        .table-of-contents {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 100px;
-            align-self: start;
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-        }
-
-        .table-of-contents h2 {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--secondary-color);
-        }
-
-        .table-of-contents ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .table-of-contents li {
-            margin: 0;
-            padding: 0;
-        }
-
-        .table-of-contents a {
-            color: var(--text-color);
-            text-decoration: none;
-            display: block;
-            padding: 0.5rem 0;
-            border-radius: 4px;
-            transition: all var(--transition);
-            padding-left: 0.5rem;
-        }
-
-        .table-of-contents a:hover, .table-of-contents a.active {
-            background-color: rgba(0, 82, 204, 0.1);
-            color: var(--primary-color);
-            padding-left: 1rem;
-        }
-
-        /* Content Sections */
-        .content-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .section {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            box-shadow: var(--shadow);
-            transition: transform var(--transition);
-        }
-
-        .section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(9, 30, 66, 0.15);
-        }
-
-        .section h2 {
-            color: var(--primary-color);
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid rgba(0, 82, 204, 0.2);
-            position: relative;
-        }
-
-        .section h2::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 80px;
-            height: 2px;
-            background-color: var(--primary-color);
-        }
-
-        .section h3 {
-            margin: 1.5rem 0 1rem;
-            color: var(--secondary-color);
-        }
-
-        /* Important Notes */
-        .important {
-            background-color: rgba(54, 179, 126, 0.1);
-            border-left: 4px solid var(--accent-color);
-            padding: 1.25rem;
-            margin: 1.5rem 0;
-            border-radius: 0 var(--border-radius) var(--border-radius) 0;
-            position: relative;
-        }
-
-        .important::before {
-            content: '!';
-            position: absolute;
-            top: -12px;
-            left: -12px;
-            width: 24px;
-            height: 24px;
-            background: var(--accent-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        /* Lists */
-        ul {
-            list-style-type: disc;
-            padding-left: 1.5rem;
-            margin: 1rem 0;
-        }
-
-        li {
-            margin: 0.5rem 0;
-        }
-
-        /* Permission Grid */
-        .permission-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin: 1.5rem 0;
-        }
-
-        .permission-item {
-            background: rgba(0, 82, 204, 0.05);
-            padding: 1.25rem;
-            border-radius: var(--border-radius);
-            transition: transform var(--transition);
-            border: 1px solid rgba(0, 82, 204, 0.1);
-        }
-
-        .permission-item:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-            background: rgba(0, 82, 204, 0.08);
-        }
-
-        .permission-item h3 {
-            color: var(--primary-color);
-            margin: 0 0 0.75rem 0;
-            display: flex;
-            align-items: center;
-            font-size: 1.1rem;
-        }
-
-        .permission-item h3::before {
-            content: '🔒';
-            margin-right: 8px;
-        }
-
-        /* Contact Info */
-        .contact-info {
             text-align: center;
-            padding: 1.5rem;
-        }
-
-        .contact-info a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color var(--transition);
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            margin: 0.5rem;
-            background-color: rgba(0, 82, 204, 0.1);
-            border-radius: 20px;
-        }
-
-        .contact-info a:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        /* Highlighted Text */
-        .highlight {
-            background: linear-gradient(120deg, rgba(0, 82, 204, 0.1), rgba(0, 101, 255, 0.1));
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-
-        /* Back to Top Button */
-        .back-to-top {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 40px;
-            height: 40px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: all var(--transition);
-            box-shadow: 0 2px 10px rgba(9, 30, 66, 0.2);
-        }
-
-        .back-to-top.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .back-to-top:hover {
-            background: var(--secondary-color);
-            transform: translateY(-3px);
-        }
-
-        /* Footer */
-        footer {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            text-align: center;
-            margin-top: auto;
-            box-shadow: 0 -2px 8px rgba(9, 30, 66, 0.1);
-        }
-
-        footer p {
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 900px) {
-            .main-container {
-                grid-template-columns: 1fr;
-            }
-
-            .table-of-contents {
-                position: relative;
-                top: 0;
-                max-height: none;
-                margin-bottom: 1.5rem;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .header-container {
-                flex-direction: column;
-                text-align: center;
-                padding: 1rem;
-                gap: 0.5rem;
-            }
-
-            .logo-container {
-                justify-content: center;
-            }
-
-            .main-container {
-                padding: 1rem;
-                margin: 1rem auto;
-            }
-
-            .section {
-                padding: 1.5rem;
-            }
-
-            .permission-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .back-to-top {
-                bottom: 1rem;
-                right: 1rem;
-            }
+            color: #666;
+            font-style: italic;
+            margin-bottom: 30px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <div class="logo-container">
-                <img src="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/refs/heads/main/ic_launcher.png" 
-                     alt="JIRA URL Wizard Logo" 
-                     class="logo">
-                <div class="title-container">
-                    <h1>Privacy Policy</h1>
-                    <p class="last-updated">Last Updated: April 1, 2024</p>
-                </div>
-            </div>
-        </div>
-    </header>
+    <h1>JIRA URL Wizard Privacy Policy</h1>
+    <p class="last-updated">Last updated: April 10, 2024</p>
 
-    <div class="main-container">
-        <nav class="table-of-contents">
-            <h2>Contents</h2>
-            <ul id="toc-list">
-                <li><a href="#introduction">1. Introduction</a></li>
-                <li><a href="#information-collection">2. Information Collection</a></li>
-                <li><a href="#local-storage">3. Local Storage Usage</a></li>
-                <li><a href="#permissions">4. Required Permissions</a></li>
-                <li><a href="#data-security">5. Data Security</a></li>
-                <li><a href="#user-rights">6. Your Rights and Control</a></li>
-                <li><a href="#changes">7. Changes to Policy</a></li>
-                <li><a href="#contact">8. Contact Information</a></li>
-                <li><a href="#compliance">9. Compliance</a></li>
-            </ul>
-        </nav>
+    <h2>1. Introduction</h2>
+    <p>JIRA URL Wizard ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome extension.</p>
 
-        <div class="content-container">
-            <section id="introduction" class="section">
-                <h2>1. Introduction</h2>
-                <p>JIRA URL Wizard is committed to protecting your privacy. This privacy policy explains our data collection, use, and protection practices for the Chrome extension.</p>
-                <p>Our extension is designed with privacy in mind, operating entirely locally within your browser without transmitting any data to external servers.</p>
-            </section>
+    <h2>2. Information We Collect</h2>
+    <p>JIRA URL Wizard collects and stores the following information locally on your device:</p>
+    <ul>
+        <li>JIRA environment configurations (URLs, names)</li>
+        <li>Saved ticket information</li>
+        <li>User preferences and settings</li>
+    </ul>
+    <p>All data is stored locally in your browser's storage and is not transmitted to any external servers.</p>
 
-            <section id="information-collection" class="section">
-                <h2>2. Information Collection</h2>
-                <div class="important">
-                    <h3>We Do Not Collect:</h3>
-                    <ul>
-                        <li>Personal information</li>
-                        <li>Health information</li>
-                        <li>Financial information</li>
-                        <li>Authentication data</li>
-                        <li>Personal communications</li>
-                        <li>Location data</li>
-                        <li>Web history</li>
-                        <li>User activity data</li>
-                        <li>Website content</li>
-                    </ul>
-                </div>
-                <p>Our extension operates on a <span class="highlight">privacy-first</span> principle, ensuring that no sensitive or personal information is collected or transmitted.</p>
-            </section>
+    <h2>3. How We Use Your Information</h2>
+    <p>The information we collect is used solely for the purpose of:</p>
+    <ul>
+        <li>Generating JIRA ticket URLs</li>
+        <li>Managing your saved environments</li>
+        <li>Remembering your preferences</li>
+        <li>Improving the extension's functionality</li>
+    </ul>
 
-            <section id="local-storage" class="section">
-                <h2>3. Local Storage Usage</h2>
-                <p>The extension stores the following information locally in your browser:</p>
-                <ul>
-                    <li>Environment configuration preferences</li>
-                    <li>URL patterns for different environments</li>
-                    <li>UI preferences</li>
-                    <li>Recently generated URLs (limited to last 10)</li>
-                    <li>Custom environment templates</li>
-                </ul>
-                <div class="important">
-                    <p><strong>Important:</strong> This data never leaves your browser and is not transmitted to any external servers. All data is stored locally using your browser's storage API.</p>
-                </div>
-            </section>
+    <h2>4. Data Storage and Security</h2>
+    <p>All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We do not:</p>
+    <ul>
+        <li>Transmit any data to external servers</li>
+        <li>Share your information with third parties</li>
+        <li>Use tracking or analytics services</li>
+    </ul>
 
-            <section id="permissions" class="section">
-                <h2>4. Required Permissions</h2>
-                <div class="permission-grid">
-                    <div class="permission-item">
-                        <h3>activeTab</h3>
-                        <p>To read the current tab's URL for transformation. Only activated when you explicitly interact with the extension.</p>
-                    </div>
-                    <div class="permission-item">
-                        <h3>storage</h3>
-                        <p>To save your environment configurations locally. All data remains in your browser.</p>
-                    </div>
-                    <div class="permission-item">
-                        <h3>tabs</h3>
-                        <p>To manage URL transformations across tabs. Used only for core functionality.</p>
-                    </div>
-                    <div class="permission-item">
-                        <h3>contextMenus</h3>
-                        <p>To provide right-click menu functionality for quick access to features.</p>
-                    </div>
-                    <div class="permission-item">
-                        <h3>clipboardWrite</h3>
-                        <p>To copy generated URLs. Only writes to clipboard, never reads from it.</p>
-                    </div>
-                    <div class="permission-item">
-                        <h3>host</h3>
-                        <p>To access and transform JIRA URLs. Limited to URL transformation only.</p>
-                    </div>
-                </div>
-            </section>
+    <h2>5. Permissions</h2>
+    <p>JIRA URL Wizard requires the following permissions:</p>
+    <ul>
+        <li><strong>storage</strong>: To save your configurations and preferences locally</li>
+        <li><strong>tabs</strong>: To detect and interact with JIRA tabs</li>
+        <li><strong>activeTab</strong>: To access the current tab's URL when generating ticket links</li>
+    </ul>
 
-            <section id="data-security" class="section">
-                <h2>5. Data Security</h2>
-                <p>We maintain security through:</p>
-                <ul>
-                    <li>Local-only data storage</li>
-                    <li>No external data transmission</li>
-                    <li>No third-party service integration</li>
-                    <li>No analytics or tracking</li>
-                    <li>Regular security updates</li>
-                    <li>Transparent permission usage</li>
-                </ul>
-                <div class="important">
-                    <p>All data processing occurs locally within your browser, ensuring maximum security and privacy.</p>
-                </div>
-            </section>
+    <h2>6. Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+        <li>Access your stored data through the extension's options page</li>
+        <li>Delete your stored data at any time</li>
+        <li>Export your configurations</li>
+    </ul>
 
-            <section id="user-rights" class="section">
-                <h2>6. Your Rights and Control</h2>
-                <p>You have complete control over your data:</p>
-                <ul>
-                    <li>Clear all data by uninstalling the extension</li>
-                    <li>Reset preferences through extension settings</li>
-                    <li>No data persistence after removal</li>
-                    <li>Export your settings at any time</li>
-                    <li>Choose which features to enable</li>
-                </ul>
-                <p>We believe in <span class="highlight">transparency and user control</span> over their data.</p>
-            </section>
+    <h2>7. Changes to This Privacy Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
 
-            <section id="changes" class="section">
-                <h2>7. Changes to Privacy Policy</h2>
-                <p>We will notify users of any privacy policy changes through:</p>
-                <ul>
-                    <li>Extension update notes</li>
-                    <li>This privacy policy page</li>
-                    <li>GitHub repository updates</li>
-                </ul>
-                <div class="important">
-                    <p>We are committed to maintaining transparency about any changes to our privacy practices.</p>
-                </div>
-            </section>
+    <h2>8. Contact Us</h2>
+    <p>If you have any questions about this Privacy Policy, please contact us:</p>
+    <ul>
+        <li>By email: [Your Contact Email]</li>
+        <li>Through the extension's GitHub repository</li>
+    </ul>
 
-            <section id="contact" class="section">
-                <h2>8. Contact Information</h2>
-                <div class="contact-info">
-                    <p>For privacy-related questions, please contact us through:</p>
-                    <div>
-                        <a href="https://github.com/kcharfi24/JIRA-URL-Wizard/issues" target="_blank">GitHub Issues</a>
-                        <a href="https://chrome.google.com/webstore/detail/jira-url-wizard" target="_blank">Chrome Web Store</a>
-                    </div>
-                    <p style="margin-top: 1rem;">We aim to respond to all privacy-related inquiries within 48 hours.</p>
-                </div>
-            </section>
-
-            <section id="compliance" class="section">
-                <h2>9. Compliance</h2>
-                <p>This extension complies with:</p>
-                <ul>
-                    <li>Chrome Web Store Developer Program Policies</li>
-                    <li>GDPR principles</li>
-                    <li>Browser extension privacy best practices</li>
-                    <li>Data protection regulations</li>
-                    <li>User privacy rights</li>
-                </ul>
-                <div class="important">
-                    <p>We regularly review and update our privacy practices to ensure compliance with the latest regulations and best practices.</p>
-                </div>
-            </section>
-        </div>
-    </div>
-
-    <div class="back-to-top" id="back-to-top">↑</div>
-
-    <footer>
-        <p>© 2024 JIRA URL Wizard. All rights reserved.</p>
-    </footer>
-
-    <script>
-        // Highlight active section in Table of Contents
-        document.addEventListener('DOMContentLoaded', function() {
-            const sections = document.querySelectorAll('.section');
-            const navLinks = document.querySelectorAll('.table-of-contents a');
-            const backToTop = document.getElementById('back-to-top');
-            
-            // Back to top button functionality
-            backToTop.addEventListener('click', function() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
-            
-            // Show/hide back to top button
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > 300) {
-                    backToTop.classList.add('visible');
-                } else {
-                    backToTop.classList.remove('visible');
-                }
-                
-                // Highlight current section in TOC
-                let currentSectionId = '';
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop;
-                    const sectionHeight = section.clientHeight;
-                    if (window.scrollY >= (sectionTop - 100)) {
-                        currentSectionId = section.getAttribute('id');
-                    }
-                });
-                
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${currentSectionId}`) {
-                        link.classList.add('active');
-                    }
-                });
-            });
-        });
-    </script>
+    <h2>9. Compliance with Laws</h2>
+    <p>JIRA URL Wizard complies with:</p>
+    <ul>
+        <li>Chrome Web Store Developer Program Policies</li>
+        <li>General Data Protection Regulation (GDPR)</li>
+        <li>California Consumer Privacy Act (CCPA)</li>
+    </ul>
 </body>
-</html>
+</html> 
