@@ -92,15 +92,19 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           onChange={handleInputChange}
           placeholder="Enter Ticket ID"
           className="flex-grow px-2 py-1 border border-gray-300 rounded-md text-base font-semibold bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+          disabled={!settings.allowManualTicketInput}
+          title={!settings.allowManualTicketInput ? "Manual ticket ID input is disabled in settings" : "Enter Ticket ID"}
         />
-        <button
-          type="submit"
-          className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          title="Apply Ticket ID"
-          aria-label="Apply Ticket ID"
-        >
-          {iconAssets.check}
-        </button>
+        {settings.allowManualTicketInput && (
+          <button
+            type="submit"
+            className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            title="Apply Ticket ID"
+            aria-label="Apply Ticket ID"
+          >
+            {iconAssets.check}
+          </button>
+        )}
         <button
           type="button"
           onClick={onRefreshFromCurrentTab}
@@ -226,7 +230,7 @@ const UrlOutput: React.FC<UrlOutputProps> = ({ url, onCopyUrl, settings }) => {
         aria-label="Copy Generated URL"
         disabled={!url}
       >
-        {settings.useMarkdownCopy ? iconAssets.markdownCopy : iconAssets.copy}
+        {iconAssets.copy}
       </button>
     </div>
   );
@@ -786,12 +790,8 @@ const JiraUrlWizard = () => {
   }, [copyToClipboard, settings?.urls, settings.useMarkdownCopy]);
 
   const handleCopyUrl = useCallback(() => {
-    let textToCopy = currentFullUrl;
-    if (settings.useMarkdownCopy && currentFullUrl) {
-      textToCopy = `[${currentFullUrl}](${currentFullUrl})`;
-    }
-    copyToClipboard(textToCopy, settings.useMarkdownCopy ? "URL (Markdown) Copied!" : "URL Copied!");
-  }, [currentFullUrl, copyToClipboard, settings.useMarkdownCopy]);
+    copyToClipboard(currentFullUrl, "URL Copied!");
+  }, [currentFullUrl, copyToClipboard]);
 
   const selectRecentTicket = useCallback((ticket: string) => {
     setTicketId(ticket);

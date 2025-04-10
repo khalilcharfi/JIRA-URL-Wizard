@@ -8,20 +8,33 @@ export interface SettingsStorage {
   theme: "light" | "dark" | "system"
   prefixes: string[]
   ticketTypes: string[]
-  urls: Record<string, string>
+  urls: {
+    mobile: string
+    desktop: string
+    bo: string
+    drupal7: string
+    drupal9: string
+  }
   jiraPatterns: JiraPattern[]
   isDarkMode: boolean
   integrateQrImage: boolean
   useMarkdownCopy: boolean
   language: string
   urlStructure: string[]
+  allowManualTicketInput: boolean
 }
 
 export const DEFAULT_SETTINGS: SettingsStorage = {
   theme: "system",
   prefixes: [],
   ticketTypes: [],
-  urls: {},
+  urls: {
+    mobile: "",
+    desktop: "",
+    bo: "",
+    drupal7: "",
+    drupal9: ""
+  },
   jiraPatterns: [
     { pattern: "[A-Z]+-\\d+" } // Common JIRA pattern (e.g., ABC-123)
   ],
@@ -29,7 +42,8 @@ export const DEFAULT_SETTINGS: SettingsStorage = {
   integrateQrImage: false,
   useMarkdownCopy: false,
   language: "auto",
-  urlStructure: ["ticketType", ".", "issuePrefix", "-", "[0-9]+", "baseUrl"]
+  urlStructure: ["ticketType", ".", "issuePrefix", "-", "[0-9]+", "baseUrl"],
+  allowManualTicketInput: false
 }
 
 // Add a default sample ticket ID

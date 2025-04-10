@@ -1396,27 +1396,50 @@ const IndexOptions = () => {
                 </div>
 
                 <div className="mb-5 options-section__input-group md:col-span-2 pt-3 pb-3 border-t border-gray-100 dark:border-gray-700">
-  <div className="flex items-center justify-between">
-    <div className="flex-1">
-      <label htmlFor="use-markdown-copy" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
-          <path d="M8 11h8"></path>
-          <path d="M8 15h5"></path>
-        </svg>
-        Use Markdown formatting when copying generated content
-      </label>
-      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Copy content as Markdown format instead of plain text (if applicable)</p>
-    </div>
-    <Toggle
-      id="use-markdown-copy"
-      checked={tempSettings.useMarkdownCopy}
-      onCheckedChange={(checked) => handleSettingChange("useMarkdownCopy", checked)}
-      aria-label="Use Markdown when copying"
-    />
-  </div>
-</div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label htmlFor="use-markdown-copy" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
+                          <path d="M8 11h8"></path>
+                          <path d="M8 15h5"></path>
+                        </svg>
+                        Use Markdown formatting when copying generated content
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Copy content as Markdown format instead of plain text (if applicable)</p>
+                    </div>
+                    <Toggle
+                      id="use-markdown-copy"
+                      checked={tempSettings.useMarkdownCopy}
+                      onCheckedChange={(checked) => handleSettingChange("useMarkdownCopy", checked)}
+                      aria-label="Use Markdown when copying"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-5 options-section__input-group md:col-span-2 pt-3 pb-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label htmlFor="allow-manual-ticket-input" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
+                          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+                          <path d="M18 14h-8"></path>
+                          <path d="M15 18h-5"></path>
+                          <path d="M10 6h8v4h-8V6Z"></path>
+                        </svg>
+                        Allow manual ticket input
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Enable manual ticket ID input in the popup interface</p>
+                    </div>
+                    <Toggle
+                      id="allow-manual-ticket-input"
+                      checked={tempSettings.allowManualTicketInput}
+                      onCheckedChange={(checked) => handleSettingChange("allowManualTicketInput", checked)}
+                      aria-label="Allow manual ticket input"
+                    />
+                  </div>
+                </div>
 
                 {/* Preview Demo Button */}
                 <div className="md:col-span-2 pt-3 border-t border-gray-100 dark:border-gray-700 hidden">
