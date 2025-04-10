@@ -13,7 +13,7 @@
             padding: 20px;
             color: #333;
         }
-        h1, h2 {
+        h1, h2, h3 {
             color: #2c3e50;
         }
         h1 {
@@ -25,11 +25,34 @@
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
         }
+        h3 {
+            margin-top: 20px;
+            color: #34495e;
+        }
         .last-updated {
             text-align: center;
             color: #666;
             font-style: italic;
             margin-bottom: 30px;
+        }
+        .permission {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .permission h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .permission p {
+            margin: 5px 0;
+        }
+        .data-type {
+            background: #f1f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -38,58 +61,123 @@
     <p class="last-updated">Last updated: April 10, 2024</p>
 
     <h2>1. Introduction</h2>
-    <p>JIRA URL Wizard ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome extension.</p>
+    <p>JIRA URL Wizard ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome extension. We take your privacy seriously and are transparent about our data practices.</p>
 
     <h2>2. Information We Collect</h2>
     <p>JIRA URL Wizard collects and stores the following information locally on your device:</p>
-    <ul>
-        <li>JIRA environment configurations (URLs, names)</li>
-        <li>Saved ticket information</li>
-        <li>User preferences and settings</li>
-    </ul>
-    <p>All data is stored locally in your browser's storage and is not transmitted to any external servers.</p>
+    
+    <div class="data-type">
+        <h3>2.1 Configuration Data</h3>
+        <ul>
+            <li>JIRA environment configurations (URLs, names, authentication details)</li>
+            <li>Custom environment settings and preferences</li>
+            <li>User interface preferences (theme, layout, etc.)</li>
+        </ul>
+    </div>
 
-    <h2>3. How We Use Your Information</h2>
-    <p>The information we collect is used solely for the purpose of:</p>
-    <ul>
-        <li>Generating JIRA ticket URLs</li>
-        <li>Managing your saved environments</li>
-        <li>Remembering your preferences</li>
-        <li>Improving the extension's functionality</li>
-    </ul>
+    <div class="data-type">
+        <h3>2.2 Ticket Data</h3>
+        <ul>
+            <li>Saved ticket information (ticket IDs, descriptions)</li>
+            <li>Ticket categorization and organization</li>
+            <li>Quick access ticket lists</li>
+        </ul>
+    </div>
+
+    <div class="data-type">
+        <h3>2.3 Usage Data</h3>
+        <ul>
+            <li>Extension settings and preferences</li>
+            <li>Last accessed environments</li>
+            <li>User-defined shortcuts and hotkeys</li>
+        </ul>
+    </div>
+
+    <p><strong>Important:</strong> All data is stored locally in your browser's storage and is not transmitted to any external servers.</p>
+
+    <h2>3. Detailed Permission Usage</h2>
+    <p>JIRA URL Wizard requires the following permissions to function properly. Here's a detailed explanation of why each permission is needed:</p>
+
+    <div class="permission">
+        <h4>storage</h4>
+        <p><strong>Purpose:</strong> To save your configurations and preferences locally</p>
+        <p><strong>Usage:</strong> This permission allows the extension to:</p>
+        <ul>
+            <li>Save your JIRA environment configurations</li>
+            <li>Store your ticket information</li>
+            <li>Remember your preferences and settings</li>
+            <li>Maintain your quick access lists</li>
+        </ul>
+        <p><strong>Data Handling:</strong> All data is stored locally using Chrome's storage API. No data is sent to external servers.</p>
+    </div>
+
+    <div class="permission">
+        <h4>tabs</h4>
+        <p><strong>Purpose:</strong> To detect and interact with JIRA tabs</p>
+        <p><strong>Usage:</strong> This permission enables the extension to:</p>
+        <ul>
+            <li>Detect when you're on a JIRA page</li>
+            <li>Extract ticket information from the current tab</li>
+            <li>Generate appropriate URLs for different environments</li>
+            <li>Switch between JIRA instances</li>
+        </ul>
+        <p><strong>Data Handling:</strong> The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored.</p>
+    </div>
+
+    <div class="permission">
+        <h4>activeTab</h4>
+        <p><strong>Purpose:</strong> To access the current tab's URL when generating ticket links</p>
+        <p><strong>Usage:</strong> This permission allows the extension to:</p>
+        <ul>
+            <li>Read the current tab's URL when you click the extension icon</li>
+            <li>Generate appropriate ticket links based on the current context</li>
+            <li>Provide quick access to related tickets</li>
+        </ul>
+        <p><strong>Data Handling:</strong> The extension only accesses the active tab when you explicitly interact with it. No background tab access occurs.</p>
+    </div>
 
     <h2>4. Data Storage and Security</h2>
-    <p>All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We do not:</p>
+    <p>All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We implement the following security measures:</p>
     <ul>
-        <li>Transmit any data to external servers</li>
-        <li>Share your information with third parties</li>
-        <li>Use tracking or analytics services</li>
+        <li>All data is encrypted using Chrome's built-in storage encryption</li>
+        <li>No data is transmitted to external servers</li>
+        <li>No tracking or analytics services are used</li>
+        <li>Regular security audits of the codebase</li>
+        <li>Secure handling of sensitive information</li>
     </ul>
 
-    <h2>5. Permissions</h2>
-    <p>JIRA URL Wizard requires the following permissions:</p>
-    <ul>
-        <li><strong>storage</strong>: To save your configurations and preferences locally</li>
-        <li><strong>tabs</strong>: To detect and interact with JIRA tabs</li>
-        <li><strong>activeTab</strong>: To access the current tab's URL when generating ticket links</li>
-    </ul>
-
-    <h2>6. Your Rights</h2>
-    <p>You have the right to:</p>
+    <h2>5. Your Rights and Controls</h2>
+    <p>You have complete control over your data:</p>
     <ul>
         <li>Access your stored data through the extension's options page</li>
         <li>Delete your stored data at any time</li>
-        <li>Export your configurations</li>
+        <li>Export your configurations for backup</li>
+        <li>Import configurations from other devices</li>
+        <li>Reset all settings to default</li>
+    </ul>
+
+    <h2>6. Data Retention</h2>
+    <p>Your data is stored locally on your device until you:</p>
+    <ul>
+        <li>Explicitly delete it through the extension's options</li>
+        <li>Uninstall the extension</li>
+        <li>Clear your browser data</li>
     </ul>
 
     <h2>7. Changes to This Privacy Policy</h2>
-    <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
+    <p>We may update this Privacy Policy from time to time. We will notify you of any changes by:</p>
+    <ul>
+        <li>Posting the new Privacy Policy on this page</li>
+        <li>Updating the "Last updated" date</li>
+        <li>Notifying users through the extension's update mechanism</li>
+    </ul>
 
     <h2>8. Contact Us</h2>
     <p>If you have any questions about this Privacy Policy, please contact us:</p>
     <ul>
         <li>By email: [Your Contact Email]</li>
         <li>Through the extension's GitHub repository</li>
+        <li>Via the Chrome Web Store support section</li>
     </ul>
 
     <h2>9. Compliance with Laws</h2>
@@ -98,6 +186,10 @@
         <li>Chrome Web Store Developer Program Policies</li>
         <li>General Data Protection Regulation (GDPR)</li>
         <li>California Consumer Privacy Act (CCPA)</li>
+        <li>Children's Online Privacy Protection Act (COPPA)</li>
     </ul>
+
+    <h2>10. Third-Party Services</h2>
+    <p>JIRA URL Wizard does not use any third-party services that collect or process user data. All functionality is self-contained within the extension.</p>
 </body>
 </html> 
