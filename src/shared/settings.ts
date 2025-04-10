@@ -1,5 +1,6 @@
 export interface JiraPattern {
   pattern: string
+  description?: string
 }
 
 export interface SettingsStorage {
