@@ -760,16 +760,20 @@ const IndexOptions = () => {
   const handleExport = useCallback(() => {
     try {
       const settingsToExport = {
-        theme: settings?.theme ?? DEFAULT_SETTINGS.theme,
+        exportedAt: new Date().toISOString(),
+        integrateQrImage: settings?.integrateQrImage ?? DEFAULT_SETTINGS.integrateQrImage,
+        isDarkMode: document.documentElement.classList.contains('dark'),
+        jiraPatterns: (settings?.jiraPatterns ?? DEFAULT_SETTINGS.jiraPatterns).map(pattern => ({
+          description: pattern.description || "JIRA pattern",
+          pattern: pattern.pattern
+        })),
+        language: settings?.language ?? DEFAULT_SETTINGS.language,
         prefixes: settings?.prefixes ?? DEFAULT_SETTINGS.prefixes,
+        theme: settings?.theme ?? DEFAULT_SETTINGS.theme,
         ticketTypes: settings?.ticketTypes ?? DEFAULT_SETTINGS.ticketTypes,
+        urlStructure: settings?.urlStructure ?? DEFAULT_SETTINGS.urlStructure,
         urls: settings?.urls ?? DEFAULT_SETTINGS.urls,
-        jiraPatterns: settings?.jiraPatterns ?? DEFAULT_SETTINGS.jiraPatterns,
-        integrateQrImage:
-          settings?.integrateQrImage ?? DEFAULT_SETTINGS.integrateQrImage,
-        useMarkdownCopy:
-          settings?.useMarkdownCopy ?? DEFAULT_SETTINGS.useMarkdownCopy,
-        exportedAt: new Date().toISOString()
+        useMarkdownCopy: settings?.useMarkdownCopy ?? DEFAULT_SETTINGS.useMarkdownCopy
       }
 
       const jsonString = JSON.stringify(settingsToExport, null, 2)
