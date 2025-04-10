@@ -442,14 +442,79 @@ const JiraUrlWizard = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [qrCodeEnvId, setQrCodeEnvId] = useState('mobile');
   const [isQrCodeAnimating, setIsQrCodeAnimating] = useState(false);
-  
 
-  const refreshTicketIdFromCurrentTab = async () => {
+  // --- Helper Functions ---
+  const extractTicketFromUrl = useCallback((url: string, patterns: JiraPattern[], prefixes: string[]): string | null => {
+    if (!url) return null;
+    
+    // First try to match using the patterns
+    if (patterns && patterns.length > 0) {
+      for (const pattern of patterns) {
+        try {
+          if (!pattern.pattern) continue;
+          const regex = new RegExp(pattern.pattern, 'i');
+          const match = url.match(regex);
+          
+          if (match && match[1]) {
+            return match[1].toUpperCase();
+          }
+        } catch (e) {
+          console.error('Invalid regex pattern:', e);
+        }
+      }
+    }
+    
+    // Then try to match using just prefixes
+    if (prefixes && prefixes.length > 0) {
+      const prefixPattern = `(?:${prefixes.join('|')})-\\d+`;
+      try {
+        const regex = new RegExp(prefixPattern, 'i');
+        const match = url.match(regex);
+        
+        if (match && match[0]) {
+          return match[0].toUpperCase();
+        }
+      } catch (e) {
+        console.error('Error with prefix pattern:', e);
+      }
+    }
+    
+    return null;
+  }, []);
+
+  const addToRecentTickets = useCallback(async (ticket: string) => {
+    if (!ticket || ticket.trim() === '' || ticket === DEFAULT_SAMPLE_TICKET_ID) return;
     try {
-      const patterns = settings.jiraPatterns || [];
-      const prefixes = settings.prefixes || [];
+      setRecentTickets(prevTickets => {
+        const updatedTickets = [ticket, ...prevTickets.filter(t => t !== ticket)].slice(0, 5);
+        chrome.storage.sync.set({ recentTickets: updatedTickets }).catch(error => {
+          console.error('Error saving recent ticket:', error);
+        });
+        return updatedTickets;
+      });
+    } catch (error) {
+      console.error('Error initiating recent ticket update:', error);
+    }
+  }, []);
+
+  const refreshTicketIdFromCurrentTab = useCallback(async () => {
+    try {
+      setToastMessage("Refreshing from current tab...");
       
-      const { ticketId: extractedTicketId, error } = await detectTicketFromCurrentTab(patterns, prefixes);
+      // Get current URL directly
+      const currentUrl = await getCurrentTabUrl();
+      
+      if (!currentUrl) {
+        setToastMessage("No URL available in current tab");
+        return;
+      }
+      
+      // Extract ticket ID using our optimized function
+      const extractedTicketId = extractTicketFromUrl(
+        currentUrl,
+        settings.jiraPatterns || [],
+        settings.prefixes || []
+      );
 
       if (extractedTicketId) {
         setTicketId(extractedTicketId);
@@ -462,37 +527,13 @@ const JiraUrlWizard = () => {
           lastTicketDetectedAt: Date.now()
         });
       } else {
-        setToastMessage(error || "No ticket ID found in current tab");
+        setToastMessage("No ticket ID found in current tab");
       }
     } catch (error) {
       console.error("Error refreshing ticket ID:", error);
       setToastMessage("Error refreshing ticket ID");
     }
-  };
-
-  // Add a function to handle manual ticket ID changes
-  const handleTicketIdChange = useCallback((newTicketId: string) => {
-    if (newTicketId && newTicketId !== ticketId) {
-      setTicketId(newTicketId);
-      
-      // Add to recent tickets
-      setRecentTickets(prevTickets => {
-        const updatedTickets = [newTicketId, ...prevTickets.filter(t => t !== newTicketId)].slice(0, 5);
-        chrome.storage.sync.set({ recentTickets: updatedTickets }).catch(error => {
-          console.error('Error saving recent ticket:', error);
-        });
-        return updatedTickets;
-      });
-      
-      setToastMessage("Ticket ID updated");
-      
-      // Update lastTicketId in storage
-      chrome.storage.local.set({ 
-        lastTicketId: newTicketId,
-        lastTicketDetectedAt: Date.now() 
-      });
-    }
-  }, [ticketId]);
+  }, [settings.jiraPatterns, settings.prefixes, addToRecentTickets, extractTicketFromUrl]);
 
   // --- Effects ---
   useEffect(() => {
@@ -501,57 +542,74 @@ const JiraUrlWizard = () => {
 
     const loadInitialData = async () => {
       try {
+        // 1. Load settings first - we need these for URL detection
         const loadedSettings = await getSettings();
         if (!isMounted) return;
         setSettings(loadedSettings);
         
-        const lastTicketData = await chrome.storage.local.get(['lastTicketId', 'lastTicketDetectedAt']);
+        // 2. Get stored recent tickets and last detected ticket info
+        const [storedTicketsData, lastTicketData] = await Promise.all([
+          chrome.storage.sync.get('recentTickets'),
+          chrome.storage.local.get(['lastTicketId', 'lastTicketDetectedAt'])
+        ]);
+        
+        const loadedRecentTickets = storedTicketsData.recentTickets || [];
         const lastTicketId = lastTicketData.lastTicketId;
         const lastDetectionTime = lastTicketData.lastTicketDetectedAt || 0;
-
-        const storedTicketsData = await chrome.storage.sync.get('recentTickets');
-        const loadedRecentTickets = storedTicketsData.recentTickets || [];
-        if (isMounted) {
-          setRecentTickets(loadedRecentTickets);
-        }
-
-        // Check if we need to detect from current tab (if no recent detection)
-        const shouldDetectFromTab = !lastTicketId || (Date.now() - lastDetectionTime > 5000);
         
-        let finalInitialTicketId = DEFAULT_SAMPLE_TICKET_ID;
+        if (!isMounted) return;
+        setRecentTickets(loadedRecentTickets);
+        
+        // 3. Initialize ticket ID display with cached value
+        if (lastTicketId) {
+          setTicketId(lastTicketId);
+          console.log(`Popup: Loaded cached ticket ID: ${lastTicketId}`);
+        } else {
+          setTicketId(DEFAULT_SAMPLE_TICKET_ID);
+        }
+        
+        // Always show the UI immediately after initial data is loaded
+        setIsLoading(false);
+        
+        // 4. Determine if we should detect from current tab
+        const currentTime = Date.now();
+        const cacheExpired = currentTime - lastDetectionTime > 5000; // 5 second cache
+        const shouldDetectFromTab = !lastTicketId || cacheExpired;
         
         if (shouldDetectFromTab) {
-          const { ticketId: extractedTicketId } = await detectTicketFromCurrentTab(
+          // Get current tab URL first to avoid race conditions
+          const currentUrl = await getCurrentTabUrl();
+          
+          if (!currentUrl) {
+            console.log('No valid URL in current tab');
+            return;
+          }
+          
+          // Extract ticket ID from URL using optimized function
+          const extractedTicketId = extractTicketFromUrl(
+            currentUrl, 
             loadedSettings.jiraPatterns || [],
             loadedSettings.prefixes || []
           );
           
-          if (extractedTicketId) {
-            finalInitialTicketId = extractedTicketId;
-            addToRecentTickets(extractedTicketId);
-            console.log(`Popup: Set ticket ID from URL: ${extractedTicketId}`);
+          if (extractedTicketId && isMounted) {
+            console.log(`Popup: Detected ticket ID from current tab: ${extractedTicketId}`);
             
-            // Update lastTicketId and lastTicketDetectedAt
-            chrome.storage.local.set({ 
-              lastTicketId: extractedTicketId,
-              lastTicketDetectedAt: Date.now() 
-            });
-          } else if (lastTicketId) {
-            finalInitialTicketId = lastTicketId;
-            console.log(`Popup: Set ticket ID from last used: ${lastTicketId}`);
+            // Only update if different from what we already have
+            if (extractedTicketId !== lastTicketId) {
+              setTicketId(extractedTicketId);
+              addToRecentTickets(extractedTicketId);
+              
+              // Update cache with new detection
+              chrome.storage.local.set({ 
+                lastTicketId: extractedTicketId,
+                lastTicketDetectedAt: currentTime 
+              });
+            }
           }
-        } else if (lastTicketId) {
-          finalInitialTicketId = lastTicketId;
-          console.log(`Popup: Set ticket ID from last used: ${lastTicketId}`);
         }
-
-        if (isMounted) {
-          setTicketId(finalInitialTicketId);
-        }
-
       } catch (error) {
         console.error('Error loading popup initial data:', error);
-      } finally {
         if (isMounted) {
           setIsLoading(false);
         }
@@ -575,7 +633,7 @@ const JiraUrlWizard = () => {
       isMounted = false; 
       chrome.runtime.onMessage.removeListener(handleBackgroundMessages);
     };
-  }, []);
+  }, [addToRecentTickets, extractTicketFromUrl]);
 
   useEffect(() => {
     const handleSettingsChange = (newSettings: SettingsStorage) => {
@@ -672,21 +730,6 @@ const JiraUrlWizard = () => {
   }, [qrCodeSelectedEnvConfig, ticketId, settings.urlStructure, settings.ticketTypes]);
 
   // --- Callbacks (Defined AFTER derived data) ---
-  const addToRecentTickets = useCallback(async (ticket: string) => {
-    if (!ticket || ticket.trim() === '' || ticket === DEFAULT_SAMPLE_TICKET_ID) return;
-    try {
-      setRecentTickets(prevTickets => {
-        const updatedTickets = [ticket, ...prevTickets.filter(t => t !== ticket)].slice(0, 5);
-        chrome.storage.sync.set({ recentTickets: updatedTickets }).catch(error => {
-          console.error('Error saving recent ticket:', error);
-        });
-        return updatedTickets;
-      });
-    } catch (error) {
-      console.error('Error initiating recent ticket update:', error);
-    }
-  }, []);
-
   const copyToClipboard = useCallback((text: string, message: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => { setToastMessage(message); })
@@ -786,7 +829,7 @@ const JiraUrlWizard = () => {
         onToggleRecentTickets={() => setShowRecentTickets(prev => !prev)}
         onSelectRecentTicket={selectRecentTicket}
         onRefreshFromCurrentTab={refreshTicketIdFromCurrentTab}
-        onTicketIdChange={handleTicketIdChange}
+        onTicketIdChange={setTicketId}
         settings={settings}
       />
       
