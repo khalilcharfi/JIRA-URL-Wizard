@@ -1,14 +1,39 @@
 # JIRA URL Wizard
 
-A browser extension that helps you quickly generate and manage JIRA ticket URLs across different environments.
+<div align="center">
+  <img src="assets/app.webp" alt="JIRA URL Wizard Logo" width="200"/>
+</div>
+
+JIRA URL Wizard is a powerful browser extension designed to streamline your JIRA workflow by making it easier to manage and access JIRA tickets across different environments. Whether you're working with development, staging, or production environments, this tool helps you quickly generate and switch between JIRA ticket URLs with just a few clicks.
 
 ## Features
 
-- Generate JIRA ticket URLs for different environments
-- Manage and switch between multiple JIRA environments
-- Quick access to frequently used tickets
-- User-friendly interface with drag-and-drop functionality
-- QR code generation for easy mobile access
+### 🚀 Environment Management
+- Configure and save multiple JIRA environments (dev, staging, production)
+- Quick switching between different JIRA instances
+- Custom environment naming and organization
+
+### 🎯 Ticket Management
+- Generate JIRA ticket URLs instantly for any environment
+- Save frequently accessed tickets for quick access
+- Drag-and-drop interface for organizing your tickets
+- Support for different JIRA ticket formats and patterns
+
+### 📱 Mobile Integration
+- Generate QR codes for tickets to quickly access them on mobile devices
+- Share tickets easily with team members
+- Mobile-friendly interface for on-the-go access
+
+### 🎨 User Experience
+- Clean, modern interface built with React and TailwindCSS
+- Intuitive drag-and-drop functionality using DND Kit
+- Responsive design that works across all devices
+- Customizable settings to match your workflow
+
+### 🔒 Security & Privacy
+- Local storage of your JIRA configurations
+- No data sent to external servers
+- Secure handling of your JIRA credentials
 
 ## Installation
 
