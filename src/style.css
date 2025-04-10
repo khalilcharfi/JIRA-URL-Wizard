@@ -3,3 +3,84 @@
 @tailwind utilities;
 
 /* You can add custom styles below this line */
+
+/* Drag and drop improvements */
+.dragging-in-progress {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+/* Improve touch handling */
+[aria-roledescription="draggable"],
+[aria-roledescription="sortable"] {
+  touch-action: none; /* Prevent scrolling while dragging on touch devices */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+}
+
+/* Enhanced draggable visual feedback */
+[aria-roledescription="draggable"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Allow normal scrolling for the document */
+html, body {
+  touch-action: auto;
+}
+
+/* Enhanced styles for ticket-type components */
+[data-component-type="ticket-type"] {
+  position: relative !important;
+  z-index: 50 !important; /* Very high z-index to ensure it's on top */
+  cursor: grab !important;
+  user-select: none !important;
+  touch-action: none !important; /* Critical for touch devices */
+  -webkit-touch-callout: none !important;
+  -webkit-user-drag: element !important; /* Enable native dragging on iOS */
+}
+
+/* Make sure the component is visible during drag */
+[data-component-type="ticket-type"]:active {
+  cursor: grabbing !important;
+  opacity: 0.8 !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  transform: scale(1.05) !important;
+  z-index: 100 !important;
+}
+
+/* Custom styling for ticket type to make it more prominent */
+[data-component-type="ticket-type"] {
+  background-color: rgba(59, 130, 246, 0.15) !important; 
+  border: 2px solid rgba(59, 130, 246, 0.4) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+[data-component-type="ticket-type"]:hover {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Fix any overlay issues */
+[data-component-type="ticket-type"] * {
+  pointer-events: none !important; /* Ensure drag events go through to parent */
+}
+
+/* Ensure all draggable items have proper touch behavior */
+[draggable="true"] {
+  -webkit-user-drag: element;
+  user-select: none;
+  touch-action: none;
+}
+
+/* Ensure drag events work properly */
+.dragging-in-progress * {
+  pointer-events: none;
+}
+
+.dragging-in-progress [data-component-type],
+.dragging-in-progress [aria-roledescription="draggable"],
+.dragging-in-progress [aria-roledescription="sortable"] {
+  pointer-events: auto;
+}

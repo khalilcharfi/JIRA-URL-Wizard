@@ -14,6 +14,7 @@ import {
     useDroppable,
     defaultDropAnimationSideEffects,
     MeasuringStrategy,
+    MouseSensor,
 } from '@dnd-kit/core';
 import type {
     DragStartEvent,
@@ -98,33 +99,52 @@ interface ItemProps {
 const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({ 
     id, component, isUsed, allAvailableComponents 
 }) => {
+    // Check if this is a dynamic field type
     const isDynamicField = ['ticket-type', 'issue-prefix', 'base-url'].includes(component.type);
     const isDisabled = isDynamicField && isUsed;
 
-    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    // For ticket type components, add direct drag handler
+    const isTicketType = component.type === 'ticket-type';
+
+    // Use sortable with modified options for better touch support
+    const { attributes, listeners, setNodeRef, isDragging } = useSortable({
         id: id,
         data: { type: 'available', componentData: component },
         disabled: isDisabled,
+        attributes: {
+            role: 'button',
+            tabIndex: 0,
+            roleDescription: 'draggable'
+        }
     });
 
     const style = isDragging ? { opacity: 0.5, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' } : undefined;
     const itemStyle = getComponentStyle(component.type);
 
-    if (isDisabled) {
+    // Special handling for ticket type component
+    if (isTicketType) {
         return (
             <div
-                role="button"
-                tabIndex={-1}
-                aria-disabled="true"
-                title={`${component.description} (already in pattern)`}
-                className={`relative py-1.5 px-3 rounded-lg select-none shadow-sm transition-all opacity-40 ${itemStyle} border-dashed cursor-not-allowed filter grayscale`}
+                ref={setNodeRef}
+                style={style}
+                {...listeners} 
+                {...attributes}
+                title={component.description}
+                className="relative py-1.5 px-3 rounded-lg select-none shadow-sm transition-all duration-150 group
+                            cursor-grab hover:shadow-md hover:scale-105 active:cursor-grabbing
+                            bg-blue-50 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600
+                            text-blue-700 dark:text-blue-300 hover:border-blue-400 dark:hover:border-blue-500
+                            active:bg-blue-100 dark:active:bg-blue-800/40"
+                data-component-type="ticket-type"
             >
-                <ItemContent component={component} />
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-5 dark:bg-opacity-20 rounded-lg">
-                    <div className="text-xs font-medium px-1.5 py-0.5 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 rounded shadow-sm border border-gray-200 dark:border-gray-700">
-                        Already used
-                    </div>
-                </div>
+                <span className="text-sm font-medium flex items-center">
+                    <GripVertical
+                        size={12}
+                        className="mr-1 text-blue-500/50 dark:text-blue-400/50"
+                    />
+                    {component.description}
+                </span>
+                <div className="absolute inset-0 rounded-lg bg-transparent group-hover:bg-black/5 dark:group-hover:bg-white/5 pointer-events-none"></div>
             </div>
         );
     }
@@ -133,12 +153,16 @@ const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({
         <div
             ref={setNodeRef}
             style={style}
-            {...listeners}
+            {...listeners} 
             {...attributes}
             title={component.description}
-            className={`relative py-1.5 px-3 rounded-lg select-none shadow-sm transition-all duration-150 group cursor-grab hover:shadow-md hover:scale-105 active:cursor-grabbing ${itemStyle}`}
+            className={`relative py-1.5 px-3 rounded-lg select-none shadow-sm transition-all duration-150 group 
+                cursor-grab hover:shadow-md hover:scale-105 active:cursor-grabbing touch-manipulation 
+                ${itemStyle} border border-transparent hover:border-gray-300 dark:hover:border-gray-600`}
+            data-component-type={component.type}
         >
             <ItemContent component={component} />
+            <div className="absolute inset-0 rounded-lg bg-transparent group-hover:bg-black/5 dark:group-hover:bg-white/5 pointer-events-none"></div>
         </div>
     );
 };
@@ -477,18 +501,28 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     const initialPattern = useMemo(() => {
         if (urlStructure && urlStructure.length > 0) {
             return urlStructure.map(item => {
-                switch (item) {
-                    case 'ticketType': return 'ticket-type';
-                    case 'issuePrefix': return 'issue-prefix';
-                    case 'baseUrl': return 'base-url';
-                    case '.': return `sep-dot-${Date.now()}`;
-                    case '-': return `sep-hyphen-${Date.now()}`;
-                    case '_': return `sep-underscore-${Date.now()}`;
-                    case '/': return `sep-slash-${Date.now()}`;
-                    case '[0-9]+': return `regex-numeric-${Date.now()}`;
-                    case '[a-zA-Z0-9]+': return `regex-alphanumeric-${Date.now()}`;
-                    default: return item;
+                // Handle dynamic components
+                if (item === 'ticketType' || item === 'ticket-type') return 'ticket-type';
+                if (item === 'issuePrefix' || item === 'issue-prefix') return 'issue-prefix';
+                if (item === 'baseUrl' || item === 'base-url') return 'base-url';
+                
+                // Handle separators
+                if (item === '.') return `sep-dot-${Date.now()}`;
+                if (item === '-') return `sep-hyphen-${Date.now()}`;
+                if (item === '_') return `sep-underscore-${Date.now()}`;
+                if (item === '/') return `sep-slash-${Date.now()}`;
+                
+                // Handle regex patterns
+                if (item === '[0-9]+') return `regex-numeric-${Date.now()}`;
+                if (item === '[a-zA-Z0-9]+') return `regex-alphanumeric-${Date.now()}`;
+                
+                // Handle custom regex patterns
+                if (item.startsWith('[') && item.endsWith(']+')) {
+                    return `custom-regex-${Date.now()}-${item}`;
                 }
+                
+                // Return the item as is if it doesn't match any known pattern
+                return item;
             });
         }
         return ['ticket-type', 'issue-prefix', 'base-url'];
@@ -503,6 +537,10 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     const [urlValidationResults, setUrlValidationResults] = useState<Record<string, boolean>>({});
     const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+    const [dropTargetArea, setDropTargetArea] = useState<{
+        id: UniqueIdentifier | null;
+        position: 'before' | 'after' | 'container' | null;
+    }>({ id: null, position: null });
 
     // Validation rules definition
     const validationRules = useMemo(() => [
@@ -640,19 +678,49 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         }
     ], [allAvailableComponents]);
         
-    // Improved sensor configuration
+    // Improved sensor configuration for better drag detection
     const sensors = useSensors(
+        useSensor(MouseSensor, {
+            activationConstraint: {
+                distance: 0,
+                tolerance: 0,
+                delay: 0,
+            },
+        }),
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 10,
-                tolerance: 5,
-                delay: 100,
+                distance: 0,
+                tolerance: 0,
+                delay: 0,
+            },
+            onActivation: ({ event }) => {
+                if (event instanceof TouchEvent) {
+                    const target = event.target as HTMLElement;
+                    if (target) {
+                        target.style.touchAction = 'none';
+                    }
+                }
             },
         }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
+
+    // Add a custom modifier for drag visualization
+    const customDropAnimationModifier = {
+        active: {
+            opacity: '0.8',
+            scale: '1.05',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+        },
+    };
+
+    const dropAnimation: DropAnimation = {
+        sideEffects: defaultDropAnimationSideEffects({
+            styles: customDropAnimationModifier
+        })
+    };
 
     // Define pattern container as a droppable area
     const { setNodeRef: setPatternDropRef } = useDroppable({
@@ -794,6 +862,37 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         validateConstructedUrls();
     }, [pattern, validationRules, validateConstructedUrls]);
 
+    // Add a useEffect to reload the pattern when urlStructure changes
+    useEffect(() => {
+        if (urlStructure && urlStructure.length > 0) {
+            const mappedPattern = urlStructure.map(item => {
+                // Handle dynamic components with consistent naming
+                if (item === 'ticketType' || item === 'ticket-type') return 'ticket-type';
+                if (item === 'issuePrefix' || item === 'issue-prefix') return 'issue-prefix';
+                if (item === 'baseUrl' || item === 'base-url') return 'base-url';
+                
+                // Handle separators
+                if (item === '.') return `sep-dot-${Date.now()}`;
+                if (item === '-') return `sep-hyphen-${Date.now()}`;
+                if (item === '_') return `sep-underscore-${Date.now()}`;
+                if (item === '/') return `sep-slash-${Date.now()}`;
+                
+                // Handle regex patterns
+                if (item === '[0-9]+') return `regex-numeric-${Date.now()}`;
+                if (item === '[a-zA-Z0-9]+') return `regex-alphanumeric-${Date.now()}`;
+                
+                // Handle custom regex patterns
+                if (typeof item === 'string' && item.startsWith('[') && item.endsWith(']+')) {
+                    return `custom-regex-${Date.now()}-${item}`;
+                }
+                
+                // Return the item as is if it doesn't match any known pattern
+                return item;
+            });
+            setPattern(mappedPattern);
+        }
+    }, [urlStructure]);
+
     // Event handlers
     const handleDeleteComponent = useCallback((idToDelete: UniqueIdentifier) => {
         // Prevent deletion of permanent components
@@ -808,8 +907,25 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         // Automatically save the pattern
         const isPatternValid = Object.values(validationResults).every(result => result.valid);
         if (onSavePattern && isPatternValid) {
-            const patternStringArray = newPattern.map(id => String(id));
-            onSavePattern(patternStringArray);
+            // Convert to the correct format expected by settings
+            const formattedPattern = newPattern.map(id => {
+                const idStr = String(id);
+                if (idStr === 'ticket-type') return 'ticketType';
+                if (idStr === 'issue-prefix') return 'issuePrefix';
+                if (idStr === 'base-url') return 'baseUrl';
+                if (idStr.startsWith('sep-dot')) return '.';
+                if (idStr.startsWith('sep-hyphen')) return '-';
+                if (idStr.startsWith('sep-underscore')) return '_';
+                if (idStr.startsWith('sep-slash')) return '/';
+                if (idStr.startsWith('regex-numeric')) return '[0-9]+';
+                if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
+                if (idStr.startsWith('custom-regex-')) {
+                    const match = idStr.match(/custom-regex-\d+-(.+)/);
+                    return match ? match[1] : idStr;
+                }
+                return idStr;
+            });
+            onSavePattern(formattedPattern);
         }
     }, [pattern, onSavePattern, validationResults]);
 
@@ -819,18 +935,28 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         // Reset to the pattern from settings or fall back to default
         if (urlStructure && urlStructure.length > 0) {
             newPattern = urlStructure.map(item => {
-                switch (item) {
-                    case 'ticketType': return 'ticket-type';
-                    case 'issuePrefix': return 'issue-prefix';
-                    case 'baseUrl': return 'base-url';
-                    case '.': return `sep-dot-${Date.now()}`;
-                    case '-': return `sep-hyphen-${Date.now()}`;
-                    case '_': return `sep-underscore-${Date.now()}`;
-                    case '/': return `sep-slash-${Date.now()}`;
-                    case '[0-9]+': return `regex-numeric-${Date.now()}`;
-                    case '[a-zA-Z0-9]+': return `regex-alphanumeric-${Date.now()}`;
-                    default: return item;
+                // Handle dynamic components with consistent naming
+                if (item === 'ticketType' || item === 'ticket-type') return 'ticket-type';
+                if (item === 'issuePrefix' || item === 'issue-prefix') return 'issue-prefix';
+                if (item === 'baseUrl' || item === 'base-url') return 'base-url';
+                
+                // Handle separators
+                if (item === '.') return `sep-dot-${Date.now()}`;
+                if (item === '-') return `sep-hyphen-${Date.now()}`;
+                if (item === '_') return `sep-underscore-${Date.now()}`;
+                if (item === '/') return `sep-slash-${Date.now()}`;
+                
+                // Handle regex patterns
+                if (item === '[0-9]+') return `regex-numeric-${Date.now()}`;
+                if (item === '[a-zA-Z0-9]+') return `regex-alphanumeric-${Date.now()}`;
+                
+                // Handle custom regex patterns
+                if (typeof item === 'string' && item.startsWith('[') && item.endsWith(']+')) {
+                    return `custom-regex-${Date.now()}-${item}`;
                 }
+                
+                // Return the item as is if it doesn't match any known pattern
+                return item;
             });
         } else {
             // Reset to default pattern
@@ -840,54 +966,128 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         setPattern(newPattern);
         
         // Automatically save the pattern
-        const isPatternValid = Object.values(validationResults).every(result => result.valid);
-        if (onSavePattern && isPatternValid) {
-            const patternStringArray = newPattern.map(id => String(id));
-            onSavePattern(patternStringArray);
+        if (onSavePattern) {
+            // Convert to the correct format expected by settings
+            const formattedPattern = newPattern.map(id => {
+                const idStr = String(id);
+                if (idStr === 'ticket-type') return 'ticketType';
+                if (idStr === 'issue-prefix') return 'issuePrefix';
+                if (idStr === 'base-url') return 'baseUrl';
+                if (idStr.startsWith('sep-dot')) return '.';
+                if (idStr.startsWith('sep-hyphen')) return '-';
+                if (idStr.startsWith('sep-underscore')) return '_';
+                if (idStr.startsWith('sep-slash')) return '/';
+                if (idStr.startsWith('regex-numeric')) return '[0-9]+';
+                if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
+                if (idStr.startsWith('custom-regex-')) {
+                    const match = idStr.match(/custom-regex-\d+-(.+)/);
+                    return match ? match[1] : idStr;
+                }
+                return idStr;
+            });
+            onSavePattern(formattedPattern);
         }
-    }, [urlStructure, validationResults, onSavePattern]);
+    }, [urlStructure, onSavePattern]);
 
     const handleSavePattern = useCallback(() => {
-        // Convert UniqueIdentifier[] to string[]
-        const patternStringArray = pattern.map(id => String(id));
+        // Convert UniqueIdentifier[] to string[] with proper format mapping
+        const formattedPattern = pattern.map(id => {
+            const idStr = String(id);
+            if (idStr === 'ticket-type') return 'ticketType';
+            if (idStr === 'issue-prefix') return 'issuePrefix';
+            if (idStr === 'base-url') return 'baseUrl';
+            if (idStr.startsWith('sep-dot')) return '.';
+            if (idStr.startsWith('sep-hyphen')) return '-';
+            if (idStr.startsWith('sep-underscore')) return '_';
+            if (idStr.startsWith('sep-slash')) return '/';
+            if (idStr.startsWith('regex-numeric')) return '[0-9]+';
+            if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
+            if (idStr.startsWith('custom-regex-')) {
+                const match = idStr.match(/custom-regex-\d+-(.+)/);
+                return match ? match[1] : idStr;
+            }
+            return idStr;
+        });
         
         if (onSavePattern) {
-            onSavePattern(patternStringArray);
+            onSavePattern(formattedPattern);
         }
     }, [pattern, onSavePattern]);
 
     // DnD Event Handlers
     const handleDragStart = useCallback((event: DragStartEvent) => {
         const { active } = event;
+        
+        // Log the start of dragging for debugging purposes
+        console.log('Drag started:', { 
+            id: active.id, 
+            type: active.data.current?.type,
+            data: active.data.current,
+            rect: active.rect,
+        });
+        
+        // More robust type extraction - default to 'available' for components being dragged from the available list
+        let type = active.data.current?.type || null;
+        if (type !== 'pattern' && type !== 'available') {
+            // If we can't determine the type, check if it's in the pattern
+            type = pattern.includes(active.id) ? 'pattern' : 'available';
+        }
+        
         setActiveId(active.id);
-        setActiveType(active.data.current?.type || null);
-    }, []);
+        setActiveType(type);
+        
+        // Add a class to the body to indicate dragging is in progress
+        document.body.classList.add('dragging-in-progress');
+    }, [pattern]);
 
     const handleDragOver = useCallback((event: DragOverEvent) => {
         const { active, over } = event;
         
         if (!over) {
             setDragOverIndex(null);
+            setDropTargetArea({ id: null, position: null });
             return;
         }
         
-        // Find the index where the item is being dragged over
+        // Set drop target area for visual feedback
         if (over.id === PATTERN_CONTAINER_ID) {
+            setDropTargetArea({ id: PATTERN_CONTAINER_ID, position: 'container' });
             setDragOverIndex(pattern.length);
             return;
         }
         
-        const overIndex = pattern.findIndex(id => id === over.id);
-        if (overIndex !== -1) {
+        if (pattern.includes(over.id)) {
+            const overIndex = pattern.indexOf(over.id);
             setDragOverIndex(overIndex);
+            
+            // Determine if dropping before or after the target
+            const deltaX = event.delta.x;
+            const position = deltaX < 0 ? 'before' : 'after';
+            setDropTargetArea({ id: over.id, position });
+        } else {
+            setDropTargetArea({ id: null, position: null });
         }
     }, [pattern]);
 
     const handleDragEnd = useCallback((event: DragEndEvent) => {
         const { active, over } = event;
+        
+        // Log drag end for debugging
+        console.log('Drag ended:', { 
+            activeId: active.id, 
+            overId: over?.id,
+            activeType: active.data.current?.type,
+            overType: over?.data.current?.type,
+        });
+        
+        // Clean up state
         setActiveId(null);
         setActiveType(null);
         setDragOverIndex(null);
+        setDropTargetArea({ id: null, position: null });
+        
+        // Remove the dragging class from the body
+        document.body.classList.remove('dragging-in-progress');
         
         if (over && over.id !== active.id) {
             let newPattern: UniqueIdentifier[] = [...pattern];
@@ -913,7 +1113,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                     if (overNode) {
                         const overRect = overNode.getBoundingClientRect();
                         const isBeforeTarget = deltaX < 0; // Simplified logic: if dragging left, place before
-
+                        
                         if (isBeforeTarget) {
                             // Add before the target
                             newPattern = [...pattern.slice(0, overIndex), uniqueId, ...pattern.slice(overIndex)];
@@ -922,7 +1122,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                             newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
                         }
                     } else {
-                         // Fallback - add after the target if node rect unavailable
+                        // Fallback - add after the target if node rect unavailable
                         newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
                     }
                 }
@@ -942,18 +1142,59 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
             // Automatically save the pattern
             const isPatternValid = Object.values(validationResults).every(result => result.valid);
             if (onSavePattern && isPatternValid) {
-                const patternStringArray = newPattern.map(id => String(id));
-                onSavePattern(patternStringArray);
+                // Convert to the correct format expected by settings
+                const formattedPattern = newPattern.map(id => {
+                    const idStr = String(id);
+                    if (idStr === 'ticket-type') return 'ticketType';
+                    if (idStr === 'issue-prefix') return 'issuePrefix';
+                    if (idStr === 'base-url') return 'baseUrl';
+                    if (idStr.startsWith('sep-dot')) return '.';
+                    if (idStr.startsWith('sep-hyphen')) return '-';
+                    if (idStr.startsWith('sep-underscore')) return '_';
+                    if (idStr.startsWith('sep-slash')) return '/';
+                    if (idStr.startsWith('regex-numeric')) return '[0-9]+';
+                    if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
+                    if (idStr.startsWith('custom-regex-')) {
+                        const match = idStr.match(/custom-regex-\d+-(.+)/);
+                        return match ? match[1] : idStr;
+                    }
+                    return idStr;
+                });
+                onSavePattern(formattedPattern);
             }
         }
     }, [pattern, validationResults, onSavePattern]);
+
+    // Reset drop target area when drag ends
+    const handleDragCancel = useCallback(() => {
+        setActiveId(null);
+        setActiveType(null);
+        setDragOverIndex(null);
+        setDropTargetArea({ id: null, position: null });
+        
+        // Remove the dragging class from the body
+        document.body.classList.remove('dragging-in-progress');
+        
+        console.log('Drag cancelled');
+    }, []);
 
     // Calculate which components are already used in the pattern
     const usedDynamicComponentIds = useMemo(() => {
         const usedIds = new Set<string>();
         pattern.forEach(id => {
-            const baseId = String(id).includes('-') ? String(id).split('-')[0] : String(id);
-            if (PERMANENT_COMPONENT_BASE_IDS.has(baseId)) {
+            const idStr = String(id);
+            
+            // First check exact matches for basic components
+            if (['ticket-type', 'issue-prefix', 'base-url'].includes(idStr)) {
+                usedIds.add(idStr);
+                return;
+            }
+            
+            // Then check for base components by extracting the base ID
+            const baseId = idStr.includes('-') ? idStr.split('-')[0] : idStr;
+            
+            // For pattern items that are dynamic components (can only appear once)
+            if (['ticket-type', 'issue-prefix', 'base-url'].includes(baseId)) {
                 usedIds.add(baseId);
             }
         });
@@ -986,16 +1227,6 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         ).map(c => c.id)),
         [initialComponents]
     );
-
-    const dropAnimation: DropAnimation = {
-        sideEffects: defaultDropAnimationSideEffects({
-            styles: {
-                active: {
-                    opacity: '0.4',
-                }
-            }
-        })
-    };
 
     const allRulesValid = validationRules.every(rule => validationResults[rule.id]?.valid ?? false);
 
@@ -1042,12 +1273,23 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                         onDragStart={handleDragStart}
                         onDragOver={handleDragOver}
                         onDragEnd={handleDragEnd}
+                        onDragCancel={handleDragCancel}
                         measuring={{
                             droppable: {
                                 strategy: MeasuringStrategy.Always
                             }
                         }}
+                        autoScroll={true}
                     >
+                        {/* Debug information for development */}
+                        <div className="mb-3 text-xs bg-yellow-50 text-yellow-700 p-2 rounded border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-800/50">
+                            Tip: Grab and hold the ticket type component firmly, then drag it to the pattern area below.
+                            <div className="mt-1 flex space-x-2">
+                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full dark:bg-blue-900/50 dark:text-blue-300">Active ID: {activeId?.toString() || "None"}</span>
+                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full dark:bg-green-900/50 dark:text-green-300">Type: {activeType || "None"}</span>
+                            </div>
+                        </div>
+                        
                         <AvailableComponentsSection 
                             categorizedComponents={categorizedComponents}
                             usedDynamicComponentIds={usedDynamicComponentIds}
@@ -1063,29 +1305,46 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                             
                             <div 
                                 ref={setPatternDropRef}
-                                className="flex flex-wrap gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-h-[60px] pattern-container"
+                                className={`flex flex-wrap gap-2 p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 min-h-[60px] pattern-container ${
+                                    dropTargetArea.id === PATTERN_CONTAINER_ID && pattern.length === 0 
+                                    ? 'ring-2 ring-blue-400 dark:ring-blue-600 bg-blue-50 dark:bg-blue-900/20' 
+                                    : ''
+                                }`}
                             >
                                 <SortableContext items={pattern} strategy={horizontalListSortingStrategy}>
-                                    {pattern.map((id) => {
+                                    {pattern.map((id, index) => {
                                         const component = getBaseComponentData(id, allAvailableComponents);
                                         if (!component) return null;
                                         
+                                        // Add drop indicators
+                                        const showBeforeIndicator = dropTargetArea.id === id && dropTargetArea.position === 'before';
+                                        const showAfterIndicator = dropTargetArea.id === id && dropTargetArea.position === 'after';
+                                        
                                         return (
-                                            <PatternItem
-                                                key={id}
-                                                id={id}
-                                                component={component}
-                                                onDelete={handleDeleteComponent}
-                                                allAvailableComponents={allAvailableComponents}
-                                                activeDragId={activeId}
-                                                permanentIds={permanentIds}
-                                            />
+                                            <React.Fragment key={id}>
+                                                {showBeforeIndicator && (
+                                                    <div className="self-stretch w-1 m-0 bg-blue-500 rounded-full animate-pulse" />
+                                                )}
+                                                <PatternItem
+                                                    id={id}
+                                                    component={component}
+                                                    onDelete={handleDeleteComponent}
+                                                    allAvailableComponents={allAvailableComponents}
+                                                    activeDragId={activeId}
+                                                    permanentIds={permanentIds}
+                                                />
+                                                {showAfterIndicator && (
+                                                    <div className="self-stretch w-1 m-0 bg-blue-500 rounded-full animate-pulse" />
+                                                )}
+                                            </React.Fragment>
                                         );
                                     })}
                                 </SortableContext>
                                 
                                 {pattern.length === 0 && (
-                                    <div className="flex items-center justify-center w-full h-12 text-gray-400 dark:text-gray-500">
+                                    <div className={`flex items-center justify-center w-full h-12 text-gray-400 dark:text-gray-500 ${
+                                        dropTargetArea.id === PATTERN_CONTAINER_ID ? 'text-blue-500 dark:text-blue-400' : ''
+                                    }`}>
                                         Drag components here to build your URL pattern
                                     </div>
                                 )}
@@ -1108,12 +1367,12 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                         <DragOverlay dropAnimation={dropAnimation}>
                             {activeId && activeComponent ? (
                                 activeType === 'available' ? (
-                                    <AvailableItem
-                                        id={activeId}
-                                        component={activeComponent}
-                                        isUsed={false}
-                                        allAvailableComponents={allAvailableComponents}
-                                    />
+                                    <div 
+                                        className={`relative py-1.5 px-3 rounded-lg select-none shadow-md scale-105 ${getComponentStyle(activeComponent.type)}`}
+                                        style={{ transformOrigin: '0 0' }}
+                                    >
+                                        <ItemContent component={activeComponent} />
+                                    </div>
                                 ) : (
                                     <PatternItem
                                         id={activeId}
@@ -1133,24 +1392,6 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         </div>
     );
 };
-
-// Add missing useDraggable hook
-interface DraggableOptions {
-    id: UniqueIdentifier;
-    data?: { type: string; componentData: any };
-    disabled?: boolean;
-}
-
-const useDraggable = ({ id, data, disabled = false }: DraggableOptions) => {
-    const { attributes, listeners, setNodeRef, isDragging } = useSortable({
-        id,
-        data,
-        disabled
-    });
-    
-    return { attributes, listeners, setNodeRef, isDragging };
-};
-
 
 // Then, add a basic Tooltip component implementation
 const Tooltip: React.FC<{ text: string; children: React.ReactElement }> = ({ text, children }) => {
