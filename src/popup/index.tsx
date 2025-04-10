@@ -444,6 +444,38 @@ const JiraUrlWizard = () => {
   const [isQrCodeAnimating, setIsQrCodeAnimating] = useState(false);
 
   // --- Helper Functions ---
+  const getCurrentTabUrl = useCallback(async (): Promise<string | null> => {
+    try {
+      const response = await chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' });
+      return response?.url || null;
+    } catch (error) {
+      console.error('Error getting current tab URL:', error);
+      return null;
+    }
+  }, []);
+
+  const detectTicketFromCurrentTab = useCallback(async (): Promise<{ ticketId: string | null; error?: string }> => {
+    try {
+      const currentUrl = await getCurrentTabUrl();
+      if (!currentUrl) {
+        return { ticketId: null, error: 'No URL available in current tab' };
+      }
+
+      const response = await chrome.runtime.sendMessage({ 
+        action: 'detectTicketFromUrl', 
+        url: currentUrl 
+      });
+      
+      return { 
+        ticketId: response.ticketId, 
+        error: response.error 
+      };
+    } catch (error) {
+      console.error('Error detecting ticket from current tab:', error);
+      return { ticketId: null, error: 'Error detecting ticket' };
+    }
+  }, [getCurrentTabUrl]);
+
   const extractTicketFromUrl = useCallback((url: string, patterns: JiraPattern[], prefixes: string[]): string | null => {
     if (!url) return null;
     
