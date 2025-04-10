@@ -74,6 +74,67 @@ const generateUniqueIdIfNeeded = (component: ComponentData): UniqueIdentifier =>
     return needsUniqueId ? `${component.id}-${Date.now()}` : component.id;
 };
 
+// Utility to consistently format pattern for settings
+const formatPatternForSettings = (pattern: UniqueIdentifier[]): string[] => {
+    return pattern.map(id => {
+        const idStr = String(id);
+        
+        // Map dynamic components
+        if (idStr === 'ticket-type') return 'ticketType';
+        if (idStr === 'issue-prefix') return 'issuePrefix';
+        if (idStr === 'base-url') return 'baseUrl';
+        
+        // Map separator components 
+        if (idStr.startsWith('sep-dot')) return '.';
+        if (idStr.startsWith('sep-hyphen')) return '-';
+        if (idStr.startsWith('sep-underscore')) return '_';
+        if (idStr.startsWith('sep-slash')) return '/';
+        
+        // Map regex components
+        if (idStr.startsWith('regex-numeric')) return '[0-9]+';
+        if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
+        if (idStr.startsWith('custom-regex-')) {
+            const match = idStr.match(/custom-regex-\d+-(.+)/);
+            return match ? match[1] : idStr;
+        }
+        
+        // Default - return as is
+        return idStr;
+    });
+};
+
+// Utility to consistently map settings format to internal pattern representation
+const mapSettingsToInternalPattern = (urlStructure: string[]): UniqueIdentifier[] => {
+    if (!urlStructure || urlStructure.length === 0) {
+        return ['ticket-type', 'issue-prefix', 'base-url'];
+    }
+    
+    return urlStructure.map(item => {
+        // Handle dynamic components with consistent naming
+        if (item === 'ticketType') return 'ticket-type';
+        if (item === 'issuePrefix') return 'issue-prefix';
+        if (item === 'baseUrl') return 'base-url';
+        
+        // Handle separators
+        if (item === '.') return `sep-dot-${Date.now()}`;
+        if (item === '-') return `sep-hyphen-${Date.now()}`;
+        if (item === '_') return `sep-underscore-${Date.now()}`;
+        if (item === '/') return `sep-slash-${Date.now()}`;
+        
+        // Handle regex patterns
+        if (item === '[0-9]+') return `regex-numeric-${Date.now()}`;
+        if (item === '[a-zA-Z0-9]+') return `regex-alphanumeric-${Date.now()}`;
+        
+        // Handle custom regex patterns
+        if (typeof item === 'string' && item.startsWith('[') && item.endsWith(']+')) {
+            return `custom-regex-${Date.now()}-${item}`;
+        }
+        
+        // Return the item as is if it doesn't match any known pattern
+        return item;
+    });
+};
+
 const getComponentStyle = (type: ComponentData['type']) => {
     const styles = {
         'ticket-type': 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300',
@@ -103,9 +164,6 @@ const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({
     const isDynamicField = ['ticket-type', 'issue-prefix', 'base-url'].includes(component.type);
     const isDisabled = isDynamicField && isUsed;
 
-    // For ticket type components, add direct drag handler
-    const isTicketType = component.type === 'ticket-type';
-
     // Use sortable with modified options for better touch support
     const { attributes, listeners, setNodeRef, isDragging } = useSortable({
         id: id,
@@ -113,28 +171,43 @@ const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({
         disabled: isDisabled,
         attributes: {
             role: 'button',
-            tabIndex: 0,
+            tabIndex: isDisabled ? -1 : 0,
             roleDescription: 'draggable'
         }
     });
 
-    const style = isDragging ? { opacity: 0.5, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' } : undefined;
+    var style = isDragging ? { opacity: 0.5, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' } : undefined;
     const itemStyle = getComponentStyle(component.type);
+
+    if (isDisabled) {
+        style = { 
+            opacity: 0.6,
+            boxShadow: 'none'
+        };
+    }
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            {...listeners} 
-            {...attributes}
-            title={component.description}
+            {...(isDisabled ? {} : listeners)} 
+            {...(isDisabled ? {} : attributes)}
+            title={isDisabled ? `${component.description} - Already in use` : component.description}
             className={`relative py-1.5 px-3 rounded-lg select-none shadow-sm transition-all duration-150 group 
-                cursor-grab hover:shadow-md hover:scale-105 active:cursor-grabbing touch-manipulation 
-                ${itemStyle} border border-transparent hover:border-gray-300 dark:hover:border-gray-600`}
+                ${!isDisabled ? 'cursor-grab hover:shadow-md hover:scale-105 active:cursor-grabbing' : 'cursor-not-allowed'} 
+                touch-manipulation ${itemStyle} border ${isDisabled ? 'border-gray-200 dark:border-gray-700' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
             data-component-type={component.type}
+            data-disabled={isDisabled}
         >
             <ItemContent component={component} />
-            <div className="absolute inset-0 rounded-lg bg-transparent group-hover:bg-black/5 dark:group-hover:bg-white/5 pointer-events-none"></div>
+            {isDisabled && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100/60 dark:bg-gray-800/60 rounded-lg">
+                
+                </div>
+            )}
+            {!isDisabled && (
+                <div className="absolute inset-0 rounded-lg bg-transparent group-hover:bg-black/5 dark:group-hover:bg-white/5 pointer-events-none"></div>
+            )}
         </div>
     );
 };
@@ -471,33 +544,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     
     // Convert urlStructure from settings to pattern IDs
     const initialPattern = useMemo(() => {
-        if (urlStructure && urlStructure.length > 0) {
-            return urlStructure.map(item => {
-                // Handle dynamic components
-                if (item === 'ticketType' || item === 'ticket-type') return 'ticket-type';
-                if (item === 'issuePrefix' || item === 'issue-prefix') return 'issue-prefix';
-                if (item === 'baseUrl' || item === 'base-url') return 'base-url';
-                
-                // Handle separators
-                if (item === '.') return `sep-dot-${Date.now()}`;
-                if (item === '-') return `sep-hyphen-${Date.now()}`;
-                if (item === '_') return `sep-underscore-${Date.now()}`;
-                if (item === '/') return `sep-slash-${Date.now()}`;
-                
-                // Handle regex patterns
-                if (item === '[0-9]+') return `regex-numeric-${Date.now()}`;
-                if (item === '[a-zA-Z0-9]+') return `regex-alphanumeric-${Date.now()}`;
-                
-                // Handle custom regex patterns
-                if (item.startsWith('[') && item.endsWith(']+')) {
-                    return `custom-regex-${Date.now()}-${item}`;
-                }
-                
-                // Return the item as is if it doesn't match any known pattern
-                return item;
-            });
-        }
-        return ['ticket-type', 'issue-prefix', 'base-url'];
+        return mapSettingsToInternalPattern(urlStructure);
     }, [urlStructure]);
         
     // State management
@@ -513,6 +560,46 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         id: UniqueIdentifier | null;
         position: 'before' | 'after' | 'container' | null;
     }>({ id: null, position: null });
+    
+    // Track if there are unsaved changes
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    
+    // Function to check if the current pattern differs from the initial one
+    const checkForChanges = useCallback((newPattern: UniqueIdentifier[]) => {
+        // Convert both patterns to settings format for comparison
+        const formattedCurrentPattern = formatPatternForSettings(newPattern);
+        
+        // urlStructure is already in settings format
+        const formattedInitialPattern = urlStructure || [];
+        
+        // If lengths differ, definitely has changes
+        if (formattedCurrentPattern.length !== formattedInitialPattern.length) {
+            setHasUnsavedChanges(true);
+            return;
+        }
+        
+        // Check each item
+        for (let i = 0; i < formattedCurrentPattern.length; i++) {
+            if (formattedCurrentPattern[i] !== formattedInitialPattern[i]) {
+                setHasUnsavedChanges(true);
+                return;
+            }
+        }
+        
+        // No differences found
+        setHasUnsavedChanges(false);
+    }, [urlStructure]);
+    
+    // Updated setPattern to check for changes
+    const setPatternWithChanges = useCallback((newPattern: UniqueIdentifier[]) => {
+        setPattern(newPattern);
+        checkForChanges(newPattern);
+    }, [checkForChanges]);
+
+    // Replace automatic saves with manual saves
+    const handlePatternChange = useCallback((newPattern: UniqueIdentifier[]) => {
+        setPatternWithChanges(newPattern);
+    }, [setPatternWithChanges]);
 
     // Validation rules definition
     const validationRules = useMemo(() => [
@@ -834,36 +921,43 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         validateConstructedUrls();
     }, [pattern, validationRules, validateConstructedUrls]);
 
-    // Add a useEffect to reload the pattern when urlStructure changes
+    // Effect to detect changes in the pattern compared to original urlStructure
+    useEffect(() => {
+        checkForChanges(pattern);
+    }, [pattern, checkForChanges]);
+
+    // Update the useEffect to ensure correct initialization of pattern and hasUnsavedChanges
     useEffect(() => {
         if (urlStructure && urlStructure.length > 0) {
-            const mappedPattern = urlStructure.map(item => {
-                // Handle dynamic components with consistent naming
-                if (item === 'ticketType' || item === 'ticket-type') return 'ticket-type';
-                if (item === 'issuePrefix' || item === 'issue-prefix') return 'issue-prefix';
-                if (item === 'baseUrl' || item === 'base-url') return 'base-url';
-                
-                // Handle separators
-                if (item === '.') return `sep-dot-${Date.now()}`;
-                if (item === '-') return `sep-hyphen-${Date.now()}`;
-                if (item === '_') return `sep-underscore-${Date.now()}`;
-                if (item === '/') return `sep-slash-${Date.now()}`;
-                
-                // Handle regex patterns
-                if (item === '[0-9]+') return `regex-numeric-${Date.now()}`;
-                if (item === '[a-zA-Z0-9]+') return `regex-alphanumeric-${Date.now()}`;
-                
-                // Handle custom regex patterns
-                if (typeof item === 'string' && item.startsWith('[') && item.endsWith(']+')) {
-                    return `custom-regex-${Date.now()}-${item}`;
-                }
-                
-                // Return the item as is if it doesn't match any known pattern
-                return item;
-            });
+            const mappedPattern = mapSettingsToInternalPattern(urlStructure);
             setPattern(mappedPattern);
+            setHasUnsavedChanges(false); // Reset unsaved changes when loading new structure
+        } else if (!pattern.length) {
+            // If no urlStructure provided and pattern is empty, initialize with default
+            const defaultPattern = ['ticket-type', 'issue-prefix', 'base-url'];
+            setPattern(defaultPattern);
+            // Mark as having changes if urlStructure is empty but we're setting a default
+            setHasUnsavedChanges(urlStructure?.length === 0);
         }
     }, [urlStructure]);
+
+    // Add a dedicated effect to recompute hasUnsavedChanges when urlStructure changes
+    // This ensures we correctly detect when changes need to be saved after the parent component updates
+    useEffect(() => {
+        // Skip on initial mount
+        if (pattern.length > 0) {
+            checkForChanges(pattern);
+        }
+    }, [urlStructure, checkForChanges, pattern]);
+
+    // Log change state to help troubleshoot save issues
+    useEffect(() => {
+        console.log("URL builder state updated:", {
+            hasUnsavedChanges,
+            patternLength: pattern.length,
+            urlStructureLength: urlStructure?.length || 0
+        });
+    }, [hasUnsavedChanges, pattern, urlStructure]);
 
     // Event handlers
     const handleDeleteComponent = useCallback((idToDelete: UniqueIdentifier) => {
@@ -874,117 +968,42 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         }
         
         const newPattern = pattern.filter(id => id !== idToDelete);
-        setPattern(newPattern);
-        
-        // Automatically save the pattern
-        const isPatternValid = Object.values(validationResults).every(result => result.valid);
-        if (onSavePattern && isPatternValid) {
-            // Convert to the correct format expected by settings
-            const formattedPattern = newPattern.map(id => {
-                const idStr = String(id);
-                if (idStr === 'ticket-type') return 'ticketType';
-                if (idStr === 'issue-prefix') return 'issuePrefix';
-                if (idStr === 'base-url') return 'baseUrl';
-                if (idStr.startsWith('sep-dot')) return '.';
-                if (idStr.startsWith('sep-hyphen')) return '-';
-                if (idStr.startsWith('sep-underscore')) return '_';
-                if (idStr.startsWith('sep-slash')) return '/';
-                if (idStr.startsWith('regex-numeric')) return '[0-9]+';
-                if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
-                if (idStr.startsWith('custom-regex-')) {
-                    const match = idStr.match(/custom-regex-\d+-(.+)/);
-                    return match ? match[1] : idStr;
-                }
-                return idStr;
-            });
-            onSavePattern(formattedPattern);
-        }
-    }, [pattern, onSavePattern, validationResults]);
+        handlePatternChange(newPattern);
+    }, [pattern, handlePatternChange]);
 
     const handleReset = useCallback(() => {
-        let newPattern: UniqueIdentifier[];
-        
-        // Reset to the pattern from settings or fall back to default
-        if (urlStructure && urlStructure.length > 0) {
-            newPattern = urlStructure.map(item => {
-                // Handle dynamic components with consistent naming
-                if (item === 'ticketType' || item === 'ticket-type') return 'ticket-type';
-                if (item === 'issuePrefix' || item === 'issue-prefix') return 'issue-prefix';
-                if (item === 'baseUrl' || item === 'base-url') return 'base-url';
-                
-                // Handle separators
-                if (item === '.') return `sep-dot-${Date.now()}`;
-                if (item === '-') return `sep-hyphen-${Date.now()}`;
-                if (item === '_') return `sep-underscore-${Date.now()}`;
-                if (item === '/') return `sep-slash-${Date.now()}`;
-                
-                // Handle regex patterns
-                if (item === '[0-9]+') return `regex-numeric-${Date.now()}`;
-                if (item === '[a-zA-Z0-9]+') return `regex-alphanumeric-${Date.now()}`;
-                
-                // Handle custom regex patterns
-                if (typeof item === 'string' && item.startsWith('[') && item.endsWith(']+')) {
-                    return `custom-regex-${Date.now()}-${item}`;
-                }
-                
-                // Return the item as is if it doesn't match any known pattern
-                return item;
-            });
-        } else {
-            // Reset to default pattern
-            newPattern = ['ticket-type', 'issue-prefix', 'base-url'];
-        }
-        
-        setPattern(newPattern);
-        
-        // Automatically save the pattern
-        if (onSavePattern) {
-            // Convert to the correct format expected by settings
-            const formattedPattern = newPattern.map(id => {
-                const idStr = String(id);
-                if (idStr === 'ticket-type') return 'ticketType';
-                if (idStr === 'issue-prefix') return 'issuePrefix';
-                if (idStr === 'base-url') return 'baseUrl';
-                if (idStr.startsWith('sep-dot')) return '.';
-                if (idStr.startsWith('sep-hyphen')) return '-';
-                if (idStr.startsWith('sep-underscore')) return '_';
-                if (idStr.startsWith('sep-slash')) return '/';
-                if (idStr.startsWith('regex-numeric')) return '[0-9]+';
-                if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
-                if (idStr.startsWith('custom-regex-')) {
-                    const match = idStr.match(/custom-regex-\d+-(.+)/);
-                    return match ? match[1] : idStr;
-                }
-                return idStr;
-            });
-            onSavePattern(formattedPattern);
-        }
-    }, [urlStructure, onSavePattern]);
+        // Use our utility function for consistent mapping
+        const newPattern = mapSettingsToInternalPattern(urlStructure);
+        setPatternWithChanges(newPattern);
+    }, [urlStructure, setPatternWithChanges]);
 
+    // Replace the inline allRulesValid computation with a memoized value for consistency
+    const allRulesValid = useMemo(() => {
+        return validationRules.every(rule => validationResults[rule.id]?.valid ?? false);
+    }, [validationRules, validationResults]);
+
+    // Update the handleSavePattern to use the memoized allRulesValid
     const handleSavePattern = useCallback(() => {
-        // Convert UniqueIdentifier[] to string[] with proper format mapping
-        const formattedPattern = pattern.map(id => {
-            const idStr = String(id);
-            if (idStr === 'ticket-type') return 'ticketType';
-            if (idStr === 'issue-prefix') return 'issuePrefix';
-            if (idStr === 'base-url') return 'baseUrl';
-            if (idStr.startsWith('sep-dot')) return '.';
-            if (idStr.startsWith('sep-hyphen')) return '-';
-            if (idStr.startsWith('sep-underscore')) return '_';
-            if (idStr.startsWith('sep-slash')) return '/';
-            if (idStr.startsWith('regex-numeric')) return '[0-9]+';
-            if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
-            if (idStr.startsWith('custom-regex-')) {
-                const match = idStr.match(/custom-regex-\d+-(.+)/);
-                return match ? match[1] : idStr;
-            }
-            return idStr;
-        });
-        
-        if (onSavePattern) {
-            onSavePattern(formattedPattern);
+        if (!onSavePattern) {
+            console.warn("No onSavePattern callback provided to URLComponentBuilder");
+            return;
         }
-    }, [pattern, onSavePattern]);
+        
+        // Only save if there are changes and all validation rules pass
+        if (hasUnsavedChanges && allRulesValid) {
+            // Use the consistent formatting function
+            const formattedPattern = formatPatternForSettings(pattern);
+            
+            // Log the pattern being saved (for debugging)
+            console.log("Saving URL pattern:", formattedPattern);
+            
+            // Call the parent's save callback
+            onSavePattern(formattedPattern);
+            
+            // Mark changes as saved
+            setHasUnsavedChanges(false);
+        }
+    }, [pattern, onSavePattern, hasUnsavedChanges, allRulesValid]);
 
     // DnD Event Handlers
     const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -1032,9 +1051,12 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
             const overIndex = pattern.indexOf(over.id);
             setDragOverIndex(overIndex);
             
-            // Determine if dropping before or after the target
-            const deltaX = event.delta.x;
-            const position = deltaX < 0 ? 'before' : 'after';
+            // Use the delta movement direction to determine position
+            // This follows the natural expectation:
+            // - Moving left -> drop before
+            // - Moving right -> drop after
+            const position = event.delta.x < 0 ? 'before' : 'after';
+            
             setDropTargetArea({ id: over.id, position });
         } else {
             setDropTargetArea({ id: null, position: null });
@@ -1077,8 +1099,16 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                 else if (pattern.includes(over.id)) {
                     const overIndex = pattern.indexOf(over.id);
                     
-                    // Simplified insertion: always insert *after* the item dropped onto
-                    newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
+                    // Get the drop position (before or after)
+                    const dropPosition = dropTargetArea.position;
+                    
+                    // Insert at the exact position based on the drop indicator
+                    if (dropPosition === 'before') {
+                        newPattern = [...pattern.slice(0, overIndex), uniqueId, ...pattern.slice(overIndex)];
+                    } else {
+                        // Default to 'after' if position is unspecified or 'after'
+                        newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
+                    }
                 }
             }
             // Handle sorting within pattern
@@ -1087,37 +1117,32 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                 const newIndex = pattern.indexOf(over.id);
                 
                 if (oldIndex !== -1 && newIndex !== -1) {
-                    newPattern = arrayMove(pattern, oldIndex, newIndex);
+                    // Get the drop position (before or after)
+                    const dropPosition = dropTargetArea.position;
+                    
+                    // Remove the dragged item from its original position
+                    const patternWithoutDraggedItem = pattern.filter((_, index) => index !== oldIndex);
+                    
+                    // Get the new insert index, adjusting for the removed item
+                    let insertIndex = patternWithoutDraggedItem.indexOf(over.id);
+                    
+                    // Adjust the insert position based on the drop indicator
+                    if (dropPosition === 'after') {
+                        insertIndex += 1;
+                    }
+                    
+                    // Insert the dragged item at the exact position
+                    newPattern = [
+                        ...patternWithoutDraggedItem.slice(0, insertIndex),
+                        active.id,
+                        ...patternWithoutDraggedItem.slice(insertIndex)
+                    ];
                 }
             }
             
-            setPattern(newPattern);
-            
-            // Automatically save the pattern
-            const isPatternValid = Object.values(validationResults).every(result => result.valid);
-            if (onSavePattern && isPatternValid) {
-                // Convert to the correct format expected by settings
-                const formattedPattern = newPattern.map(id => {
-                    const idStr = String(id);
-                    if (idStr === 'ticket-type') return 'ticketType';
-                    if (idStr === 'issue-prefix') return 'issuePrefix';
-                    if (idStr === 'base-url') return 'baseUrl';
-                    if (idStr.startsWith('sep-dot')) return '.';
-                    if (idStr.startsWith('sep-hyphen')) return '-';
-                    if (idStr.startsWith('sep-underscore')) return '_';
-                    if (idStr.startsWith('sep-slash')) return '/';
-                    if (idStr.startsWith('regex-numeric')) return '[0-9]+';
-                    if (idStr.startsWith('regex-alphanumeric')) return '[a-zA-Z0-9]+';
-                    if (idStr.startsWith('custom-regex-')) {
-                        const match = idStr.match(/custom-regex-\d+-(.+)/);
-                        return match ? match[1] : idStr;
-                    }
-                    return idStr;
-                });
-                onSavePattern(formattedPattern);
-            }
+            handlePatternChange(newPattern);
         }
-    }, [pattern, validationResults, onSavePattern]);
+    }, [pattern, handlePatternChange, dropTargetArea]);
 
     // Reset drop target area when drag ends
     const handleDragCancel = useCallback(() => {
@@ -1182,14 +1207,38 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         [initialComponents]
     );
 
-    const allRulesValid = validationRules.every(rule => validationResults[rule.id]?.valid ?? false);
-
     return (
         <div className="space-y-5">
             <section>
                 <div className="flex flex-wrap items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">URL Structure</h3>
                     <div className="flex items-center space-x-2">
+                        <button
+                            type="button"
+                            className={`flex items-center px-2 py-1 text-xs font-medium bg-white dark:bg-gray-800 border rounded-md shadow-sm focus:outline-none ${
+                                hasUnsavedChanges && allRulesValid
+                                    ? 'text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                                    : 'text-gray-400 dark:text-gray-600 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
+                            }`}
+                            onClick={() => {
+                                console.log("Save button clicked");
+                                console.log("Has unsaved changes:", hasUnsavedChanges);
+                                console.log("All rules valid:", allRulesValid);
+                                console.log("Current pattern:", pattern);
+                                console.log("Formatted pattern:", formatPatternForSettings(pattern));
+                                
+                                if (hasUnsavedChanges && allRulesValid) {
+                                    handleSavePattern();
+                                }
+                            }}
+                            disabled={!hasUnsavedChanges || !allRulesValid}
+                            title={!allRulesValid ? "Fix validation errors before saving" : 
+                                   !hasUnsavedChanges ? "No changes to save" : 
+                                   !onSavePattern ? "No save handler provided" : "Save changes"}
+                        >
+                            <Save size={14} className="mr-1" />
+                            Save Pattern
+                        </button>
                         <button
                             type="button"
                             className="flex items-center px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
@@ -1208,10 +1257,24 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                                 </>
                             )}
                         </button>
+                        <button
+                            type="button"
+                            className="flex items-center px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
+                            onClick={handleReset}
+                            title="Reset to last saved pattern"
+                        >
+                            <RefreshCw size={14} className="mr-1" />
+                            Reset
+                        </button>
                     </div>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
                     Build your custom JIRA URL structure by dragging and dropping components. This pattern defines how your JIRA ticket IDs will be transformed into URLs. Ensure patterns create valid URLs (correct TLDs, no invalid starting characters) and avoid placing regex patterns consecutively.
+                    {hasUnsavedChanges && (
+                        <span className="ml-2 text-amber-500 dark:text-amber-400 font-medium">
+                            You have unsaved changes.
+                        </span>
+                    )}
                 </div>
                 
                 {showRules && (
@@ -1235,14 +1298,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                         }}
                         autoScroll={true}
                     >
-                        {/* Debug information for development */}
-                        <div className="mb-3 text-xs bg-yellow-50 text-yellow-700 p-2 rounded border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-800/50">
-                            Tip: Grab and hold the ticket type component firmly, then drag it to the pattern area below.
-                            <div className="mt-1 flex space-x-2">
-                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full dark:bg-blue-900/50 dark:text-blue-300">Active ID: {activeId?.toString() || "None"}</span>
-                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full dark:bg-green-900/50 dark:text-green-300">Type: {activeType || "None"}</span>
-                            </div>
-                        </div>
+    
                         
                         <AvailableComponentsSection 
                             categorizedComponents={categorizedComponents}

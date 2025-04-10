@@ -51,7 +51,6 @@ html, body {
 /* Custom styling for ticket type to make it more prominent */
 [data-component-type="ticket-type"] {
   background-color: rgba(59, 130, 246, 0.15) !important; 
-  border: 2px solid rgba(59, 130, 246, 0.4) !important;
   transition: all 0.15s ease-in-out !important;
 }
 

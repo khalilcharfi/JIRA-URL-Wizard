@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import '../style.css';
 import { QRCode } from 'react-qrcode-logo';
 import imageAssets, { iconAssets } from '../assets/imageAssets';
@@ -7,6 +7,9 @@ import { DEFAULT_SETTINGS, DEFAULT_SAMPLE_TICKET_ID } from '../shared/settings';
 import type { SettingsStorage, JiraPattern } from '../shared/settings';
 import { getSettings, addSettingsListener, removeSettingsListener } from '../services/storageService';
 import { generateMarkdownLinks, generatePlainTextLinks } from '../services/templateService';
+import { buildUrlFromPattern } from '../utils/urlBuilder';
+import { getCurrentTabUrl } from '../utils/urlUtils';
+import { detectTicketFromCurrentTab, extractIssueIdFromUrl } from '../services/ticketService';
 
 interface Environment {
   id: string;
@@ -53,36 +56,79 @@ interface PopupHeaderProps {
   onCopyEnvironmentLinks: () => void;
   onToggleRecentTickets: () => void;
   onSelectRecentTicket: (ticket: string) => void;
+  onRefreshFromCurrentTab: () => void;
+  onTicketIdChange: (id: string) => void;
+  settings: SettingsStorage;
 }
 const PopupHeader: React.FC<PopupHeaderProps> = ({
-  ticketId, recentTickets, showRecentTickets, onCopyEnvironmentLinks, onToggleRecentTickets, onSelectRecentTicket
+  ticketId, recentTickets, showRecentTickets, onCopyEnvironmentLinks, 
+  onToggleRecentTickets, onSelectRecentTicket, onRefreshFromCurrentTab,
+  onTicketIdChange, settings
 }) => {
+  const [inputValue, setInputValue] = useState(ticketId);
+  
+  useEffect(() => {
+    setInputValue(ticketId);
+  }, [ticketId]);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      onTicketIdChange(inputValue.trim());
+    }
+  };
+  
   return (
-    <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 relative">
-      <input
-        type="text"
-        id="ticket-id"
-        value={ticketId}
-        readOnly
-        placeholder="Enter Ticket ID"
-        className="flex-grow px-2 py-1 border border-gray-300 rounded-md text-base font-semibold bg-gray-50 dark:bg-gray-700 dark:border-gray-600 cursor-default dark:text-gray-300"
-      />
-      <button
-        onClick={onCopyEnvironmentLinks}
-        className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-        title="Copy Environment Links"
-        aria-label="Copy Environment Links"
-      >
-        {iconAssets.copy}
-      </button>
-      <button
-        onClick={onToggleRecentTickets}
-        className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-        title="Recent Tickets"
-        aria-label="Show Recent Tickets"
-      >
-        {iconAssets.clock}
-      </button>
+    <div className="p-3 border-b border-gray-200 dark:border-gray-700 relative">
+      <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <input
+          type="text"
+          id="ticket-id"
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder="Enter Ticket ID"
+          className="flex-grow px-2 py-1 border border-gray-300 rounded-md text-base font-semibold bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+        />
+        <button
+          type="submit"
+          className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          title="Apply Ticket ID"
+          aria-label="Apply Ticket ID"
+        >
+          {iconAssets.check}
+        </button>
+        <button
+          type="button"
+          onClick={onRefreshFromCurrentTab}
+          className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          title="Refresh from Current Tab"
+          aria-label="Refresh from Current Tab"
+        >
+          {iconAssets.refresh}
+        </button>
+        <button
+          type="button"
+          onClick={onCopyEnvironmentLinks}
+          className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          title="Copy Environment Links"
+          aria-label="Copy Environment Links"
+        >
+          {settings.useMarkdownCopy ? iconAssets.markdownCopy : iconAssets.copy}
+        </button>
+        <button
+          type="button"
+          onClick={onToggleRecentTickets}
+          className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          title="Recent Tickets"
+          aria-label="Show Recent Tickets"
+        >
+          {iconAssets.clock}
+        </button>
+      </form>
       {showRecentTickets && (
         <div className="absolute top-full right-3 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10">
           <ul className="py-1">
@@ -159,8 +205,9 @@ const MemoizedEnvironmentTabs = React.memo(EnvironmentTabs);
 interface UrlOutputProps {
   url: string;
   onCopyUrl: () => void;
+  settings: SettingsStorage;
 }
-const UrlOutput: React.FC<UrlOutputProps> = ({ url, onCopyUrl }) => {
+const UrlOutput: React.FC<UrlOutputProps> = ({ url, onCopyUrl, settings }) => {
   return (
     <div className="flex items-center gap-2 h-[36px] bg-gray-50 dark:bg-gray-800 rounded-md px-3 pr-0 w-full max-w-[420px]" id="url-output-mobile">
       <a
@@ -179,7 +226,7 @@ const UrlOutput: React.FC<UrlOutputProps> = ({ url, onCopyUrl }) => {
         aria-label="Copy Generated URL"
         disabled={!url}
       >
-        {iconAssets.copy}
+        {settings.useMarkdownCopy ? iconAssets.markdownCopy : iconAssets.copy}
       </button>
     </div>
   );
@@ -329,11 +376,12 @@ interface OutputAreaProps extends QrCodeSectionProps {
   ticketId: string;
   onCopyUrl: () => void;
   integrateQrImage: boolean;
+  settings: SettingsStorage;
 }
 const OutputArea: React.FC<OutputAreaProps> = ({
   activeEnv, currentFullUrl, currentEnv, ticketId, onCopyUrl,
   environments, qrCodeEnvId, qrCodeUrl, onSelectQrEnv, onCopyQrCode, isAnimating,
-  integrateQrImage
+  integrateQrImage, settings
 }) => {
   return (
     <div className="p-3 space-y-2 min-h-[80px] flex items-center justify-center">
@@ -351,7 +399,7 @@ const OutputArea: React.FC<OutputAreaProps> = ({
           />
         </QrCodeErrorBoundary>
       ) : currentEnv && ticketId ? (
-        <MemoizedUrlOutput url={currentFullUrl} onCopyUrl={onCopyUrl} />
+        <MemoizedUrlOutput url={currentFullUrl} onCopyUrl={onCopyUrl} settings={settings} />
       ) : !currentEnv && activeEnv !== 'qrcode' ? (
          <p className="text-gray-500 dark:text-gray-400 text-center text-xs pt-4">Select an environment.</p>
       ) : !ticketId && activeEnv !== 'qrcode' ? (
@@ -394,6 +442,57 @@ const JiraUrlWizard = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [qrCodeEnvId, setQrCodeEnvId] = useState('mobile');
   const [isQrCodeAnimating, setIsQrCodeAnimating] = useState(false);
+  
+
+  const refreshTicketIdFromCurrentTab = async () => {
+    try {
+      const patterns = settings.jiraPatterns || [];
+      const prefixes = settings.prefixes || [];
+      
+      const { ticketId: extractedTicketId, error } = await detectTicketFromCurrentTab(patterns, prefixes);
+
+      if (extractedTicketId) {
+        setTicketId(extractedTicketId);
+        addToRecentTickets(extractedTicketId);
+        setToastMessage("Updated from current tab");
+
+        // Update local storage
+        chrome.storage.local.set({
+          lastTicketId: extractedTicketId,
+          lastTicketDetectedAt: Date.now()
+        });
+      } else {
+        setToastMessage(error || "No ticket ID found in current tab");
+      }
+    } catch (error) {
+      console.error("Error refreshing ticket ID:", error);
+      setToastMessage("Error refreshing ticket ID");
+    }
+  };
+
+  // Add a function to handle manual ticket ID changes
+  const handleTicketIdChange = useCallback((newTicketId: string) => {
+    if (newTicketId && newTicketId !== ticketId) {
+      setTicketId(newTicketId);
+      
+      // Add to recent tickets
+      setRecentTickets(prevTickets => {
+        const updatedTickets = [newTicketId, ...prevTickets.filter(t => t !== newTicketId)].slice(0, 5);
+        chrome.storage.sync.set({ recentTickets: updatedTickets }).catch(error => {
+          console.error('Error saving recent ticket:', error);
+        });
+        return updatedTickets;
+      });
+      
+      setToastMessage("Ticket ID updated");
+      
+      // Update lastTicketId in storage
+      chrome.storage.local.set({ 
+        lastTicketId: newTicketId,
+        lastTicketDetectedAt: Date.now() 
+      });
+    }
+  }, [ticketId]);
 
   // --- Effects ---
   useEffect(() => {
@@ -405,9 +504,10 @@ const JiraUrlWizard = () => {
         const loadedSettings = await getSettings();
         if (!isMounted) return;
         setSettings(loadedSettings);
-
-        const lastTicketData = await chrome.storage.local.get('lastTicketId');
+        
+        const lastTicketData = await chrome.storage.local.get(['lastTicketId', 'lastTicketDetectedAt']);
         const lastTicketId = lastTicketData.lastTicketId;
+        const lastDetectionTime = lastTicketData.lastTicketDetectedAt || 0;
 
         const storedTicketsData = await chrome.storage.sync.get('recentTickets');
         const loadedRecentTickets = storedTicketsData.recentTickets || [];
@@ -415,42 +515,38 @@ const JiraUrlWizard = () => {
           setRecentTickets(loadedRecentTickets);
         }
 
-        let extractedTicketId: string | null = null;
-        try {
-          const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-          const url = tabs[0]?.url;
-          if (url) {
-            const patterns = loadedSettings.jiraPatterns || [];
-            for (const jp of patterns) {
-              if (!jp.enabled) continue;
-              try {
-                const regex = new RegExp(jp.pattern);
-                const match = url.match(regex);
-                if (match && match[1]) {
-                  extractedTicketId = match[1];
-                  break;
-                }
-              } catch (e) {
-                console.warn(`Invalid regex in settings: ${jp.pattern}`, e);
-              }
-            }
-          }
-        } catch (tabError) {
-          console.error("Error getting tab URL:", tabError);
-        }
-
+        // Check if we need to detect from current tab (if no recent detection)
+        const shouldDetectFromTab = !lastTicketId || (Date.now() - lastDetectionTime > 5000);
+        
         let finalInitialTicketId = DEFAULT_SAMPLE_TICKET_ID;
-        if (extractedTicketId) {
-          finalInitialTicketId = extractedTicketId;
+        
+        if (shouldDetectFromTab) {
+          const { ticketId: extractedTicketId } = await detectTicketFromCurrentTab(
+            loadedSettings.jiraPatterns || [],
+            loadedSettings.prefixes || []
+          );
+          
+          if (extractedTicketId) {
+            finalInitialTicketId = extractedTicketId;
+            addToRecentTickets(extractedTicketId);
+            console.log(`Popup: Set ticket ID from URL: ${extractedTicketId}`);
+            
+            // Update lastTicketId and lastTicketDetectedAt
+            chrome.storage.local.set({ 
+              lastTicketId: extractedTicketId,
+              lastTicketDetectedAt: Date.now() 
+            });
+          } else if (lastTicketId) {
+            finalInitialTicketId = lastTicketId;
+            console.log(`Popup: Set ticket ID from last used: ${lastTicketId}`);
+          }
         } else if (lastTicketId) {
           finalInitialTicketId = lastTicketId;
+          console.log(`Popup: Set ticket ID from last used: ${lastTicketId}`);
         }
 
         if (isMounted) {
           setTicketId(finalInitialTicketId);
-          if (finalInitialTicketId !== DEFAULT_SAMPLE_TICKET_ID) {
-             addToRecentTickets(finalInitialTicketId);
-          }
         }
 
       } catch (error) {
@@ -464,7 +560,21 @@ const JiraUrlWizard = () => {
 
     loadInitialData();
 
-    return () => { isMounted = false; };
+    // Listen for messages from the background script
+    const handleBackgroundMessages = (message: any) => {
+      if (message.action === 'ticketDetected' && message.ticketId) {
+        console.log(`Popup received ticketDetected message: ${message.ticketId}`);
+        setTicketId(message.ticketId);
+        addToRecentTickets(message.ticketId);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleBackgroundMessages);
+
+    return () => { 
+      isMounted = false; 
+      chrome.runtime.onMessage.removeListener(handleBackgroundMessages);
+    };
   }, []);
 
   useEffect(() => {
@@ -489,6 +599,8 @@ const JiraUrlWizard = () => {
     const baseUrls = settings?.urls && typeof settings.urls === 'object'
                       ? settings.urls
                       : DEFAULT_SETTINGS.urls;
+    
+    // Create environment entries only for URLs that exist in settings
     const envConfig = [
       { id: 'mobile', name: 'Mobile', icon: 'smartphone' as IconName, color: 'bg-blue-500', url: baseUrls.mobile },
       { id: 'desktop', name: 'Desktop', icon: 'monitor' as IconName, color: 'bg-teal-500', url: baseUrls.desktop },
@@ -496,12 +608,15 @@ const JiraUrlWizard = () => {
       { id: 'drupal7', name: 'Drupal 7', icon: 'layout' as IconName, color: 'bg-purple-500', url: baseUrls.drupal7 },
       { id: 'drupal9', name: 'Drupal 9', icon: 'layout' as IconName, color: 'bg-orange-500', url: baseUrls.drupal9 },
     ].filter(env => !!env.url);
+    
+    // Always add QR code option
     return [
       ...envConfig,
       { id: 'qrcode', name: 'QR Code', icon: 'qr-code' as IconName, color: 'bg-red-500', url: '' }
     ];
   }, [settings?.urls]);
 
+  // Restore the missing useEffect hook for setting the initial environment
   useEffect(() => {
     if (!isLoading && environments.length > 0) {
       const currentEnvExists = environments.find(env => env.id === activeEnv);
@@ -511,24 +626,50 @@ const JiraUrlWizard = () => {
       }
     }
   }, [activeEnv, environments, isLoading]);
-
+  
   const currentEnv = useMemo(() => environments.find(e => e.id === activeEnv), [environments, activeEnv]);
 
   const currentFullUrl = useMemo(() => {
     const idToUse = ticketId || DEFAULT_SAMPLE_TICKET_ID;
+    
+    // Use URL structure if available, otherwise fallback to simple concatenation
+    if (settings.urlStructure && settings.urlStructure.length > 0 && currentEnv?.url) {
+      return buildUrlFromPattern(
+        currentEnv.url,
+        settings.urlStructure,
+        idToUse,
+        settings.ticketTypes[0] || '',
+        ''  // Empty prefix
+      );
+    }
+    
+    // Fallback to simple concatenation
     return currentEnv?.url && idToUse
       ? `${currentEnv.url.replace(/\/$/, '')}/${idToUse}`
       : '';
-  }, [currentEnv, ticketId]);
+  }, [currentEnv, ticketId, settings.urlStructure, settings.ticketTypes]);
 
   const qrCodeSelectedEnvConfig = useMemo(() => environments.find(e => e.id === qrCodeEnvId), [environments, qrCodeEnvId]);
 
   const qrCodeUrl = useMemo(() => {
     const idToUse = ticketId || DEFAULT_SAMPLE_TICKET_ID;
+    
+    // Use URL structure if available, otherwise fallback to simple concatenation
+    if (settings.urlStructure && settings.urlStructure.length > 0 && qrCodeSelectedEnvConfig?.url) {
+      return buildUrlFromPattern(
+        qrCodeSelectedEnvConfig.url,
+        settings.urlStructure,
+        idToUse,
+        settings.ticketTypes[0] || '',
+        ''  // Empty prefix
+      );
+    }
+    
+    // Fallback to simple concatenation
     return qrCodeSelectedEnvConfig?.url && idToUse
       ? `${qrCodeSelectedEnvConfig.url.replace(/\/$/, '')}/${idToUse}`
       : '';
-  }, [qrCodeSelectedEnvConfig, ticketId]);
+  }, [qrCodeSelectedEnvConfig, ticketId, settings.urlStructure, settings.ticketTypes]);
 
   // --- Callbacks (Defined AFTER derived data) ---
   const addToRecentTickets = useCallback(async (ticket: string) => {
@@ -611,6 +752,30 @@ const JiraUrlWizard = () => {
   const isDarkMode = settings.theme === 'dark' ||
                      (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
+  // Configure available ticketTypes and check if any are present
+  const hasTicketTypes = settings.ticketTypes && settings.ticketTypes.length > 0;
+  const hasEnvironments = environments.length > 1; // At least one real environment plus QR code option
+
+  // Add Settings Info section to show available URLs
+  const SettingsInfo = () => {
+    if (hasEnvironments) return null; // Only show when there are no environments
+    
+    return (
+      <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-md m-3">
+        <h3 className="text-sm font-medium text-amber-800 dark:text-amber-400 mb-1">Configuration Needed</h3>
+        <p className="text-xs text-amber-700 dark:text-amber-500 mb-2">
+          No environment URLs have been configured. Please visit the extension settings to add URLs.
+        </p>
+        <button
+          onClick={openOptionsPage}
+          className="text-xs bg-amber-600 text-white dark:bg-amber-700 px-2 py-1 rounded hover:bg-amber-700 dark:hover:bg-amber-600 transition-colors"
+        >
+          Open Settings
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className={`w-[468px] min-w-[468px] max-w-[468px] text-sm font-sans ${isDarkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`} id="jira-url-wizard">
       <MemoizedPopupHeader
@@ -620,20 +785,30 @@ const JiraUrlWizard = () => {
         onCopyEnvironmentLinks={handleCopyEnvironmentLinks}
         onToggleRecentTickets={() => setShowRecentTickets(prev => !prev)}
         onSelectRecentTicket={selectRecentTicket}
+        onRefreshFromCurrentTab={refreshTicketIdFromCurrentTab}
+        onTicketIdChange={handleTicketIdChange}
+        settings={settings}
       />
-
-      <MemoizedEnvironmentTabs
-        environments={environments}
-        activeEnv={activeEnv}
-        onSelectEnv={setActiveEnv}
-      />
+      
+      {/* Show settings info if no environments configured */}
+      <SettingsInfo />
+      
+      {/* Environment Tabs (only show if environments available) */}
+      {hasEnvironments && (
+        <MemoizedEnvironmentTabs
+          environments={environments}
+          activeEnv={activeEnv}
+          onSelectEnv={setActiveEnv}
+        />
+      )}
 
       <MemoizedOutputArea
         activeEnv={activeEnv}
         currentFullUrl={currentFullUrl}
         currentEnv={currentEnv}
-        ticketId={ticketId}
+        ticketId={ticketId} // Use the full ticket ID
         onCopyUrl={handleCopyUrl}
+        
         environments={environments}
         qrCodeEnvId={qrCodeEnvId}
         qrCodeUrl={qrCodeUrl}
@@ -641,13 +816,12 @@ const JiraUrlWizard = () => {
         onCopyQrCode={handleQrCodeCopy}
         isAnimating={isQrCodeAnimating}
         integrateQrImage={settings.integrateQrImage}
+        settings={settings}
       />
 
       <MemoizedPopupFooter onOpenOptions={openOptionsPage} />
 
-      {toastMessage && (
-        <MemoizedToast message={toastMessage} onClose={() => setToastMessage(null)} />
-      )}
+      {toastMessage && <MemoizedToast message={toastMessage} onClose={() => setToastMessage(null)} />}
     </div>
   );
 };
