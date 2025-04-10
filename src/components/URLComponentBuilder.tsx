@@ -121,34 +121,6 @@ const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({
     const style = isDragging ? { opacity: 0.5, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' } : undefined;
     const itemStyle = getComponentStyle(component.type);
 
-    // Special handling for ticket type component
-    if (isTicketType) {
-        return (
-            <div
-                ref={setNodeRef}
-                style={style}
-                {...listeners} 
-                {...attributes}
-                title={component.description}
-                className="relative py-1.5 px-3 rounded-lg select-none shadow-sm transition-all duration-150 group
-                            cursor-grab hover:shadow-md hover:scale-105 active:cursor-grabbing
-                            bg-blue-50 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-600
-                            text-blue-700 dark:text-blue-300 hover:border-blue-400 dark:hover:border-blue-500
-                            active:bg-blue-100 dark:active:bg-blue-800/40"
-                data-component-type="ticket-type"
-            >
-                <span className="text-sm font-medium flex items-center">
-                    <GripVertical
-                        size={12}
-                        className="mr-1 text-blue-500/50 dark:text-blue-400/50"
-                    />
-                    {component.description}
-                </span>
-                <div className="absolute inset-0 rounded-lg bg-transparent group-hover:bg-black/5 dark:group-hover:bg-white/5 pointer-events-none"></div>
-            </div>
-        );
-    }
-
     return (
         <div
             ref={setNodeRef}
@@ -1105,26 +1077,8 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                 else if (pattern.includes(over.id)) {
                     const overIndex = pattern.indexOf(over.id);
                     
-                    // Calculate if we should place before or after the target
-                    // Safely access properties from event.delta, as rect might be complex
-                    const deltaX = event.delta.x;
-                    const overNode = over.data.current?.nodeRef?.current;
-                    
-                    if (overNode) {
-                        const overRect = overNode.getBoundingClientRect();
-                        const isBeforeTarget = deltaX < 0; // Simplified logic: if dragging left, place before
-                        
-                        if (isBeforeTarget) {
-                            // Add before the target
-                            newPattern = [...pattern.slice(0, overIndex), uniqueId, ...pattern.slice(overIndex)];
-                        } else {
-                            // Add after the target
-                            newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
-                        }
-                    } else {
-                        // Fallback - add after the target if node rect unavailable
-                        newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
-                    }
+                    // Simplified insertion: always insert *after* the item dropped onto
+                    newPattern = [...pattern.slice(0, overIndex + 1), uniqueId, ...pattern.slice(overIndex + 1)];
                 }
             }
             // Handle sorting within pattern

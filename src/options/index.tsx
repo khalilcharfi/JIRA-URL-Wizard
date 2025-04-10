@@ -15,7 +15,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState, useRef } from "react"
 import InfoPopup from "~src/components/InfoPopup";
 import URLComponentBuilder from "~src/components/URLComponentBuilder";
-import {DEFAULT_TOAST_TIMEOUT_MS} from "~src/utils/utils";
+import { DEFAULT_TOAST_TIMEOUT_MS } from "~src/utils/config";
 // Import the shared settings definitions
 import { DEFAULT_SETTINGS } from "~src/shared/settings"
 import type { SettingsStorage, JiraPattern } from "~src/shared/settings"
@@ -24,45 +24,17 @@ import { QRCode } from 'react-qrcode-logo';
 import { marked } from 'marked';
 // Import the MarkdownRenderer component
 import MarkdownRenderer from "../components/MarkdownRenderer";
+// Import the new storage service
+import {
+  getSettings,
+  saveSettings,
+  addSettingsListener,
+  removeSettingsListener
+} from "../services/storageService";
 
 // First, let's update the JiraPattern type to include the enabled property
 interface CustomJiraPattern extends JiraPattern {
   enabled?: boolean;
-}
-
-// Custom hook for chrome.storage.sync - Ensure this is defined and uncommented
-function useStorage<T>(key: string, defaultValue: T): [T, (value: T) => void] {
-  const [value, setValue] = useState<T>(defaultValue)
-
-  useEffect(() => {
-    // Load initial value
-    chrome.storage.sync.get(key).then((result) => {
-      setValue(result[key] ?? defaultValue)
-    })
-
-    // Listen for changes
-    const listener = (changes: {
-      [key: string]: chrome.storage.StorageChange
-    }) => {
-      if (changes[key]) {
-        setValue(changes[key].newValue ?? defaultValue)
-      }
-    }
-
-    chrome.storage.onChanged.addListener(listener)
-    return () => chrome.storage.onChanged.removeListener(listener)
-  }, [key, defaultValue])
-
-  const setStorageValue = useCallback(
-    (newValue: T) => {
-      chrome.storage.sync.set({ [key]: newValue }).then(() => {
-        setValue(newValue)
-      })
-    },
-    [key]
-  )
-
-  return [value, setStorageValue]
 }
 
 const AVAILABLE_LANGUAGES = {
@@ -530,50 +502,84 @@ function getUrlDescription(key: string): string {
 }
 
 const IndexOptions = () => {
-  const [settings, setSettings] = useStorage<SettingsStorage>(
-    "jiraUrlWizardSettings",
-    DEFAULT_SETTINGS
-  )
+  // Use standard useState for managing settings
+  const [settings, setSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
+  const [tempSettings, setTempSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
-  const [tempSettings, setTempSettings] =
-    useState<SettingsStorage>(DEFAULT_SETTINGS)
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
-    const browserLang = navigator.language.split("-")[0]
-    return browserLang || "auto"
-  })
-
-  const [toast, setToast] = useState<{ message: string; type: string } | null>(
-    null
-  )
-
-  const [editingPatternIndex, setEditingPatternIndex] = useState<number | null>(
-    null
-  )
-  const [editingPatternData, setEditingPatternData] = useState<CustomJiraPattern | null>(null)
-  const [isCurrentPatternValid, setIsCurrentPatternValid] = useState(true)
-  const [isPreviewMatch, setIsPreviewMatch] = useState(false)
-  const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false)
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("auto");
+  const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
+  const [editingPatternIndex, setEditingPatternIndex] = useState<number | null>(null);
+  const [editingPatternData, setEditingPatternData] = useState<CustomJiraPattern | null>(null);
+  const [isCurrentPatternValid, setIsCurrentPatternValid] = useState(true);
+  const [isPreviewMatch, setIsPreviewMatch] = useState(false);
+  const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false);
   const [baseUrlChanges, setBaseUrlChanges] = useState<boolean>(false);
   const [showPreviewDemo, setShowPreviewDemo] = useState(false);
 
+  // Effect to load settings initially
   useEffect(() => {
-    if (settings) {
-      setTempSettings(settings)
+    let isMounted = true;
+    setIsLoading(true);
+    getSettings().then((loadedSettings) => {
+      if (isMounted) {
+        setSettings(loadedSettings); // Set the 'saved' state
+        setTempSettings(loadedSettings); // Set the editable state
+        setSelectedLanguage(
+          loadedSettings.language || navigator.language.split("-")[0] || "auto"
+        );
+        setIsLoading(false);
+      }
+    }).catch(error => {
+        console.error("Failed to load initial settings:", error);
+        if (isMounted) {
+            // Keep defaults if loading fails
+            setSettings(DEFAULT_SETTINGS);
+            setTempSettings(DEFAULT_SETTINGS);
+            setSelectedLanguage("auto");
+            setIsLoading(false);
+        }
+    });
+
+    return () => { isMounted = false; }; // Cleanup on unmount
+  }, []);
+
+  // Effect to listen for external changes to settings
+  useEffect(() => {
+    const handleExternalChange = (newSettings: SettingsStorage) => {
+      console.log("Settings changed externally, updating options page state.");
+      setSettings(newSettings); // Update the 'saved' state
+      // Decide if you want to overwrite tempSettings or just notify user
+      // For simplicity, let's update tempSettings too, assuming external changes should be reflected
+      setTempSettings(newSettings);
       setSelectedLanguage(
-        settings.language || navigator.language.split("-")[0] || "auto"
-      )
-    }
-  }, [settings])
+        newSettings.language || navigator.language.split("-")[0] || "auto"
+      );
+      // Maybe show a toast? showToast("Settings updated from another source.", "info");
+    };
+
+    addSettingsListener(handleExternalChange);
+
+    // Return a cleanup function to remove the listener
+    return () => {
+      // Correctly remove the specific listener function
+      // Note: This requires removeSettingsListener to handle function references correctly
+      // If storageService doesn't manage listener references, this might need adjustment
+      const listenerToRemove = handleExternalChange as any;
+      removeSettingsListener(listenerToRemove);
+    };
+  }, []); // Empty dependency array to run only on mount/unmount
 
   const isDirty = useMemo(() => {
-    if (!settings) return false
-    return JSON.stringify(settings) !== JSON.stringify(tempSettings)
-  }, [settings, tempSettings])
+    // Only compare if settings have loaded
+    if (isLoading) return false;
+    return JSON.stringify(settings) !== JSON.stringify(tempSettings);
+  }, [settings, tempSettings, isLoading]);
 
   const showToast = useCallback((message: string, type: string) => {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), DEFAULT_TOAST_TIMEOUT_MS)
-  }, [])
+    setToast({ message, type });
+    setTimeout(() => setToast(null), DEFAULT_TOAST_TIMEOUT_MS);
+  }, []);
 
   const addPrefix = (prefixToAdd: string) => {
     const trimmedPrefix = prefixToAdd.trim();
@@ -633,49 +639,58 @@ const IndexOptions = () => {
     }));
   };
 
-  const handleUrlChange = useCallback((key: string, value: string) => {
-    // Strip out http:// or https:// if present
+  const handleUrlChange = (key: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    // Strip out http:// or https:// if present - Keep this logic
     const cleanValue = value.replace(/^(https?:\/\/)/, '');
-    
+
     setTempSettings((prev) => {
-      const newUrls = { ...prev.urls, [key]: cleanValue };
-      // Check if any URL value has changed
+      const newUrls = { ...(prev.urls || {}), [key]: cleanValue }; // Ensure prev.urls is object
+      // Update baseUrlChanges state if necessary (optional, can be removed if not used elsewhere)
+      const originalUrls = settings?.urls || {}; // Compare against saved state
       const hasChanged = Object.entries(newUrls).some(
-        ([k, v]) => v !== (settings?.urls || {})[k]
+        ([k, v]) => v !== originalUrls[k]
       );
-      setBaseUrlChanges(hasChanged);
+      setBaseUrlChanges(hasChanged); // Keep or remove based on usage
       return { ...prev, urls: newUrls };
     });
-  }, [settings]);
+  };
 
-  // Add a custom paste handler for the URL inputs
+  // Update handlePaste logic slightly if needed for direct input control
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-    // Get pasted content
     const pastedText = event.clipboardData.getData('text');
-    // Check if it contains a protocol
     if (pastedText.match(/^https?:\/\//)) {
-      // Extract the URL without the protocol
       const match = pastedText.match(/^https?:\/\/(.+)/);
       if (match && match[1]) {
-        // Get the input element
-        const input = event.currentTarget;
-        // Stop the default paste operation
         event.preventDefault();
-        // Insert the stripped URL at cursor position
-        const cursorPos = input.selectionStart || 0;
-        const textBeforeCursor = input.value.substring(0, cursorPos);
-        const textAfterCursor = input.value.substring(cursorPos);
-        const newValue = textBeforeCursor + match[1] + textAfterCursor;
+        const input = event.currentTarget;
+        const key = input.id.replace('base-url-input-', ''); // Extract key from id
+        const strippedValue = match[1];
+        const currentCursorPos = input.selectionStart || 0; // Define cursorPos here
         
-        // Set the value - need to use a custom method due to using DebouncedTextInput
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLInputElement.prototype, "value"
-        )?.set;
-        if (nativeInputValueSetter) {
-          nativeInputValueSetter.call(input, newValue);
-          // Trigger an input event to update internal state
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+        // Update state directly using a synthetic event if possible, or modify handleUrlChange
+        // For simplicity, let's call a modified logic that updates state
+        setTempSettings((prev) => {
+          const currentVal = (prev.urls || {})[key] || '';
+          // Use currentCursorPos defined outside
+          const textBeforeCursor = currentVal.substring(0, currentCursorPos);
+          const textAfterCursor = currentVal.substring(currentCursorPos);
+          const newValue = textBeforeCursor + strippedValue + textAfterCursor;
+          const cleanNewValue = newValue.replace(/^(https?:\/\/)/, ''); // Ensure clean on paste too
+
+          const newUrls = { ...(prev.urls || {}), [key]: cleanNewValue };
+          // Update baseUrlChanges state (optional)
+          const originalUrls = settings?.urls || {};
+          const hasChanged = Object.entries(newUrls).some(([k, v]) => v !== originalUrls[k]);
+          setBaseUrlChanges(hasChanged);
+          return { ...prev, urls: newUrls };
+        });
+        
+        // Manually set cursor position after paste (requires timeout)
+        setTimeout(() => {
+          // Use currentCursorPos defined outside
+          input.selectionStart = input.selectionEnd = currentCursorPos + strippedValue.length;
+        }, 0);
       }
     }
   };
@@ -735,10 +750,16 @@ const IndexOptions = () => {
     []
   )
 
-  const savePreferences = useCallback(() => {
-    setSettings(tempSettings)
-    showToast("Settings saved successfully!", "success")
-  }, [tempSettings, setSettings, showToast])
+  const savePreferences = useCallback(async () => { // Make async
+    try {
+      await saveSettings(tempSettings); // Use the new service function
+      setSettings(tempSettings); // Update the local 'saved' state
+      showToast("Settings saved successfully!", "success");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      showToast("Error saving settings", "error");
+    }
+  }, [tempSettings, showToast]);
 
   const resetChanges = useCallback(() => {
     if (
@@ -746,25 +767,27 @@ const IndexOptions = () => {
         "Are you sure you want to reset all settings to the last saved state (or defaults if never saved)? Any unsaved changes will be lost."
       )
     ) {
-      const currentSettings = settings || DEFAULT_SETTINGS
-      setTempSettings(currentSettings)
+      // Use the current 'saved' state (settings) for reset
+      setTempSettings(settings);
       setSelectedLanguage(
-        currentSettings.language === "auto"
+        settings.language === "auto"
           ? navigator.language.split("-")[0]
-          : currentSettings.language
-      )
-      showToast("Changes reset", "info")
+          : settings.language
+      );
+      showToast("Changes reset", "info");
     }
-  }, [settings, showToast])
+  }, [settings, showToast]); // Depend on the actual saved settings state
 
   const handleExport = useCallback(() => {
     try {
       const settingsToExport = {
         exportedAt: new Date().toISOString(),
         integrateQrImage: settings?.integrateQrImage ?? DEFAULT_SETTINGS.integrateQrImage,
+        // Determine isDarkMode based on *current* document state, not potentially stale settings
         isDarkMode: document.documentElement.classList.contains('dark'),
         jiraPatterns: (settings?.jiraPatterns ?? DEFAULT_SETTINGS.jiraPatterns).map(pattern => ({
-          description: pattern.description || "JIRA pattern",
+          // Ensure enabled is exported if present, default to true otherwise
+          enabled: (pattern as CustomJiraPattern).enabled !== false,
           pattern: pattern.pattern
         })),
         language: settings?.language ?? DEFAULT_SETTINGS.language,
@@ -774,103 +797,119 @@ const IndexOptions = () => {
         urlStructure: settings?.urlStructure ?? DEFAULT_SETTINGS.urlStructure,
         urls: settings?.urls ?? DEFAULT_SETTINGS.urls,
         useMarkdownCopy: settings?.useMarkdownCopy ?? DEFAULT_SETTINGS.useMarkdownCopy
-      }
+      };
 
-      const jsonString = JSON.stringify(settingsToExport, null, 2)
-      const blob = new Blob([jsonString], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.href = url
-      link.download = "jira-url-wizard-settings.json"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-      showToast("Settings exported successfully!", "success")
+      const jsonString = JSON.stringify(settingsToExport, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "jira-url-wizard-settings.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast("Settings exported successfully!", "success");
     } catch (error) {
-      console.error("Error exporting settings:", error)
-      showToast("Error exporting settings", "error")
+      console.error("Error exporting settings:", error);
+      showToast("Error exporting settings", "error");
     }
-  }, [settings, showToast])
+  }, [settings, showToast]);
 
   const handleImport = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
-      if (!file) return
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const text = e.target?.result
+          const text = e.target?.result;
           if (typeof text !== "string") {
-            throw new Error("Failed to read file content.")
+            throw new Error("Failed to read file content.");
           }
-          const importedData = JSON.parse(text)
+          const importedData = JSON.parse(text);
 
           if (!importedData || typeof importedData !== "object") {
-            throw new Error("Invalid file format.")
+            throw new Error("Invalid file format.");
           }
 
-          const importedSettings: Partial<SettingsStorage> = {}
+          // Validate and merge imported data carefully
+          const newSettings: SettingsStorage = { ...DEFAULT_SETTINGS }; // Start with defaults
+
+          // Merge fields from importedData if they exist and have the correct type
           if (["light", "dark", "system"].includes(importedData.theme)) {
-            importedSettings.theme = importedData.theme
-          } else {
-            importedSettings.theme = tempSettings.theme
+            newSettings.theme = importedData.theme;
           }
-          if (importedData.issuePrefix)
-            importedSettings.prefixes = importedData.issuePrefix
-          else if (importedData.prefixes)
-            importedSettings.prefixes = importedData.prefixes
-          if (importedData.ticketTypes)
-            importedSettings.ticketTypes = importedData.ticketTypes
-          if (importedData.baseUrls)
-            importedSettings.urls = importedData.baseUrls
-          else if (importedData.urls) importedSettings.urls = importedData.urls
-          if (importedData.jiraPatterns)
-            importedSettings.jiraPatterns = importedData.jiraPatterns
-          if (typeof importedData.integrateQrImage === "boolean")
-            importedSettings.integrateQrImage = importedData.integrateQrImage
-          if (typeof importedData.useMarkdownCopy === "boolean")
-            importedSettings.useMarkdownCopy = importedData.useMarkdownCopy
-
-          const newSettings: SettingsStorage = {
-            ...DEFAULT_SETTINGS,
-            ...tempSettings,
-            ...importedSettings
+          if (Array.isArray(importedData.prefixes) && importedData.prefixes.every((p:any) => typeof p === 'string')) {
+            newSettings.prefixes = importedData.prefixes;
           }
+          if (Array.isArray(importedData.ticketTypes) && importedData.ticketTypes.every((t:any) => typeof t === 'string')) {
+            newSettings.ticketTypes = importedData.ticketTypes;
+          }
+          if (typeof importedData.urls === 'object' && importedData.urls !== null) {
+            // Further validation for URL values might be needed
+            newSettings.urls = importedData.urls;
+          }
+          if (Array.isArray(importedData.jiraPatterns) && importedData.jiraPatterns.every((jp:any) => typeof jp === 'object' && jp !== null && typeof jp.pattern === 'string')) {
+            // Ensure 'enabled' defaults to true if missing
+            newSettings.jiraPatterns = importedData.jiraPatterns.map((jp: any) => ({
+              pattern: jp.pattern,
+              enabled: jp.enabled !== false // Default to true if undefined or true
+            }));
+          }
+          if (typeof importedData.integrateQrImage === "boolean") {
+            newSettings.integrateQrImage = importedData.integrateQrImage;
+          }
+          if (typeof importedData.useMarkdownCopy === "boolean") {
+            newSettings.useMarkdownCopy = importedData.useMarkdownCopy;
+          }
+          if (Array.isArray(importedData.urlStructure) && importedData.urlStructure.every((u:any) => typeof u === 'string')) {
+            newSettings.urlStructure = importedData.urlStructure;
+          }
+           if (Object.keys(AVAILABLE_LANGUAGES).includes(importedData.language)) {
+             newSettings.language = importedData.language;
+           }
 
-          setTempSettings(newSettings)
-          const theme = newSettings.theme
-          const prefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)"
-          ).matches
+          // Apply the merged settings to the temporary state
+          setTempSettings(newSettings);
+
+          // Update theme immediately
+          const theme = newSettings.theme;
+          const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
           document.documentElement.classList.toggle(
             "dark",
             theme === "dark" || (theme === "system" && prefersDark)
-          )
-          setSelectedLanguage(navigator.language.split("-")[0] || "auto")
+          );
+
+          // Update language selection
+          setSelectedLanguage(
+            newSettings.language === "auto"
+              ? navigator.language.split("-")[0] || "auto"
+              : newSettings.language
+          );
 
           showToast(
             "Settings imported successfully! Review and click Save to apply changes.",
             "info"
-          )
+          );
         } catch (error) {
-          console.error("Error importing settings:", error)
+          console.error("Error importing settings:", error);
           const errorMessage =
-            error instanceof Error ? error.message : String(error)
-          showToast(`Error importing settings: ${errorMessage}`, "error")
+            error instanceof Error ? error.message : String(error);
+          showToast(`Error importing settings: ${errorMessage}`, "error");
         } finally {
-          event.target.value = ""
+          event.target.value = ""; // Clear the file input
         }
-      }
+      };
       reader.onerror = () => {
-        showToast("Error reading file", "error")
-        event.target.value = ""
-      }
-      reader.readAsText(file)
+        showToast("Error reading file", "error");
+        event.target.value = ""; // Clear the file input
+      };
+      reader.readAsText(file);
     },
-    [tempSettings, showToast]
-  )
+    [showToast] // Removed tempSettings dependency as we now start from defaults
+  );
 
   const sampleUrl = useMemo(() => {
     const samplePrefix = tempSettings.prefixes?.[0] || "PREFIX"
@@ -1092,12 +1131,13 @@ const IndexOptions = () => {
     return text;
   }, [settings.urls, settings.prefixes, settings.ticketTypes, settings.urlStructure]); // Depend on saved settings
 
-  if (!settings || !tempSettings) {
+  // Use the isLoading state for the loading indicator
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         Loading settings...
       </div>
-    )
+    );
   }
 
   const Section: React.FC<{
@@ -1516,7 +1556,7 @@ const IndexOptions = () => {
               </SectionHeading>
               
               <div className="space-y-4">
-                {Object.entries(tempSettings.urls).map(([key, value]) => (
+                {Object.entries(tempSettings.urls || {}).map(([key, value]) => (
                   <div key={key} className="flex flex-col space-y-1">
                     <InputGroup className="relative">
                     <Label
@@ -1530,14 +1570,15 @@ const IndexOptions = () => {
                         <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
                           https://
                         </span>
-                    <DebouncedTextInput
-                      id={`base-url-input-${key}`}
-                      initialValue={value}
-                      onSave={(newValue) => handleUrlChange(key, newValue)}
+                        <input
+                          type="text"
+                          id={`base-url-input-${key}`}
+                          value={value || ''} // Use value directly from tempSettings.urls
+                          onChange={(e) => handleUrlChange(key, e)} // Pass key and event
                           placeholder="my-env.example.com"
-                          className="flex-1 min-w-0 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500"
+                          className={`flex-1 min-w-0 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 p-2 options-section__input bg-white text-gray-900 border-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-500 border transition-colors duration-150 focus:outline-none focus:ring-1`}
                           aria-describedby={`url-description-${key}`}
-                          onPaste={handlePaste}
+                          onPaste={handlePaste} // Keep the paste handler
                         />
           
                       </div>
@@ -1759,14 +1800,16 @@ const IndexOptions = () => {
             variant="secondary"
             size="sm"
             onClick={resetChanges}
-            disabled={!isDirty}>
+            disabled={!isDirty || isLoading} // Disable if loading
+            >
             Reset Changes
           </Button>
           <Button
             variant="primary"
             size="sm"
             onClick={savePreferences}
-            disabled={!isDirty}>
+            disabled={!isDirty || isLoading} // Disable if loading
+            >
             Save Changes
           </Button>
         </div>

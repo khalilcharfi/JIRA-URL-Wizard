@@ -1,6 +1,7 @@
 export interface JiraPattern {
   pattern: string
   description?: string
+  enabled?: boolean
 }
 
 export interface SettingsStorage {
@@ -29,4 +30,7 @@ export const DEFAULT_SETTINGS: SettingsStorage = {
   useMarkdownCopy: false,
   language: "auto",
   urlStructure: ["ticketType", ".", "issuePrefix", "-", "[0-9]+", "baseUrl"]
-} 
+}
+
+// Add a default sample ticket ID
+export const DEFAULT_SAMPLE_TICKET_ID = "EXAMPLE-123"; 
