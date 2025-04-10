@@ -1441,6 +1441,28 @@ const IndexOptions = () => {
                   </div>
                 </div>
 
+                <div className="mb-5 options-section__input-group md:col-span-2 pt-3 pb-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label htmlFor="show-advanced-settings" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
+                          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                          <path d="M12 16v-4"></path>
+                          <path d="M12 8h.01"></path>
+                        </svg>
+                        Show advanced settings
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Display advanced configuration options in the settings page</p>
+                    </div>
+                    <Toggle
+                      id="show-advanced-settings"
+                      checked={tempSettings.showAdvancedSettings}
+                      onCheckedChange={(checked) => handleSettingChange("showAdvancedSettings", checked)}
+                      aria-label="Show advanced settings"
+                    />
+                  </div>
+                </div>
+
                 {/* Preview Demo Button */}
                 <div className="md:col-span-2 pt-3 border-t border-gray-100 dark:border-gray-700 hidden">
                   <Button 
@@ -1620,6 +1642,7 @@ const IndexOptions = () => {
                 className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
                 open={advancedSettingsOpen}
                 onToggle={(e) => setAdvancedSettingsOpen(e.currentTarget.open)}
+                style={{ display: tempSettings.showAdvancedSettings ? 'block' : 'none' }}
             >
                 <summary className="p-4 bg-gray-50 dark:bg-gray-800 cursor-pointer flex items-center justify-between">
                     <span className="font-medium text-lg text-gray-900 dark:text-gray-100">Advanced Settings</span>
