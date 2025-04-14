@@ -31,6 +31,7 @@ import {
     horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useTranslation } from 'react-i18next';
 
 // Type definitions
 interface URLComponentBuilderProps {
@@ -457,11 +458,13 @@ const AvailableComponentsSection: React.FC<{
     usedDynamicComponentIds, 
     allAvailableComponents 
 }) => {
+    const { t } = useTranslation();
+    
     return (
         <div className="space-y-4">
             {/* Dynamic components category */}
             <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Dynamic Fields</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">{t('sections.urlBuilderTitle')}</div>
                 <div className="flex flex-wrap gap-2">
                     {categorizedComponents.dynamic.map((component) => (
                         <AvailableItem
@@ -477,7 +480,7 @@ const AvailableComponentsSection: React.FC<{
             
             {/* Separators category */}
             <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Separators</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">{t('sections.separators')}</div>
                 <div className="flex flex-wrap gap-2">
                     {categorizedComponents.separators.map((component) => (
                         <AvailableItem
@@ -493,7 +496,7 @@ const AvailableComponentsSection: React.FC<{
             
             {/* Regex patterns category */}
             <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Regex Patterns</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">{t('sections.patterns')}</div>
                 <div className="flex flex-wrap gap-2">
                     {categorizedComponents.regex.map((component) => (
                         <AvailableItem
@@ -518,6 +521,8 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     urlStructure = [],
     onSavePattern
 }) => {
+    const { t } = useTranslation();
+    
     // Data initialization with useMemo
     const initialComponents = useMemo(() => [
         { id: 'ticket-type', text: '', type: 'ticket-type', description: 'Ticket Type' },
@@ -1211,7 +1216,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         <div className="space-y-5">
             <section>
                 <div className="flex flex-wrap items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">URL Structure</h3>
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('sections.urlStructureTitle')}</h3>
                     <div className="flex items-center space-x-2">
                         <button
                             type="button"
@@ -1237,7 +1242,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                                    !onSavePattern ? "No save handler provided" : "Save changes"}
                         >
                             <Save size={14} className="mr-1" />
-                            Save Pattern
+                            {t('sections.savePattern')}
                         </button>
                         <button
                             type="button"
@@ -1248,12 +1253,12 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                             {showRules ? (
                                 <>
                                     <Eye size={14} className="mr-1" />
-                                    Hide Rules
+                                    {t('sections.hideRules')}
                                 </>
                             ) : (
                                 <>
                                     <EyeOff size={14} className="mr-1" />
-                                    Show Rules
+                                    {t('sections.showRules')}
                                 </>
                             )}
                         </button>
@@ -1264,15 +1269,15 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                             title="Reset to last saved pattern"
                         >
                             <RefreshCw size={14} className="mr-1" />
-                            Reset
+                            {t('sections.reset')}
                         </button>
                     </div>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                    Build your custom JIRA URL structure by dragging and dropping components. This pattern defines how your JIRA ticket IDs will be transformed into URLs. Ensure patterns create valid URLs (correct TLDs, no invalid starting characters) and avoid placing regex patterns consecutively.
+                    {t('sections.urlBuilderInfo')}
                     {hasUnsavedChanges && (
                         <span className="ml-2 text-amber-500 dark:text-amber-400 font-medium">
-                            You have unsaved changes.
+                            {t('sections.unsavedChanges')}
                         </span>
                     )}
                 </div>
@@ -1310,7 +1315,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                             className="mt-4 p-3 rounded-md border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 min-h-[100px] flex flex-col"
                         >
                             <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">
-                                URL Pattern
+                                {t('sections.urlPattern')}
                             </div>
                             
                             <div 
@@ -1355,14 +1360,14 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                                     <div className={`flex items-center justify-center w-full h-12 text-gray-400 dark:text-gray-500 ${
                                         dropTargetArea.id === PATTERN_CONTAINER_ID ? 'text-blue-500 dark:text-blue-400' : ''
                                     }`}>
-                                        Drag components here to build your URL pattern
+                                        {t('sections.dragComponents')}
                                     </div>
                                 )}
                             </div>
                         </div>
                         
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 mt-4">
-                            URL Preview
+                            {t('sections.urlPreview')}
                         </h3>
                         
                         <URLPreview

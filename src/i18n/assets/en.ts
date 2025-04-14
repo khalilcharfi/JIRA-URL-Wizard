@@ -31,6 +31,11 @@ export default {
     reset: "Reset",
   },
   
+  // Language names
+  Auto: "Auto",
+  English: "English",
+  Deutsch: "German",
+  
   // Navigation and headers
   navigation: {
     home: "Home",
@@ -68,6 +73,8 @@ export default {
     baseUrls: "Base URLs",
     baseUrlsInfo: "Enter base URLs for different environments. All URLs use HTTPS protocol.",
     loading: "Loading settings...",
+    languageChanged: "Language changed successfully",
+    languageChangeError: "Failed to change language"
   },
   
   // URL related
@@ -145,15 +152,21 @@ export default {
   sections: {
     prefixesTitle: "Prefixes & Ticket Types",
     prefixesInfo: "Define project prefixes (e.g., PROJ) and optional ticket types (e.g., BUG). Press Enter to add.",
-    urlBuilderTitle: "URL Builder",
+    urlBuilderTitle: "Dynamic Fields",
     urlStructureTitle: "URL Structure",
     urlBuilderInfo: "Build your custom JIRA URL structure by dragging and dropping components. The pattern defines how your JIRA ticket IDs are converted to URLs.",
     urlBuilderDetailsInfo: "Build your custom JIRA URL structure by dragging and dropping components. This pattern defines how your JIRA ticket IDs will be transformed into URLs. Ensure patterns create valid URLs (correct TLDs, no invalid starting characters) and avoid placing regex patterns consecutively.",
     savePattern: "Save Pattern",
     showRules: "Show Rules",
+    hideRules: "Hide Rules",
     reset: "Reset",
     urlPreview: "URL Preview",
-    urlPattern: "URL Pattern"
+    urlPattern: "URL Pattern",
+    separators: "Separators",
+    patterns: "Regex Patterns",
+    dragComponents: "Drag components here to build your URL pattern",
+    unsavedChanges: "You have unsaved changes.",
+    validationRules: "Validation Rules"
   },
   
   // URL Builder components

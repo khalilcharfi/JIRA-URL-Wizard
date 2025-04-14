@@ -31,6 +31,11 @@ export default {
     reset: "Zurücksetzen",
   },
   
+  // Language names
+  Auto: "Automatisch",
+  English: "Englisch",
+  Deutsch: "Deutsch",
+  
   // Navigation and headers
   navigation: {
     home: "Startseite",
@@ -68,6 +73,8 @@ export default {
     baseUrls: "Basis-URLs",
     baseUrlsInfo: "Geben Sie Basis-URLs für verschiedene Umgebungen ein. Alle URLs verwenden das HTTPS-Protokoll.",
     loading: "Einstellungen werden geladen...",
+    languageChanged: "Sprache erfolgreich geändert",
+    languageChangeError: "Fehler beim Ändern der Sprache"
   },
   
   // URL related
@@ -144,16 +151,22 @@ export default {
   // Sections
   sections: {
     prefixesTitle: "Präfixe & Ticket-Typen",
-    prefixesInfo: "Definieren Sie Projekt-Präfixe (z.B. PROJ) und optionale Ticket-Typen (z.B. BUG). Drücken Sie Enter zum Hinzufügen.",
-    urlBuilderTitle: "URL-Builder",
+    prefixesInfo: "Definieren Sie Projektpräfixe (z.B. PROJ) und optionale Ticket-Typen (z.B. BUG). Drücken Sie Enter zum Hinzufügen.",
+    urlBuilderTitle: "Dynamische Felder",
     urlStructureTitle: "URL-Struktur",
-    urlBuilderInfo: "Erstellen Sie Ihre benutzerdefinierte JIRA-URL-Struktur durch Drag & Drop von Komponenten. Das Muster definiert, wie Ihre JIRA-Ticket-IDs in URLs umgewandelt werden.",
-    urlBuilderDetailsInfo: "Erstellen Sie Ihre benutzerdefinierte JIRA-URL-Struktur durch Drag & Drop von Komponenten. Dieses Muster definiert, wie Ihre JIRA-Ticket-IDs in URLs umgewandelt werden. Stellen Sie sicher, dass die Muster gültige URLs erzeugen (korrekte TLDs, keine ungültigen Startzeichen) und vermeiden Sie die Platzierung von Regex-Mustern nacheinander.",
+    urlBuilderInfo: "Erstellen Sie Ihre benutzerdefinierte JIRA-URL-Struktur durch Ziehen und Ablegen von Komponenten. Das Muster definiert, wie Ihre JIRA-Ticket-IDs in URLs umgewandelt werden.",
+    urlBuilderDetailsInfo: "Erstellen Sie Ihre benutzerdefinierte JIRA-URL-Struktur durch Ziehen und Ablegen von Komponenten. Dieses Muster definiert, wie Ihre JIRA-Ticket-IDs in URLs umgewandelt werden. Stellen Sie sicher, dass Muster gültige URLs erzeugen (korrekte TLDs, keine ungültigen Startzeichen) und vermeiden Sie, Regex-Muster nacheinander zu platzieren.",
     savePattern: "Muster speichern",
     showRules: "Regeln anzeigen",
+    hideRules: "Regeln ausblenden",
     reset: "Zurücksetzen",
     urlPreview: "URL-Vorschau",
-    urlPattern: "URL-Muster"
+    urlPattern: "URL-Muster",
+    separators: "Trennzeichen",
+    patterns: "Regex-Muster",
+    dragComponents: "Ziehen Sie Komponenten hierher, um Ihr URL-Muster zu erstellen",
+    unsavedChanges: "Sie haben ungespeicherte Änderungen.",
+    validationRules: "Validierungsregeln"
   },
   
   // Messages

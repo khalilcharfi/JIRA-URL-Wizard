@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import '../style.css';
 import { QRCode } from 'react-qrcode-logo';
-import imageAssets, { iconAssets } from '../assets/imageAssets';
-import type { IconName } from '../assets/imageAssets';
+import imageAssets, {
+  CheckIcon, RefreshIcon, MarkdownCopyIcon, CopyIcon, ClockIcon, SettingsIcon,
+  SmartphoneIcon, MonitorIcon, BuildingIcon, LayoutIcon, QRCodeIcon,
+  type IconName
+} from '../assets/imageAssets';
 import { DEFAULT_SETTINGS, DEFAULT_SAMPLE_TICKET_ID } from '../shared/settings';
 import type { SettingsStorage, JiraPattern } from '../shared/settings';
 import { getSettings, addSettingsListener, removeSettingsListener } from '../services/storageService';
@@ -47,6 +50,30 @@ const Toast: React.FC<{ message: string; onClose: () => void }> = ({ message, on
 };
 
 const MemoizedToast = React.memo(Toast);
+
+// --- DynamicIcon Helper ---
+const DynamicIcon: React.FC<{ iconName: IconName; className?: string; size?: number; strokeWidth?: number }> = ({ iconName, ...props }) => {
+  const commonProps = { size: 16, strokeWidth: 2, ...props }; // Default props + overrides
+  switch (iconName) {
+    case 'smartphone': return <SmartphoneIcon {...commonProps} />;
+    case 'monitor': return <MonitorIcon {...commonProps} />;
+    case 'building': return <BuildingIcon {...commonProps} />;
+    case 'layout': return <LayoutIcon {...commonProps} />;
+    case 'qr-code': return <QRCodeIcon {...commonProps} />;
+    case 'copy': return <CopyIcon {...commonProps} />;
+    case 'markdownCopy': return <MarkdownCopyIcon {...commonProps} />;
+    case 'settings': return <SettingsIcon {...commonProps} />;
+    case 'clock': return <ClockIcon {...commonProps} />;
+    case 'check': return <CheckIcon {...commonProps} />;
+    case 'refresh': return <RefreshIcon {...commonProps} />;
+    default: {
+        // Ensure exhaustive check - if IconName type changes, this will cause a compile error
+        const exhaustiveCheck: never = iconName; 
+        console.warn(`Unknown icon name: ${exhaustiveCheck}`);
+        return null; // Or return a default fallback icon
+    }
+  }
+};
 
 // --- PopupHeader ---
 interface PopupHeaderProps {
@@ -102,7 +129,7 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
             title="Apply Ticket ID"
             aria-label="Apply Ticket ID"
           >
-            {iconAssets.check}
+            <CheckIcon size={18} />
           </button>
         )}
         <button
@@ -112,7 +139,7 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           title="Refresh from Current Tab"
           aria-label="Refresh from Current Tab"
         >
-          {iconAssets.refresh}
+          <RefreshIcon size={18} />
         </button>
         <button
           type="button"
@@ -121,7 +148,7 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           title="Copy Environment Links"
           aria-label="Copy Environment Links"
         >
-          {settings.useMarkdownCopy ? iconAssets.markdownCopy : iconAssets.copy}
+          {settings.useMarkdownCopy ? <MarkdownCopyIcon size={18} /> : <CopyIcon size={18} />}
         </button>
         <button
           type="button"
@@ -130,7 +157,7 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           title="Recent Tickets"
           aria-label="Show Recent Tickets"
         >
-          {iconAssets.clock}
+          <ClockIcon size={18} />
         </button>
       </form>
       {showRecentTickets && (
@@ -193,7 +220,9 @@ const EnvironmentTabs: React.FC<EnvironmentTabsProps> = ({ environments, activeE
               {customIconPath ? (
                 <img src={customIconPath} alt={env.name} className="w-6 h-6 mb-0.5" />
               ) : (
-                <span className="w-6 h-6 mb-0.5 flex items-center justify-center">{iconAssets[env.icon]}</span>
+                <span className="w-6 h-6 mb-0.5 flex items-center justify-center">
+                  <DynamicIcon iconName={env.icon} />
+                </span>
               )}
               <span className="text-xs leading-tight">{env.name}</span>
             </button>
@@ -230,7 +259,7 @@ const UrlOutput: React.FC<UrlOutputProps> = ({ url, onCopyUrl, settings }) => {
         aria-label="Copy Generated URL"
         disabled={!url}
       >
-        {iconAssets.copy}
+        <CopyIcon size={18} />
       </button>
     </div>
   );
@@ -428,7 +457,7 @@ const PopupFooter: React.FC<PopupFooterProps> = ({ onOpenOptions }) => {
         title="Open Settings"
         aria-label="Open Extension Settings"
       >
-        {iconAssets.settings}
+        <SettingsIcon size={16} />
       </button>
     </div>
   );

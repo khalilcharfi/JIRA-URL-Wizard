@@ -1,5 +1,5 @@
 import i18n from 'i18next';
-import type { Settings as SettingsStorage } from "../utils/settings";
+import type { SettingsStorage } from "../shared/settings";
 import { saveSettings, getSettings } from './storageService';
 
 /**
@@ -22,13 +22,12 @@ export const changeLanguage = async (language: string): Promise<void> => {
     
     // Save the language preference in settings
     const settings = await getSettings();
-    const updatedSettings: SettingsStorage = {
+    
+    // Update only the language field in the settings
+    await saveSettings({
       ...settings,
       language
-    };
-    
-    // Save the updated settings to chrome.storage
-    await saveSettings(updatedSettings);
+    });
     
     console.log(`Language changed to ${language} (actual: ${actualLanguage}) and saved permanently`);
   } catch (error) {

@@ -1,17 +1,4 @@
 import 'src/style.css'
-import {
-  ChevronDown,
-  ChevronUp,
-  Download,
-  Languages,
-  Pencil,
-  RefreshCw,
-  Save,
-  Settings,
-  Upload,
-  X,
-  Eye
-} from "lucide-react"
 import React, { useCallback, useEffect, useMemo, useState, useRef } from "react"
 import InfoPopup from "~src/components/InfoPopup";
 import URLComponentBuilder from "~src/components/URLComponentBuilder";
@@ -31,12 +18,43 @@ import {
   addSettingsListener,
   removeSettingsListener
 } from "../services/storageService";
+// Add i18n imports
+import { useTranslation } from 'react-i18next';
+import { changeLanguage } from '../services/i18nService';
+import '../i18n'; // ensure i18n is initialized
+import { 
+  LightThemeIcon, 
+  DarkThemeIcon, 
+  SystemThemeIcon, 
+  LanguageIcon, 
+  QRIcon, 
+  MarkdownIcon, 
+  ManualTicketIcon, 
+  AdvancedSettingsIcon, 
+  ChevronUpIcon, 
+  ChevronDownIcon, 
+  PencilIcon, 
+  XIcon, 
+  EyeIcon, 
+  SettingsIcon,
+  UploadIcon,
+  DownloadIcon,
+  SaveIcon,
+  RefreshIcon,
+  MarkdownCopyIcon,
+  SunIcon,
+  ErrorIcon,
+  CheckIcon,
+  QRCodeIcon,
+} from '../assets/imageAssets'
 
 // First, let's update the JiraPattern type to include the enabled property
 interface CustomJiraPattern extends JiraPattern {
   enabled?: boolean;
 }
 
+// We'll use i18n to get the translated language names
+// This is just for initialization, the actual values will come from i18n
 const AVAILABLE_LANGUAGES = {
   auto: "Auto",
   en: "English",
@@ -137,7 +155,7 @@ const CustomTagInput: React.FC<CustomTagInputProps> = ({
               aria-label={`Remove ${tag}`}
               title={`Remove ${tag}`}
             >
-              <X size={12} strokeWidth={2.5} />
+              <XIcon size={12} strokeWidth={2.5} />
             </button>
           </div>
         ))}
@@ -419,19 +437,13 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               {!isCurrentPatternValid && (
                 <span className="text-red-500 dark:text-red-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="15" y1="9" x2="9" y2="15"></line>
-                    <line x1="9" y1="9" x2="15" y2="15"></line>
-            </svg>
+                  <ErrorIcon />
                 </span>
-          )}
+              )}
               {isCurrentPatternValid && isPreviewMatch && (
                 <span className="text-green-500 dark:text-green-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 6L9 17l-5-5"></path>
-                  </svg>
-        </span>
+                  <CheckIcon />
+                </span>
               )}
     </div>
   </div>
@@ -501,7 +513,11 @@ function getUrlDescription(key: string): string {
   return descriptions[key] || "";
 }
 
+type UrlKey = 'mobile' | 'desktop' | 'bo' | 'drupal7' | 'drupal9';
+
 const IndexOptions = () => {
+  const { t } = useTranslation(); // Add translation hook
+  
   // Use standard useState for managing settings
   const [settings, setSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
   const [tempSettings, setTempSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
@@ -523,25 +539,37 @@ const IndexOptions = () => {
     setIsLoading(true);
     getSettings().then((loadedSettings) => {
       if (isMounted) {
-        setSettings(loadedSettings); // Set the 'saved' state
-        setTempSettings(loadedSettings); // Set the editable state
+        // Ensure the loaded settings match the required structure
+        const validatedSettings: SettingsStorage = {
+          ...DEFAULT_SETTINGS,
+          ...loadedSettings,
+          urls: {
+            mobile: loadedSettings.urls?.mobile || DEFAULT_SETTINGS.urls.mobile,
+            desktop: loadedSettings.urls?.desktop || DEFAULT_SETTINGS.urls.desktop,
+            bo: loadedSettings.urls?.bo || DEFAULT_SETTINGS.urls.bo,
+            drupal7: loadedSettings.urls?.drupal7 || DEFAULT_SETTINGS.urls.drupal7,
+            drupal9: loadedSettings.urls?.drupal9 || DEFAULT_SETTINGS.urls.drupal9,
+          }
+        };
+        
+        setSettings(validatedSettings);
+        setTempSettings(validatedSettings);
         setSelectedLanguage(
-          loadedSettings.language || navigator.language.split("-")[0] || "auto"
+          validatedSettings.language || navigator.language.split("-")[0] || "auto"
         );
         setIsLoading(false);
       }
     }).catch(error => {
-        console.error("Failed to load initial settings:", error);
-        if (isMounted) {
-            // Keep defaults if loading fails
-            setSettings(DEFAULT_SETTINGS);
-            setTempSettings(DEFAULT_SETTINGS);
-            setSelectedLanguage("auto");
-            setIsLoading(false);
-        }
+      console.error("Failed to load initial settings:", error);
+      if (isMounted) {
+        setSettings(DEFAULT_SETTINGS);
+        setTempSettings(DEFAULT_SETTINGS);
+        setSelectedLanguage("auto");
+        setIsLoading(false);
+      }
     });
 
-    return () => { isMounted = false; }; // Cleanup on unmount
+    return () => { isMounted = false; };
   }, []);
 
   // Effect to listen for external changes to settings
@@ -639,24 +667,19 @@ const IndexOptions = () => {
     }));
   };
 
-  const handleUrlChange = (key: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUrlChange = (key: UrlKey, event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    // Strip out http:// or https:// if present - Keep this logic
     const cleanValue = value.replace(/^(https?:\/\/)/, '');
 
     setTempSettings((prev) => {
-      const newUrls = { ...(prev.urls || {}), [key]: cleanValue }; // Ensure prev.urls is object
-      // Update baseUrlChanges state if necessary (optional, can be removed if not used elsewhere)
-      const originalUrls = settings?.urls || {}; // Compare against saved state
-      const hasChanged = Object.entries(newUrls).some(
-        ([k, v]) => v !== originalUrls[k]
-      );
-      setBaseUrlChanges(hasChanged); // Keep or remove based on usage
-      return { ...prev, urls: newUrls };
+      const newUrls = { ...prev.urls, [key]: cleanValue };
+      return {
+        ...prev,
+        urls: newUrls
+      };
     });
   };
 
-  // Update handlePaste logic slightly if needed for direct input control
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = event.clipboardData.getData('text');
     if (pastedText.match(/^https?:\/\//)) {
@@ -664,31 +687,27 @@ const IndexOptions = () => {
       if (match && match[1]) {
         event.preventDefault();
         const input = event.currentTarget;
-        const key = input.id.replace('base-url-input-', ''); // Extract key from id
+        const key = input.id.replace('base-url-input-', '') as UrlKey;
         const strippedValue = match[1];
-        const currentCursorPos = input.selectionStart || 0; // Define cursorPos here
+        const currentCursorPos = input.selectionStart || 0;
         
-        // Update state directly using a synthetic event if possible, or modify handleUrlChange
-        // For simplicity, let's call a modified logic that updates state
         setTempSettings((prev) => {
-          const currentVal = (prev.urls || {})[key] || '';
-          // Use currentCursorPos defined outside
+          const currentVal = prev.urls[key] || '';
           const textBeforeCursor = currentVal.substring(0, currentCursorPos);
           const textAfterCursor = currentVal.substring(currentCursorPos);
           const newValue = textBeforeCursor + strippedValue + textAfterCursor;
-          const cleanNewValue = newValue.replace(/^(https?:\/\/)/, ''); // Ensure clean on paste too
+          const cleanValue = newValue.replace(/^(https?:\/\/)/, '');
 
-          const newUrls = { ...(prev.urls || {}), [key]: cleanNewValue };
-          // Update baseUrlChanges state (optional)
-          const originalUrls = settings?.urls || {};
-          const hasChanged = Object.entries(newUrls).some(([k, v]) => v !== originalUrls[k]);
-          setBaseUrlChanges(hasChanged);
-          return { ...prev, urls: newUrls };
+          return {
+            ...prev,
+            urls: {
+              ...prev.urls,
+              [key]: cleanValue
+            }
+          };
         });
         
-        // Manually set cursor position after paste (requires timeout)
         setTimeout(() => {
-          // Use currentCursorPos defined outside
           input.selectionStart = input.selectionEnd = currentCursorPos + strippedValue.length;
         }, 0);
       }
@@ -697,58 +716,66 @@ const IndexOptions = () => {
 
   const handleSettingChange = useCallback(
     (key: keyof SettingsStorage, value: any) => {
-      setTempSettings((prev) => ({ ...prev, [key]: value }))
+      setTempSettings((prev) => ({ ...prev, [key]: value }));
     },
     []
-  )
+  );
 
   const handleThemeChange = useCallback(
     (newTheme: SettingsStorage["theme"]) => {
-      handleSettingChange("theme", newTheme)
+      handleSettingChange("theme", newTheme);
     },
     [handleSettingChange]
-  )
+  );
 
   useEffect(() => {
     const applyThemeClass = () => {
-      const theme = tempSettings.theme
+      const theme = tempSettings.theme;
       const prefersDark = window.matchMedia(
         "(prefers-color-scheme: dark)"
-      ).matches
+      ).matches;
 
       if (theme === "dark" || (theme === "system" && prefersDark)) {
-        document.documentElement.classList.add("dark")
+        document.documentElement.classList.add("dark");
       } else {
-        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.remove("dark");
       }
-    }
+    };
 
-    applyThemeClass()
+    applyThemeClass();
 
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const systemThemeListener = (e: MediaQueryListEvent) => {
       if (tempSettings.theme === "system") {
-        applyThemeClass()
+        applyThemeClass();
       }
-    }
+    };
 
     if (tempSettings.theme === "system") {
-      mediaQuery.addEventListener("change", systemThemeListener)
+      mediaQuery.addEventListener("change", systemThemeListener);
     }
 
     return () => {
-      mediaQuery.removeEventListener("change", systemThemeListener)
-    }
-  }, [tempSettings.theme])
+      mediaQuery.removeEventListener("change", systemThemeListener);
+    };
+  }, [tempSettings.theme]);
 
   const handleLanguageChange = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const lang = event.target.value
-      setSelectedLanguage(lang)
-      setTempSettings((prev) => ({ ...prev, language: lang }))
+    async (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const lang = event.target.value;
+      setSelectedLanguage(lang);
+      handleSettingChange("language", lang);
+      
+      try {
+        await changeLanguage(lang);
+        showToast(t('settings.languageChanged'), "success");
+      } catch (error) {
+        console.error("Error changing language:", error);
+        showToast(t('settings.languageChangeError'), "error");
+      }
     },
-    []
-  )
+    [t, showToast, handleSettingChange]
+  );
 
   const savePreferences = useCallback(async () => { // Make async
     try {
@@ -1220,11 +1247,11 @@ const IndexOptions = () => {
       <header className="sticky top-0 z-50 flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto p-3 md:p-4 flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-2 options-header__title-group">
-            <Settings className="w-5 h-5 text-blue-500 options-header__icon" />
+            <SettingsIcon className="w-5 h-5 text-blue-500 options-header__icon" />
             <h1
               id="options-title"
               className="text-xl font-bold options-header__title">
-              {"Settings"}
+              {t('settings.title')}
             </h1>
           </div>
           <div className="flex flex-wrap items-center space-x-1 options-header__actions">
@@ -1235,7 +1262,7 @@ const IndexOptions = () => {
               onChange={handleImport}
               style={{ display: "none" }}
               className="options-header__import-input"
-              aria-label="Import settings file"
+              aria-label={t('settings.importFileLabel')}
             />
             <Button
               variant="ghost"
@@ -1243,19 +1270,19 @@ const IndexOptions = () => {
               onClick={() =>
                 document.getElementById("options-header-import-input")?.click()
               }
-              title="Import Settings">
-              <Upload size={16} />
-              <span>Import</span>
+              title={t('settings.import')}>
+              <UploadIcon size={16} />
+              <span>{t('common.import')}</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               id="options-header-export-button"
               onClick={handleExport}
-              title="Export Settings"
-              aria-label="Export Settings">
-              <Download size={16} />
-              <span>Export</span>
+              title={t('settings.export')}
+              aria-label={t('settings.export')}>
+              <DownloadIcon size={16} />
+              <span>{t('common.export')}</span>
             </Button>
           </div>
         </div>
@@ -1266,27 +1293,14 @@ const IndexOptions = () => {
           <div className="grid grid-cols-1 gap-10">
             <Section id="general-settings-section">
               <SectionHeading id="general-settings-heading">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 dark:text-gray-400">
-                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                General Settings
+                <SettingsIcon className="text-gray-600 dark:text-gray-400" />
+                {t('navigation.generalSettings')}
               </SectionHeading>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 items-start">
                 <InputGroup className="flex flex-col">
                   <Label id="theme-label" className="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="4"></circle>
-                      <path d="M12 2v2"></path>
-                      <path d="M12 20v2"></path>
-                      <path d="m4.93 4.93 1.41 1.41"></path>
-                      <path d="m17.66 17.66 1.41 1.41"></path>
-                      <path d="M2 12h2"></path>
-                      <path d="M20 12h2"></path>
-                      <path d="m6.34 17.66-1.41 1.41"></path>
-                      <path d="m19.07 4.93-1.41 1.41"></path>
-                    </svg>
-                    Theme
+                    <SunIcon />
+                    {t('settings.theme')}
                   </Label>
                   <div
                     className={`flex space-x-1 rounded-lg p-1 bg-gray-200/50 dark:bg-gray-700/50`}>
@@ -1303,31 +1317,15 @@ const IndexOptions = () => {
                           className={`flex-1 capitalize transition-all duration-150 ${tempSettings.theme === themeOption ? "shadow-sm" : "text-gray-500 hover:bg-white hover:text-gray-800 hover:shadow-sm dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-gray-100"}`}
                           onClick={() => handleThemeChange(themeOption)}>
                           {themeOption === "light" && (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                              <circle cx="12" cy="12" r="4"></circle>
-                              <path d="M12 2v2"></path>
-                              <path d="M12 20v2"></path>
-                              <path d="m4.93 4.93 1.41 1.41"></path>
-                              <path d="m17.66 17.66 1.41 1.41"></path>
-                              <path d="M2 12h2"></path>
-                              <path d="M20 12h2"></path>
-                              <path d="m6.34 17.66-1.41 1.41"></path>
-                              <path d="m19.07 4.93-1.41 1.41"></path>
-                            </svg>
+                            <LightThemeIcon className="mr-1" />
                           )}
                           {themeOption === "dark" && (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-                            </svg>
+                            <DarkThemeIcon className="mr-1" />
                           )}
                           {themeOption === "system" && (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                              <rect width="20" height="14" x="2" y="3" rx="2"></rect>
-                              <line x1="8" x2="16" y1="21" y2="21"></line>
-                              <line x1="12" x2="12" y1="17" y2="21"></line>
-                            </svg>
+                            <SystemThemeIcon className="mr-1" />
                           )}
-                          {themeOption}
+                          {t(`settings.themes.${themeOption}`)}
                         </Button>
                       )
                     )}
@@ -1336,61 +1334,45 @@ const IndexOptions = () => {
 
                 <InputGroup className="flex flex-col">
                   <Label id="language-label" htmlFor="language-select" className="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m5 8 6 6"></path>
-                      <path d="m4 14 6-6 2-3"></path>
-                      <path d="M2 5h12"></path>
-                      <path d="M7 2h1"></path>
-                      <path d="m22 22-5-10-5 10"></path>
-                      <path d="M14 18h6"></path>
-                    </svg>
-                    Language
+                    <LanguageIcon />
+                    {t('settings.language')}
                   </Label>
                   <div className="relative">
                     <select
                       id="language-select"
                       value={selectedLanguage}
                       onChange={handleLanguageChange}
-                      disabled
                       className={`w-full p-2 pr-10 rounded-md appearance-none options-section__input bg-white text-gray-900 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-500 border transition-colors duration-150 focus:outline-none focus:ring-1`}>
                       {Object.entries(AVAILABLE_LANGUAGES).map(
                         ([code, name]) => (
                           <option key={code} value={code}>
-                            {name}
+                            {code === 'auto' ? t('Auto') : code === 'en' ? t('English') : t('Deutsch')}
                           </option>
                         )
                       )}
                     </select>
                     <div
                       className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400`}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m6 9 6 6 6-6"></path>
-                      </svg>
+                      <ChevronDownIcon />
                     </div>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Choose your preferred interface language</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('settings.chooseLanguage')}</p>
                 </InputGroup>
 
                 <div className="mb-5 options-section__input-group md:col-span-2 pt-3 pb-3 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <label htmlFor="integrate-logo-qr" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
-                          <path d="M9 14.5a4 4 0 1 0 0-9 4 4 0 0 0 0 9Z"></path>
-                          <path d="M9 5.5V9"></path>
-                          <path d="M6.5 7.5h5"></path>
-                          <rect width="13" height="13" x="8" y="8" rx="2"></rect>
-                          <path d="m22 14-4-4"></path>
-                        </svg>
-                        Integrate logo image within generated QR codes
+                        <QRCodeIcon className="mr-2 text-gray-500 dark:text-gray-400" />
+                        {t('features.qrIntegrationLabel')}
                       </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Embed your logo in the center of QR codes (if applicable)</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">{t('features.qrIntegrationDesc')}</p>
                     </div>
                     <Toggle
                       id="integrate-logo-qr"
-                    checked={tempSettings.integrateQrImage}
+                      checked={tempSettings.integrateQrImage}
                       onCheckedChange={(checked) => handleSettingChange("integrateQrImage", checked)}
-                      aria-label="Integrate logo within QR codes"
+                      aria-label={t('features.qrIntegrationLabel')}
                     />
                   </div>
                 </div>
@@ -1399,21 +1381,16 @@ const IndexOptions = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <label htmlFor="use-markdown-copy" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
-                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect>
-                          <path d="M8 11h8"></path>
-                          <path d="M8 15h5"></path>
-                        </svg>
-                        Use Markdown formatting when copying generated content
+                        <MarkdownCopyIcon className="mr-2 text-gray-500 dark:text-gray-400" />
+                        {t('features.useMarkdownFormatting')}
                       </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Copy content as Markdown format instead of plain text (if applicable)</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">{t('features.markdownCopyDesc')}</p>
                     </div>
                     <Toggle
                       id="use-markdown-copy"
                       checked={tempSettings.useMarkdownCopy}
                       onCheckedChange={(checked) => handleSettingChange("useMarkdownCopy", checked)}
-                      aria-label="Use Markdown when copying"
+                      aria-label={t('features.markdownCopyLabel')}
                     />
                   </div>
                 </div>
@@ -1422,12 +1399,7 @@ const IndexOptions = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <label htmlFor="allow-manual-ticket-input" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
-                          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
-                          <path d="M18 14h-8"></path>
-                          <path d="M15 18h-5"></path>
-                          <path d="M10 6h8v4h-8V6Z"></path>
-                        </svg>
+                        <ManualTicketIcon className="mr-2 text-gray-500 dark:text-gray-400" />
                         Allow manual ticket input
                       </label>
                       <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Enable manual ticket ID input in the popup interface</p>
@@ -1445,11 +1417,7 @@ const IndexOptions = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <label htmlFor="show-advanced-settings" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500 dark:text-gray-400">
-                          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-                          <path d="M12 16v-4"></path>
-                          <path d="M12 8h.01"></path>
-                        </svg>
+                        <AdvancedSettingsIcon className="mr-2 text-gray-500 dark:text-gray-400" />
                         Show advanced settings
                       </label>
                       <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Display advanced configuration options in the settings page</p>
@@ -1472,7 +1440,7 @@ const IndexOptions = () => {
                     className="w-full justify-center"
                     aria-expanded={showPreviewDemo} // Add aria-expanded for accessibility
                   >
-                    <Eye size={16} className="mr-2"/>
+                    <EyeIcon className="mr-2" />
                     {showPreviewDemo ? 'Hide' : 'Preview'} Toggle Effects
                   </Button>
                 </div>
@@ -1601,15 +1569,15 @@ const IndexOptions = () => {
               </SectionHeading>
               
               <div className="space-y-4">
-                {Object.entries(tempSettings.urls || {}).map(([key, value]) => (
+                {(Object.keys(tempSettings.urls) as UrlKey[]).map((key) => (
                   <div key={key} className="flex flex-col space-y-1">
                     <InputGroup className="relative">
-                    <Label
-                      id={`base-url-label-${key}`}
+                      <Label
+                        id={`base-url-label-${key}`}
                         htmlFor={`base-url-input-${key}`}
                         className="font-medium">
-                      {key.charAt(0).toUpperCase() + key.slice(1)}
-                    </Label>
+                        {key.charAt(0).toUpperCase() + key.slice(1)}
+                      </Label>
                       
                       <div className="flex rounded-md overflow-hidden">
                         <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
@@ -1618,20 +1586,19 @@ const IndexOptions = () => {
                         <input
                           type="text"
                           id={`base-url-input-${key}`}
-                          value={value || ''} // Use value directly from tempSettings.urls
-                          onChange={(e) => handleUrlChange(key, e)} // Pass key and event
+                          value={tempSettings.urls[key] || ''}
+                          onChange={(e) => handleUrlChange(key, e)}
                           placeholder="my-env.example.com"
                           className={`flex-1 min-w-0 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 p-2 options-section__input bg-white text-gray-900 border-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-500 border transition-colors duration-150 focus:outline-none focus:ring-1`}
                           aria-describedby={`url-description-${key}`}
-                          onPaste={handlePaste} // Keep the paste handler
+                          onPaste={handlePaste}
                         />
-          
                       </div>
                       
                       <p id={`url-description-${key}`} className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         {getUrlDescription(key)}
                       </p>
-                  </InputGroup>
+                    </InputGroup>
                   </div>
                 ))}
               </div>
@@ -1646,7 +1613,7 @@ const IndexOptions = () => {
             >
                 <summary className="p-4 bg-gray-50 dark:bg-gray-800 cursor-pointer flex items-center justify-between">
                     <span className="font-medium text-lg text-gray-900 dark:text-gray-100">Advanced Settings</span>
-                    {advancedSettingsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    {advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
                 </summary>
                 <div className="p-4 space-y-6">
 
@@ -1783,7 +1750,7 @@ const IndexOptions = () => {
                                                         disabled={editingPatternIndex !== null}
                                                         title="Edit Pattern"
                                                         aria-label="Edit Pattern">
-                                                        <Pencil size={16} />
+                                                        <PencilIcon />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
@@ -1794,7 +1761,7 @@ const IndexOptions = () => {
                                                         title="Remove Pattern"
                                                         aria-label="Remove Pattern"
                                                         className="focus:ring-red-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-800/30 dark:hover:text-red-400">
-                                                        <X size={16} />
+                                                        <XIcon size={16} />
                                                     </Button>
                                                 </div>
                                             </div>
