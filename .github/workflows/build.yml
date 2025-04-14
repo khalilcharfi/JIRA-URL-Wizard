@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         node-version: [20.x] # Use Node.js 20 LTS
@@ -76,9 +76,19 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Build for Chrome
-        run: pnpm build || (echo "Chrome build failed" && exit 1)
+        # Run build under strace to get detailed system call info before potential crash
+        run: |
+          strace -f -o strace_output.txt pnpm build
+          BUILD_EXIT_CODE=$? # Capture exit code
+          echo "--- strace output (may be large) ---"
+          cat strace_output.txt || echo "strace output file not found or empty"
+          echo "--- end strace output ---"
+          if [ $BUILD_EXIT_CODE -ne 0 ]; then
+            echo "Chrome build failed with exit code $BUILD_EXIT_CODE"
+            exit $BUILD_EXIT_CODE
+          fi
         env:
-          LOG_LEVEL: verbose # Add verbose logging
+          LOG_LEVEL: verbose # Keep verbose logging
 
       - name: Debug Chrome Build
         run: |
