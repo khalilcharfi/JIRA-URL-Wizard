@@ -16,7 +16,6 @@ export interface SettingsStorage {
     drupal9: string
   }
   jiraPatterns: JiraPattern[]
-  isDarkMode: boolean
   integrateQrImage: boolean
   useMarkdownCopy: boolean
   language: string
@@ -40,7 +39,6 @@ export const DEFAULT_SETTINGS: SettingsStorage = {
     drupal9: "https://jira.check24.de/browse",
   },
   jiraPatterns: [],
-  isDarkMode: false,
   integrateQrImage: false,
   useMarkdownCopy: false,
   language: "en",

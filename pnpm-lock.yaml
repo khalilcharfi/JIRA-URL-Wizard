@@ -32,6 +32,12 @@ importers:
       dompurify:
         specifier: ^3.2.5
         version: 3.2.5
+      i18next:
+        specifier: ^24.2.3
+        version: 24.2.3(typescript@5.3.3)
+      i18next-browser-languagedetector:
+        specifier: ^8.0.4
+        version: 8.0.4
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@18.2.0)
@@ -47,6 +53,9 @@ importers:
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
+      react-i18next:
+        specifier: ^15.4.1
+        version: 15.4.1(i18next@24.2.3(typescript@5.3.3))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react-qrcode-logo:
         specifier: ^3.0.0
         version: 3.0.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -2305,6 +2314,9 @@ packages:
     engines: {node: ^14.13.1 || >=16.0.0}
     hasBin: true
 
+  html-parse-stringify@3.0.1:
+    resolution: {integrity: sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==}
+
   htmlnano@2.1.1:
     resolution: {integrity: sha512-kAERyg/LuNZYmdqgCdYvugyLWNFAm8MWXpQMz1pLpetmCbFwoMxvkSoaAMlFrOC4OKTWI4KlZGT/RsNxg4ghOw==}
     peerDependencies:
@@ -2347,6 +2359,17 @@ packages:
   human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
     engines: {node: '>=10.17.0'}
+
+  i18next-browser-languagedetector@8.0.4:
+    resolution: {integrity: sha512-f3frU3pIxD50/Tz20zx9TD9HobKYg47fmAETb117GKGPrhwcSSPJDoCposXlVycVebQ9GQohC3Efbpq7/nnJ5w==}
+
+  i18next@24.2.3:
+    resolution: {integrity: sha512-lfbf80OzkocvX7nmZtu7nSTNbrTYR52sLWxPtlXX1zAhVw8WEnFk4puUkCR4B1dNQwbSpEHHHemcZu//7EcB7A==}
+    peerDependencies:
+      typescript: ^5
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -3077,6 +3100,19 @@ packages:
   react-error-overlay@6.0.9:
     resolution: {integrity: sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==}
 
+  react-i18next@15.4.1:
+    resolution: {integrity: sha512-ahGab+IaSgZmNPYXdV1n+OYky95TGpFwnKRflX/16dY04DsYYKHtVLjeny7sBSCREEcoMbAgSkFiGLF5g5Oofw==}
+    peerDependencies:
+      i18next: '>= 23.2.3'
+      react: '>= 16.8.0'
+      react-dom: '*'
+      react-native: '*'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+      react-native:
+        optional: true
+
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -3431,6 +3467,10 @@ packages:
   utility-types@3.11.0:
     resolution: {integrity: sha512-6Z7Ma2aVEWisaL6TvBCy7P8rm2LQoPv6dJ7ecIaIixHcwfbJ0x7mWdbcwlIM5IGQxPZSFYeqRCqlOOeKoJYMkw==}
     engines: {node: '>= 4'}
+
+  void-elements@3.1.0:
+    resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
+    engines: {node: '>=0.10.0'}
 
   vue@3.3.4:
     resolution: {integrity: sha512-VTyEYn3yvIeY1Py0WaYGZsXnz3y5UnGi62GjVEqvEGPl6nxbOrCXbVOTQWBEJUqAyTUk2uJ5JLVnYJ6ZzGbrSw==}
@@ -6013,6 +6053,10 @@ snapshots:
       relateurl: 0.2.7
       terser: 5.39.0
 
+  html-parse-stringify@3.0.1:
+    dependencies:
+      void-elements: 3.1.0
+
   htmlnano@2.1.1(postcss@8.5.3)(relateurl@0.2.7)(svgo@2.8.0)(terser@5.39.0)(typescript@5.2.2):
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.2.2)
@@ -6041,6 +6085,16 @@ snapshots:
       resolve-alpn: 1.2.1
 
   human-signals@2.1.0: {}
+
+  i18next-browser-languagedetector@8.0.4:
+    dependencies:
+      '@babel/runtime': 7.27.0
+
+  i18next@24.2.3(typescript@5.3.3):
+    dependencies:
+      '@babel/runtime': 7.27.0
+    optionalDependencies:
+      typescript: 5.3.3
 
   iconv-lite@0.4.24:
     dependencies:
@@ -6758,6 +6812,15 @@ snapshots:
 
   react-error-overlay@6.0.9: {}
 
+  react-i18next@15.4.1(i18next@24.2.3(typescript@5.3.3))(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    dependencies:
+      '@babel/runtime': 7.27.0
+      html-parse-stringify: 3.0.1
+      i18next: 24.2.3(typescript@5.3.3)
+      react: 18.2.0
+    optionalDependencies:
+      react-dom: 18.2.0(react@18.2.0)
+
   react-is@16.13.1: {}
 
   react-qrcode-logo@3.0.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
@@ -7135,6 +7198,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   utility-types@3.11.0: {}
+
+  void-elements@3.1.0: {}
 
   vue@3.3.4:
     dependencies:

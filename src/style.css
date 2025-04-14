@@ -83,3 +83,7 @@ html, body {
 .dragging-in-progress [aria-roledescription="sortable"] {
   pointer-events: auto;
 }
+
+.qr-code-container {
+  text-align: -webkit-center !important;
+}

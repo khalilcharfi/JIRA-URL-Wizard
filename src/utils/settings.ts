@@ -3,7 +3,7 @@ export interface JiraPattern {
 }
 
 export interface Settings {
-    theme: 'light' | 'dark';
+    theme: 'light' | 'dark' | 'system';
     language: string;
     prefixes: string[];
     ticketTypes: string[];
@@ -12,6 +12,8 @@ export interface Settings {
     integrateQrImage: boolean;
     useMarkdownCopy: boolean;
     urlStructure: string[];
+    allowManualTicketInput: boolean;
+    showAdvancedSettings: boolean;
     exportedAt?: string;
 }
 
@@ -25,6 +27,8 @@ export const defaultSettings: Settings = {
     integrateQrImage: false,
     useMarkdownCopy: false,
     urlStructure: ['ticketType', '.', 'issuePrefix', '-', '[0-9]+', 'baseUrl'],
+    allowManualTicketInput: true,
+    showAdvancedSettings: false,
 };
 
 const requiredFields: (keyof Settings)[] = [
@@ -55,8 +59,8 @@ export const validateSettingsStructure = (settings: unknown): { isValid: boolean
     }
 
     // Validate theme
-    if ('theme' in settings && !['light', 'dark'].includes((settings as any).theme)) {
-        errors.push('Theme must be either "light" or "dark"');
+    if ('theme' in settings && !['light', 'dark', 'system'].includes((settings as any).theme)) {
+        errors.push('Theme must be either "light", "dark", or "system"');
     }
 
     // Validate arrays

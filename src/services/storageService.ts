@@ -1,5 +1,5 @@
-import type { SettingsStorage } from "../shared/settings";
-import { DEFAULT_SETTINGS } from "../shared/settings";
+import type { Settings as SettingsStorage } from "../utils/settings";
+import { defaultSettings as DEFAULT_SETTINGS } from "../utils/settings";
 
 const SETTINGS_KEY = "jiraUrlWizardSettings";
 
@@ -34,20 +34,37 @@ function isObject(item: any): boolean {
  */
 export const getSettings = async (): Promise<SettingsStorage> => {
   try {
-    const result = await chrome.storage.sync.get(SETTINGS_KEY);
-    const loadedSettings = result[SETTINGS_KEY];
+    // Define expected structure for the storage result
+    const result: { [key: string]: Partial<SettingsStorage> | undefined } = 
+      await chrome.storage.sync.get(SETTINGS_KEY);
+      
+    const loadedSettings = result[SETTINGS_KEY] || {}; // Use empty object if undefined
 
     // Deep merge loaded settings with defaults
-    // This ensures fallbacks for missing nested properties (like urls)
-    const mergedSettings = deepMerge(DEFAULT_SETTINGS, loadedSettings || {});
+    const mergedSettings: SettingsStorage = deepMerge(DEFAULT_SETTINGS, loadedSettings);
 
-    // Basic validation might still be useful here, but deepMerge handles missing keys
-    if (typeof mergedSettings !== 'object' || mergedSettings === null) {
-        console.warn('Invalid settings structure after merge, returning defaults.');
-        return DEFAULT_SETTINGS; // Should ideally not happen with deepMerge
+    // Validate required fields after merge (optional but good practice)
+    if (!mergedSettings.urls || typeof mergedSettings.urls !== 'object') {
+      console.warn('Settings validation failed: urls object missing or invalid after merge. Using default URLs.');
+      mergedSettings.urls = DEFAULT_SETTINGS.urls;
+    } else {
+      // Ensure all required URL keys exist, using defaults if necessary
+      for (const key of Object.keys(DEFAULT_SETTINGS.urls) as Array<keyof SettingsStorage['urls']>) {
+        if (typeof mergedSettings.urls[key] !== 'string') {
+          console.warn(`Settings validation: Missing or invalid URL for ${key}. Using default.`);
+          mergedSettings.urls[key] = DEFAULT_SETTINGS.urls[key];
+        }
+      }
     }
+    
+    // Validate other potentially complex fields if needed
+    if (!Array.isArray(mergedSettings.jiraPatterns)) {
+      console.warn('Settings validation failed: jiraPatterns missing or invalid. Using default.');
+      mergedSettings.jiraPatterns = DEFAULT_SETTINGS.jiraPatterns;
+    }
+    // ... add more validations as needed ...
 
-    return mergedSettings as SettingsStorage;
+    return mergedSettings; // Now guaranteed to conform better to SettingsStorage
 
   } catch (error) {
     console.error("Error getting settings from storage:", error);
@@ -68,26 +85,28 @@ export const saveSettings = async (settings: SettingsStorage): Promise<void> => 
   }
 };
 
-// Optional: Add functions for listening to changes if needed elsewhere
+/**
+ * Adds a listener for changes to the settings.
+ */
 export const addSettingsListener = (
   callback: (newSettings: SettingsStorage) => void
 ): void => {
   const listener = (changes: { [key: string]: chrome.storage.StorageChange }) => {
     if (changes[SETTINGS_KEY]) {
-      // Merge with defaults for safety
-      const updatedSettings = { ...DEFAULT_SETTINGS, ...changes[SETTINGS_KEY].newValue };
+      // Use deepMerge for consistency with getSettings
+      const updatedSettings = deepMerge(DEFAULT_SETTINGS, changes[SETTINGS_KEY].newValue || {});
       callback(updatedSettings);
     }
   };
   chrome.storage.onChanged.addListener(listener);
 };
 
+/**
+ * Removes a listener for changes to the settings.
+ */
 export const removeSettingsListener = (
   callback: (newSettings: SettingsStorage) => void
 ): void => {
-   // Note: Removing the exact listener function reference might be tricky
-   // depending on how it's implemented in the consuming component.
-   // A simpler approach might be to pass the listener function itself.
-   // However, for basic cases, this structure shows the intent.
-  chrome.storage.onChanged.removeListener(callback as any); // Cast needed if function signature differs slightly
+   // Keep the listener function reference passed directly for removal
+  chrome.storage.onChanged.removeListener(callback as any); // Keep cast for now, might need refinement if listener signature causes issues
 }; 
