@@ -1,0 +1,10 @@
+  - name: Install system dependencies
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y build-essential python3 libc6-dev libglib2.0-0 libnss3
+
+  - name: Build for Chrome
+    run: |
+      free -m
+      strace -f -o strace_output.txt /usr/bin/time -v pnpm build
+      # ... rest of existing build commands ... 
