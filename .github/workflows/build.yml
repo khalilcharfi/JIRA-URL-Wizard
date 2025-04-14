@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22.x] # Use Node.js 22.x to match local
+        node-version: [20.x] # Use Node.js 20 LTS
 
     steps:
       - name: Checkout repository
@@ -77,6 +77,8 @@ jobs:
 
       - name: Build for Chrome
         run: pnpm build || (echo "Chrome build failed" && exit 1)
+        env:
+          LOG_LEVEL: verbose # Add verbose logging
 
       - name: Debug Chrome Build
         run: |
