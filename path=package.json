@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "build": "plasmo build",
+    // "postbuild": "node scripts/optimize.js",  // Disabled for testing
+    "postbuild": "echo 'Skipping optimization'"
+  }
+} 
