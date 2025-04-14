@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
+    "postbuild": "node scripts/optimize.js",
     "package": "plasmo package",
     "install-image-tools": "./scripts/install-image-tools.sh",
     "optimize-images": "./scripts/optimize-images.sh ./build/chrome-mv3-prod"
