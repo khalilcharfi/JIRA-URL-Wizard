@@ -4,15 +4,16 @@ export const generateMarkdownLinks = (urls: SettingsStorage['urls']): string => 
   // Ensure urls is an object, provide default empty object if not
   const safeUrls = urls && typeof urls === 'object' ? urls : { bo: '', mobile: '', desktop: '', drupal7: '', drupal9: '' };
 
+  // Use Unicode escape sequences for emojis
   return `
-# 🌐 Frontend Environments
+# \u{1F310} Frontend Environments
 ${safeUrls.bo ? `- **Back Office Tool** → [${safeUrls.bo}](${safeUrls.bo})` : ''}
 ${safeUrls.mobile ? `- **Mobile Version** → [${safeUrls.mobile}](${safeUrls.mobile})` : ''}
 ${safeUrls.desktop ? `- **Desktop Version** → [${safeUrls.desktop}](${safeUrls.desktop})` : ''}
 
 ---
 
-# 📝 CMS Environments
+# \u{1F4DD} CMS Environments
 ${safeUrls.drupal7 ? `
 ## **Drupal 7**
 - **Base CMS** → [${safeUrls.drupal7}](${safeUrls.drupal7})
