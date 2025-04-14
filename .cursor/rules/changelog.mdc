@@ -1,0 +1,101 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Changelog Generation Rules
+
+## Overview
+This rule helps maintain consistent changelog entries for the JIRA URL Wizard project, following the Keep a Changelog format and Semantic Versioning.
+
+## File Structure
+- Changelog location: `CHANGELOG.md`
+- Version format: `[X.Y.Z] - YYYY-MM-DD`
+- Sections: Added, Changed, Fixed, Deprecated, Removed, Security
+
+## Entry Format
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+### Added
+- Feature description
+- Another feature
+
+### Changed
+- Change description
+- Another change
+
+### Fixed
+- Bug fix description
+- Another fix
+```
+
+## Rules
+1. **Version Numbers**
+   - Follow semantic versioning (MAJOR.MINOR.PATCH)
+   - MAJOR: Breaking changes
+   - MINOR: New features (backwards compatible)
+   - PATCH: Bug fixes (backwards compatible)
+
+2. **Entry Types**
+   - Added: New features
+   - Changed: Changes in existing functionality
+   - Deprecated: Soon-to-be removed features
+   - Removed: Removed features
+   - Fixed: Bug fixes
+   - Security: Vulnerability fixes
+
+3. **Content Guidelines**
+   - Use present tense
+   - Start with capital letter
+   - No trailing punctuation
+   - Be specific and concise
+   - Reference issues/PRs when relevant
+   - Group related changes into single, clear entries
+   - Focus on user-facing changes and impact
+   - Use commit messages as inspiration but rewrite for clarity
+   - Avoid technical jargon unless necessary
+   - Include context for changes when relevant
+
+4. **Categories**
+   - Core Features: JIRA integration, URL generation
+   - UI/UX: Interface changes, theme updates
+   - Build/Deploy: CI/CD, packaging
+   - Documentation: README, guides
+   - Security: Permissions, data handling
+
+5. **Commit Analysis**
+   - Review commit history to identify changes
+   - Group related commits into meaningful features/fixes
+   - Extract user-facing impact from technical changes
+   - Use commit messages to understand the context
+   - Verify dates and sequence of changes
+   - Identify breaking changes and dependencies
+   - Look for patterns in related commits
+
+## Examples
+```markdown
+## [1.1.0] - 2025-04-15
+### Added
+- Custom JIRA URL pattern support with validation
+- Dark mode support with automatic system preference detection
+
+### Changed
+- Enhanced URL validation with improved error messages
+- Optimized build process for faster deployment
+
+### Fixed
+- Firefox compatibility issues with pattern matching
+- Settings persistence across browser sessions
+```
+
+## Automation
+- Use `npm run changelog:unreleased` to check for unreleased changes
+- Update version in package.json before release
+- Generate release notes from changelog entries
+- Review commit history for comprehensive change tracking
+- Verify dates and sequence of changes
+
+## Links
+- [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+- [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+- [Project Documentation](README.md)

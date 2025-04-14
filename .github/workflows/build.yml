@@ -1,0 +1,171 @@
+name: Build and Package Extension
+
+on:
+  push:
+    branches: [master, main]
+    tags: ['v*']
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      publish_target:
+        description: 'Publishing target'
+        required: false
+        default: 'default'
+        type: choice
+        options:
+          - default
+          - trustedTesters
+      should_publish:
+        description: 'Publish extension'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      
+      - name: Install image optimization tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pngquant optipng jpegoptim webp gifsicle
+          npm install -g svgo
+      
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+      
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      
+      - name: Install dependencies
+        run: pnpm install
+      
+      - name: Set version info
+        run: |
+          # Set GITHUB_SHA environment variable for the version script
+          echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+          
+          # Run version replacement script
+          node scripts/replace-version.js
+      
+      - name: Build for Chrome
+        run: pnpm build
+      
+      - name: Build for Firefox
+        run: pnpm build:firefox
+      
+      - name: Build for Edge
+        run: pnpm build:edge
+      
+      - name: Package all extensions
+        run: pnpm package:all
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=$(node -p "require('./package.json').version")-$(date +'%Y%m%d')-${GITHUB_SHA::7}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Display build directories
+        run: find build -type d -maxdepth 2
+      
+      - name: Upload Chrome extension artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: jira-url-wizard-chrome-v${{ steps.version.outputs.VERSION }}
+          path: build/chrome-mv3-prod
+      
+      - name: Upload Firefox extension artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: jira-url-wizard-firefox-v${{ steps.version.outputs.VERSION }}
+          path: build/firefox-mv3-prod
+      
+      - name: Upload Edge extension artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: jira-url-wizard-edge-v${{ steps.version.outputs.VERSION }}
+          path: build/edge-mv3-prod
+      
+      - name: Upload packaged extension ZIPs
+        uses: actions/upload-artifact@v3
+        with:
+          name: jira-url-wizard-packages-v${{ steps.version.outputs.VERSION }}
+          path: |
+            build/*.zip
+
+  create-release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: jira-url-wizard-packages-v*/*.zip
+          generate_release_notes: true
+
+  deploy-chrome-store:
+    name: Deploy to Chrome Web Store
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download Chrome extension artifact
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      
+      - name: Deploy to Chrome Web Store
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: artifacts/**/*chrome*.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          glob: true
+          publish: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.should_publish == 'true' }}
+          publish-target: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_target != '' && github.event.inputs.publish_target || 'default' }} 
