@@ -1,171 +1,185 @@
-name: Build and Package Extension
+name: Build, Package, and Release Extension
 
 on:
   push:
-    branches: [master, main]
-    tags: ['v*']
+    branches: [master] # Trigger on pushes to master
+    tags: ['v*']      # Trigger on pushes of tags like v1.0, v1.1.0, etc.
   pull_request:
-    branches: [master, main]
-  workflow_dispatch:
-    inputs:
-      publish_target:
-        description: 'Publishing target'
-        required: false
-        default: 'default'
-        type: choice
-        options:
-          - default
-          - trustedTesters
-      should_publish:
-        description: 'Publish extension'
-        required: false
-        default: true
-        type: boolean
+    branches: [master] # Also trigger on PRs to master (won't release)
+  workflow_dispatch:   # Allow manual trigger
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
-        node-version: [18.x]
-    
+        node-version: [18.x] # Use Node.js 18
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Use latest checkout action
         with:
-          fetch-depth: 0
-      
+          fetch-depth: 0 # Fetch all history for version calculation
+
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v3 # Use latest pnpm setup action
         with:
           version: 8
-          run_install: false
-      
+          run_install: false # Don't run install automatically
+
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # Use latest setup-node action
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      
+          cache: 'pnpm' # Cache pnpm dependencies
+
       - name: Install image optimization tools
         run: |
           sudo apt-get update
           sudo apt-get install -y pngquant optipng jpegoptim webp gifsicle
-          npm install -g svgo
-      
+          npm install -g svgo # svgo often installed via npm
+
       - name: Get pnpm store directory
         id: pnpm-cache
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-      
+
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4 # Use latest cache action
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      
+
       - name: Install dependencies
         run: pnpm install
-      
-      - name: Set version info
-        run: |
-          # Set GITHUB_SHA environment variable for the version script
-          echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
-          
-          # Run version replacement script
-          node scripts/replace-version.js
-      
-      - name: Build for Chrome
-        run: pnpm build
-      
-      - name: Build for Firefox
-        run: pnpm build:firefox
-      
-      - name: Build for Edge
-        run: pnpm build:edge
-      
-      - name: Package all extensions
-        run: pnpm package:all
-      
-      - name: Determine version
+
+      - name: Determine version # Determine version for artifact naming
         id: version
         run: |
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
             VERSION=${GITHUB_REF#refs/tags/v}
           else
+            # Use commit hash for non-tag builds
             VERSION=$(node -p "require('./package.json').version")-$(date +'%Y%m%d')-${GITHUB_SHA::7}
           fi
+          echo "Determined version: $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-      
-      - name: Display build directories
-        run: find build -type d -maxdepth 2
-      
+
+      - name: Build for Chrome
+        run: pnpm build || (echo "Chrome build failed" && exit 1)
+
+      - name: Debug Chrome Build
+        run: |
+          echo "Chrome build contents (build/chrome-mv3-prod/):"
+          ls -la build/chrome-mv3-prod/ || echo "Chrome build directory not found"
+
+      - name: Build for Firefox
+        # Ensure build:firefox script exists in package.json: "plasmo build --target=firefox-mv3"
+        run: pnpm build:firefox || (echo "Firefox build failed - ensure 'build:firefox' script exists in package.json" && exit 1)
+
+      - name: Debug Firefox Build
+        run: |
+          echo "Firefox build contents (build/firefox-mv3-prod/):"
+          ls -la build/firefox-mv3-prod/ || echo "Firefox build directory not found"
+
+      - name: Build for Edge
+        # Ensure build:edge script exists in package.json: "plasmo build --target=edge-mv3"
+        run: pnpm build:edge || (echo "Edge build failed - ensure 'build:edge' script exists in package.json" && exit 1)
+
+      - name: Debug Edge Build
+        run: |
+          echo "Edge build contents (build/edge-mv3-prod/):"
+          ls -la build/edge-mv3-prod/ || echo "Edge build directory not found"
+
+      - name: Package all extensions
+        # Ensure package:all script exists in package.json: "pnpm package && pnpm package:firefox && pnpm package:edge"
+        run: pnpm package:all || (echo "Packaging failed - ensure 'package:all' script exists in package.json" && exit 1)
+
+      - name: Debug Package Results
+        run: |
+          echo "Listing packaged ZIP files in build/:"
+          find build -maxdepth 1 -name "*.zip" -exec ls -lh {} \; || echo "No ZIP files found in build/"
+
+      # Upload individual build directories (optional, but can be useful for debugging)
       - name: Upload Chrome extension artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jira-url-wizard-chrome-v${{ steps.version.outputs.VERSION }}
           path: build/chrome-mv3-prod
-      
+
       - name: Upload Firefox extension artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jira-url-wizard-firefox-v${{ steps.version.outputs.VERSION }}
           path: build/firefox-mv3-prod
-      
+
       - name: Upload Edge extension artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jira-url-wizard-edge-v${{ steps.version.outputs.VERSION }}
           path: build/edge-mv3-prod
-      
+
+      # Upload the final packaged ZIPs
       - name: Upload packaged extension ZIPs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jira-url-wizard-packages-v${{ steps.version.outputs.VERSION }}
-          path: |
-            build/*.zip
+          path: build/*.zip # Upload all zip files in the build root
 
   create-release:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    needs: build # Run after the build job is successful
+    # Trigger condition: Run for pushes to master AND pushes of tags starting with v
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-    
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
-      
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: jira-url-wizard-packages-v*/*.zip
-          generate_release_notes: true
+      contents: write # Permission to create releases
 
-  deploy-chrome-store:
-    name: Deploy to Chrome Web Store
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
-    
     steps:
-      - name: Download Chrome extension artifact
-        uses: actions/download-artifact@v3
+      - name: Determine version # Get version from build job output
+        id: version
+        run: echo "VERSION=${{ needs.build.outputs.VERSION }}" >> $GITHUB_OUTPUT # How to get output? Need to define it in build job. Let's recalculate for simplicity here.
+        # Simpler: Recalculate version based on ref
+      - name: Recalculate version for release naming
+        id: release_version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "RELEASE_TAG=v$VERSION" >> $GITHUB_OUTPUT
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "PRERELEASE=false" >> $GITHUB_OUTPUT
+          else
+            VERSION=$(node -p "require('./package.json').version")-$(date +'%Y%m%d')-${GITHUB_SHA::7}
+            echo "RELEASE_TAG=master-build-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT # Use a unique tag for master builds
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "PRERELEASE=true" >> $GITHUB_OUTPUT # Mark master builds as pre-release
+          fi
+          echo "Release Version: $VERSION"
+          echo "Release Tag: $(cat $GITHUB_OUTPUT | grep RELEASE_TAG | cut -d '=' -f2)"
+
+
+      - name: Download packaged artifacts
+        uses: actions/download-artifact@v4
         with:
-          path: artifacts
-      
-      - name: Deploy to Chrome Web Store
-        uses: mnao305/chrome-extension-upload@v5.0.0
+          # Download the ZIP packages artifact uploaded by the build job
+          name: jira-url-wizard-packages-v${{ steps.release_version.outputs.VERSION }}
+          path: ./release-packages # Download to a specific directory
+
+      - name: List downloaded files
+        run: ls -lR ./release-packages
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2 # Use latest release action
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use the default token
         with:
-          file-path: artifacts/**/*chrome*.zip
-          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
-          client-id: ${{ secrets.CHROME_CLIENT_ID }}
-          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
-          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          glob: true
-          publish: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.should_publish == 'true' }}
-          publish-target: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_target != '' && github.event.inputs.publish_target || 'default' }} 
+          tag_name: ${{ steps.release_version.outputs.RELEASE_TAG }}
+          name: Release ${{ steps.release_version.outputs.VERSION }} # Release name
+          body: |
+            Automated release for version ${{ steps.release_version.outputs.VERSION }}.
+            Triggered by: ${{ github.event_name }} to ${{ github.ref }}
+          draft: false
+          prerelease: ${{ steps.release_version.outputs.PRERELEASE }} # Mark master builds as pre-release
+          files: ./release-packages/*.zip # Attach all downloaded ZIP files 
