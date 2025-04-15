@@ -882,7 +882,32 @@ const JiraUrlWizard = () => {
   const hasTicketTypes = settings.ticketTypes && settings.ticketTypes.length > 0;
   const hasEnvironments = environments.length > 1; // At least one real environment plus QR code option
 
-  // Add Settings Info section to show available URLs
+  // Add Configuration Needed Overlay component when no environments are configured
+  const ConfigurationNeededOverlay = () => {
+    if (hasEnvironments) return null; // Only show when there are no environments
+    
+    return (
+      <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/95 dark:bg-gray-900/95">
+        <div className="w-4/5 p-5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/30 rounded-md shadow-lg text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-3 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-400 mb-2">{t('messages.configurationNeeded')}</h3>
+          <p className="text-sm text-amber-700 dark:text-amber-500 mb-4">
+            {t('messages.noEnvironmentsConfigured')}
+          </p>
+          <button
+            onClick={openOptionsPage}
+            className="px-4 py-2 bg-amber-600 text-white dark:bg-amber-700 rounded-md hover:bg-amber-700 dark:hover:bg-amber-600 transition-colors"
+          >
+            {t('navigation.openSettings')}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Legacy Settings Info section (we'll keep it as fallback but it's now replaced by the overlay)
   const SettingsInfo = () => {
     if (hasEnvironments) return null; // Only show when there are no environments
     
@@ -916,9 +941,6 @@ const JiraUrlWizard = () => {
         settings={settings}
       />
       
-      {/* Show settings info if no environments configured */}
-      <SettingsInfo />
-      
       {/* Environment Tabs (only show if environments available) */}
       {hasEnvironments && (
         <MemoizedEnvironmentTabs
@@ -948,6 +970,9 @@ const JiraUrlWizard = () => {
       <MemoizedPopupFooter onOpenOptions={openOptionsPage} />
 
       {toastMessage && <MemoizedToast message={toastMessage} onClose={() => setToastMessage(null)} />}
+      
+      {/* Configuration Needed Overlay */}
+      <ConfigurationNeededOverlay />
     </div>
   );
 };
