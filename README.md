@@ -1,8 +1,6 @@
-# JIRA URL Wizard
+# <img src="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png" width="32" height="32" alt="JIRA URL Wizard Logo"> JIRA URL Wizard
 
 A powerful browser extension that simplifies working with multiple JIRA environments. Seamlessly switch between development, staging, and production instances with a single click.
-
-![JIRA URL Wizard Logo](https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png)
 
 ## 🌟 Features
 
