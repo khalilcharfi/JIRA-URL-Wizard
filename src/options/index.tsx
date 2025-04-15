@@ -20,7 +20,7 @@ import {
 } from "../services/storageService";
 // Add i18n imports
 import { useTranslation } from 'react-i18next';
-import { changeLanguage, initializeLanguage } from '../services/i18nService';
+import { initializeLanguage, setI18nLanguage } from '../services/i18nService'; // Removed changeLanguage
 import '../i18n'; // ensure i18n is initialized
 import { 
   LightThemeIcon, 
@@ -797,47 +797,62 @@ const IndexOptions = () => {
   }, [tempSettings.theme]);
 
   const handleLanguageChange = useCallback(
-    async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    async (event: React.ChangeEvent<HTMLSelectElement>) => { // Make async again
       const lang = event.target.value;
-      setSelectedLanguage(lang);
-      handleSettingChange("language", lang);
-      
+      setSelectedLanguage(lang); // Update UI dropdown state immediately
+      handleSettingChange("language", lang); // Update tempSettings with the preference
+
+      // Immediately change the UI language using the new service function
       try {
-        await changeLanguage(lang);
-        showToast(t('settings.languageChanged'), "success");
+        await setI18nLanguage(lang);
+        // No toast here, it's handled on save
       } catch (error) {
-        console.error("Error changing language:", error);
-        showToast(t('settings.languageChangeError'), "error");
+        console.error("Error setting UI language:", error);
+        // Optionally show a temporary error if UI change fails?
+        // showToast(t('settings.languageChangeError'), "error"); // Reconsider if needed
       }
     },
-    [t, showToast, handleSettingChange]
+    [handleSettingChange] // Add back t, showToast if toasts are re-added
   );
 
-  const savePreferences = useCallback(async () => { // Make async
+  const savePreferences = useCallback(async () => {
+    // const languageToSet = tempSettings.language; // No longer need this variable here
     try {
-      await saveSettings(tempSettings); // Use the new service function
-      setSettings(tempSettings); // Update the local 'saved' state
+      await saveSettings(tempSettings); // Save all settings including the language preference
+      setSettings(tempSettings); // Update the main 'saved' state
+
+      // Language instance was already set by handleLanguageChange, no need to set it again here
+      // await changeLanguage(languageToSet); // Remove this call
+
       showToast(t('common.settingsSaved'), "success");
     } catch (error) {
-      console.error("Error saving settings:", error);
-      showToast(t('common.settingsError'), "error");
+      console.error("Error saving settings:", error); // Simplified error message
+      showToast(t('common.settingsError'), "error"); 
     }
-  }, [tempSettings, showToast]);
+  }, [tempSettings, showToast, t]);
 
-  const resetChanges = useCallback(() => {
+  const resetChanges = useCallback(async () => {
     if (
       window.confirm(t('common.confirmReset'))
     ) {
-      // Use the current 'saved' state (settings) for reset
+      const savedLangPref = settings.language || 'auto';
+      
+      // Revert tempSettings to the saved state
       setTempSettings(settings);
-      setSelectedLanguage(
-        settings.language === "auto"
-          ? navigator.language.split("-")[0]
-          : settings.language
-      );
+      
+      // Revert the selected language in the dropdown UI
+      setSelectedLanguage(savedLangPref);
+
+      // Revert the actual i18n language instance to match the saved state
+      try {
+        await setI18nLanguage(savedLangPref); // Use setI18nLanguage here
+      } catch (error) {
+        console.error("Error reverting language on reset:", error);
+      }
+
       showToast(t('common.changesReset'), "info");
     }
-  }, [settings, showToast]); // Depend on the actual saved settings state
+  }, [settings, showToast, t]);
 
   const handleExport = useCallback(() => {
     try {
