@@ -345,6 +345,41 @@
         .collapsible-header.active + .collapsible-content {
             display: block;
         }
+        
+        /* Language switcher styles */
+        .language-switcher {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        
+        .language-btn {
+            padding: 5px 15px;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .language-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* No need for language-specific classes anymore as we'll use data attributes */
+        @media (min-width: 1200px) {
+            .bilingual-content {
+                display: flex;
+                gap: 20px;
+            }
+            
+            .bilingual-content .language-section {
+                flex: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -352,13 +387,17 @@
         <header>
             <div class="header-content">
                 <img src="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png" alt="JIRA URL Wizard Icon">
-                <h1>JIRA URL Wizard Privacy Policy</h1>
+                <h1 data-i18n="title"></h1>
             </div>
-            <p class="last-updated">Last updated: April 10, 2024</p>
+            <p class="last-updated" data-i18n="lastUpdated"></p>
+            <div class="language-switcher">
+                <button class="language-btn active" data-lang="en">English</button>
+                <button class="language-btn" data-lang="de">Deutsch</button>
+            </div>
         </header>
         
         <div class="intro-box">
-            <p><strong>JIRA URL Wizard</strong> is designed to simplify working across multiple JIRA environments. We prioritize your privacy and security - all data is stored locally on your device, and no information is sent to external servers.</p>
+            <p data-i18n="introText"></p>
         </div>
         
         <div class="toc" id="toc">
@@ -368,67 +407,67 @@
                     <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="18" x2="21" y2="18"></line>
                 </svg>
-                Quick Navigation
+                <span data-i18n="quickNav"></span>
             </h2>
             <ul>
                 <li>
                     <a href="#introduction">
                         <span class="toc-icon">📌</span>
-                        Introduction
+                        <span data-i18n="nav.introduction"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#features">
                         <span class="toc-icon">✨</span>
-                        Key Features
+                        <span data-i18n="nav.features"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#information">
                         <span class="toc-icon">🔍</span>
-                        Information We Collect
+                        <span data-i18n="nav.information"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#permissions">
                         <span class="toc-icon">🔒</span>
-                        Permissions Usage
+                        <span data-i18n="nav.permissions"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#storage">
                         <span class="toc-icon">💾</span>
-                        Data Storage & Security
+                        <span data-i18n="nav.storage"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#rights">
                         <span class="toc-icon">👤</span>
-                        Your Rights & Controls
+                        <span data-i18n="nav.rights"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#retention">
                         <span class="toc-icon">⏱️</span>
-                        Data Retention
+                        <span data-i18n="nav.retention"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#changes">
                         <span class="toc-icon">📝</span>
-                        Policy Changes
+                        <span data-i18n="nav.changes"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#contact">
                         <span class="toc-icon">✉️</span>
-                        Contact Us
+                        <span data-i18n="nav.contact"></span>
                     </a>
                 </li>
                 <li>
                     <a href="#compliance">
                         <span class="toc-icon">⚖️</span>
-                        Legal Compliance
+                        <span data-i18n="nav.compliance"></span>
                     </a>
                 </li>
             </ul>
@@ -441,11 +480,12 @@
                     <line x1="12" y1="16" x2="12" y2="12"></line>
                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
-                Introduction
+                <span data-i18n="introduction.title"></span>
             </h2>
-            <p>JIRA URL Wizard ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome extension. We take your privacy seriously and are transparent about our data practices.</p>
-            <p>Our extension is designed to help developers, testers, and project managers easily navigate between different JIRA environments without manually changing URLs.</p>
-            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+            <p data-i18n="introduction.p1"></p>
+            <p data-i18n="introduction.p2"></p>
+            
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
         
         <section id="features">
@@ -453,7 +493,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
-                Key Features
+                <span data-i18n="features.title"></span>
             </h2>
             
             <div class="feature-box">
@@ -465,8 +505,8 @@
                     </svg>
                 </div>
                 <div class="feature-text">
-                    <h4>Quick Environment Switching</h4>
-                    <p>Instantly switch between development, staging, and production JIRA environments with a single click.</p>
+                    <h4 data-i18n="features.switching.title"></h4>
+                    <p data-i18n="features.switching.desc"></p>
                 </div>
             </div>
             
@@ -477,8 +517,8 @@
                     </svg>
                 </div>
                 <div class="feature-text">
-                    <h4>Custom Environment Configuration</h4>
-                    <p>Create and customize JIRA environment configurations to match your organization's specific setup.</p>
+                    <h4 data-i18n="features.config.title"></h4>
+                    <p data-i18n="features.config.desc"></p>
                 </div>
             </div>
             
@@ -491,8 +531,8 @@
                     </svg>
                 </div>
                 <div class="feature-text">
-                    <h4>Ticket Organization</h4>
-                    <p>Save and organize tickets for quick access across all your JIRA instances.</p>
+                    <h4 data-i18n="features.organization.title"></h4>
+                    <p data-i18n="features.organization.desc"></p>
                 </div>
             </div>
             
@@ -504,12 +544,12 @@
                     </svg>
                 </div>
                 <div class="feature-text">
-                    <h4>Automatic Ticket Detection</h4>
-                    <p>Extract ticket information automatically from any JIRA page you're viewing.</p>
+                    <h4 data-i18n="features.detection.title"></h4>
+                    <p data-i18n="features.detection.desc"></p>
                 </div>
             </div>
             
-            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
         
         <section id="information">
@@ -519,41 +559,30 @@
                     <line x1="12" y1="16" x2="12" y2="12"></line>
                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
-                Information We Collect
+                <span data-i18n="information.title"></span>
             </h2>
-            <p>JIRA URL Wizard collects and stores the following information locally on your device:</p>
+            <p data-i18n="information.intro"></p>
             
             <div class="data-type">
-                <h3>Configuration Data</h3>
-                <ul>
-                    <li>JIRA environment configurations (URLs, names, authentication details)</li>
-                    <li>Custom environment settings and preferences</li>
-                    <li>User interface preferences (theme, layout, etc.)</li>
-                </ul>
+                <h3 data-i18n="information.config.title"></h3>
+                <ul data-i18n-list="information.config.items"></ul>
             </div>
 
             <div class="data-type">
-                <h3>Ticket Data</h3>
-                <ul>
-                    <li>Saved ticket information (ticket IDs, descriptions)</li>
-                    <li>Ticket categorization and organization</li>
-                    <li>Quick access ticket lists</li>
-                </ul>
+                <h3 data-i18n="information.ticket.title"></h3>
+                <ul data-i18n-list="information.ticket.items"></ul>
             </div>
 
             <div class="data-type">
-                <h3>Usage Data</h3>
-                <ul>
-                    <li>Extension settings and preferences</li>
-                    <li>Last accessed environments</li>
-                    <li>User-defined shortcuts and hotkeys</li>
-                </ul>
+                <h3 data-i18n="information.usage.title"></h3>
+                <ul data-i18n-list="information.usage.items"></ul>
             </div>
 
             <div class="privacy-highlight">
-                <strong>Your Privacy is Our Priority:</strong> All data is stored locally in your browser's storage and is not transmitted to any external servers. We have no access to your JIRA credentials or ticket information.
+                <strong data-i18n="information.privacy.title"></strong>
+                <span data-i18n="information.privacy.desc"></span>
             </div>
-            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
         
         <section id="permissions">
@@ -697,3 +726,232 @@
                 <li>Clear your browser's extension data storage</li>
             </ul>
             <p>We have no access to your data and therefore no
+
+    </div>
+    
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                title: "JIRA URL Wizard Privacy Policy",
+                lastUpdated: "Last updated: April 10, 2024",
+                introText: "<strong>JIRA URL Wizard</strong> is designed to simplify working across multiple JIRA environments. We prioritize your privacy and security - all data is stored locally on your device, and no information is sent to external servers.",
+                quickNav: "Quick Navigation",
+                backToTop: "↑ Back to Top",
+                nav: {
+                    introduction: "Introduction",
+                    features: "Key Features",
+                    information: "Information We Collect",
+                    permissions: "Permissions Usage",
+                    storage: "Data Storage & Security",
+                    rights: "Your Rights & Controls",
+                    retention: "Data Retention",
+                    changes: "Policy Changes",
+                    contact: "Contact Us",
+                    compliance: "Legal Compliance"
+                },
+                introduction: {
+                    title: "Introduction",
+                    p1: "JIRA URL Wizard (\"we\", \"our\", or \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Chrome extension. We take your privacy seriously and are transparent about our data practices.",
+                    p2: "Our extension is designed to help developers, testers, and project managers easily navigate between different JIRA environments without manually changing URLs."
+                },
+                features: {
+                    title: "Key Features",
+                    switching: {
+                        title: "Quick Environment Switching",
+                        desc: "Instantly switch between development, staging, and production JIRA environments with a single click."
+                    },
+                    config: {
+                        title: "Custom Environment Configuration",
+                        desc: "Create and customize JIRA environment configurations to match your organization's specific setup."
+                    },
+                    organization: {
+                        title: "Ticket Organization",
+                        desc: "Save and organize tickets for quick access across all your JIRA instances."
+                    },
+                    detection: {
+                        title: "Automatic Ticket Detection",
+                        desc: "Extract ticket information automatically from any JIRA page you're viewing."
+                    }
+                },
+                information: {
+                    title: "Information We Collect",
+                    intro: "JIRA URL Wizard collects and stores the following information locally on your device:",
+                    config: {
+                        title: "Configuration Data",
+                        items: [
+                            "JIRA environment configurations (URLs, names, authentication details)",
+                            "Custom environment settings and preferences",
+                            "User interface preferences (theme, layout, etc.)"
+                        ]
+                    },
+                    ticket: {
+                        title: "Ticket Data",
+                        items: [
+                            "Saved ticket information (ticket IDs, descriptions)",
+                            "Ticket categorization and organization",
+                            "Quick access ticket lists"
+                        ]
+                    },
+                    usage: {
+                        title: "Usage Data",
+                        items: [
+                            "Extension settings and preferences",
+                            "Last accessed environments",
+                            "User-defined shortcuts and hotkeys"
+                        ]
+                    },
+                    privacy: {
+                        title: "Your Privacy is Our Priority:",
+                        desc: "All data is stored locally in your browser's storage and is not transmitted to any external servers. We have no access to your JIRA credentials or ticket information."
+                    }
+                }
+            },
+            de: {
+                title: "JIRA URL Wizard Datenschutzerklärung",
+                lastUpdated: "Zuletzt aktualisiert: 10. April 2024",
+                introText: "<strong>JIRA URL Wizard</strong> wurde entwickelt, um die Arbeit mit mehreren JIRA-Umgebungen zu vereinfachen. Wir priorisieren Ihre Privatsphäre und Sicherheit - alle Daten werden lokal auf Ihrem Gerät gespeichert, und keine Informationen werden an externe Server gesendet.",
+                quickNav: "Schnellnavigation",
+                backToTop: "↑ Zurück nach oben",
+                nav: {
+                    introduction: "Einleitung",
+                    features: "Hauptfunktionen",
+                    information: "Informationen, die wir sammeln",
+                    permissions: "Nutzung von Berechtigungen",
+                    storage: "Datenspeicherung & Sicherheit",
+                    rights: "Ihre Rechte & Kontrollen",
+                    retention: "Datenspeicherung",
+                    changes: "Änderungen der Richtlinie",
+                    contact: "Kontakt",
+                    compliance: "Rechtliche Einhaltung"
+                },
+                introduction: {
+                    title: "Einleitung",
+                    p1: "JIRA URL Wizard (\"wir\", \"unser\" oder \"uns\") verpflichtet sich zum Schutz Ihrer Privatsphäre. Diese Datenschutzrichtlinie erklärt, wie wir Ihre Informationen sammeln, verwenden und schützen, wenn Sie unsere Chrome-Erweiterung nutzen. Wir nehmen Ihre Privatsphäre ernst und sind transparent bezüglich unserer Datenpraktiken.",
+                    p2: "Unsere Erweiterung wurde entwickelt, um Entwicklern, Testern und Projektmanagern zu helfen, einfach zwischen verschiedenen JIRA-Umgebungen zu navigieren, ohne URLs manuell ändern zu müssen."
+                },
+                features: {
+                    title: "Hauptfunktionen",
+                    switching: {
+                        title: "Schneller Umgebungswechsel",
+                        desc: "Wechseln Sie mit einem einzigen Klick sofort zwischen Entwicklungs-, Staging- und Produktions-JIRA-Umgebungen."
+                    },
+                    config: {
+                        title: "Benutzerdefinierte Umgebungskonfiguration",
+                        desc: "Erstellen und passen Sie JIRA-Umgebungskonfigurationen an, um sie an die spezifische Einrichtung Ihrer Organisation anzupassen."
+                    },
+                    organization: {
+                        title: "Ticket-Organisation",
+                        desc: "Speichern und organisieren Sie Tickets für schnellen Zugriff über alle Ihre JIRA-Instanzen hinweg."
+                    },
+                    detection: {
+                        title: "Automatische Ticket-Erkennung",
+                        desc: "Extrahieren Sie Ticket-Informationen automatisch von jeder JIRA-Seite, die Sie betrachten."
+                    }
+                },
+                information: {
+                    title: "Informationen, die wir sammeln",
+                    intro: "JIRA URL Wizard sammelt und speichert die folgenden Informationen lokal auf Ihrem Gerät:",
+                    config: {
+                        title: "Konfigurationsdaten",
+                        items: [
+                            "JIRA-Umgebungskonfigurationen (URLs, Namen, Authentifizierungsdetails)",
+                            "Benutzerdefinierte Umgebungseinstellungen und Präferenzen",
+                            "Benutzeroberflächen-Präferenzen (Theme, Layout, usw.)"
+                        ]
+                    },
+                    ticket: {
+                        title: "Ticket-Daten",
+                        items: [
+                            "Gespeicherte Ticket-Informationen (Ticket-IDs, Beschreibungen)",
+                            "Ticket-Kategorisierung und -Organisation",
+                            "Schnellzugriffslisten für Tickets"
+                        ]
+                    },
+                    usage: {
+                        title: "Nutzungsdaten",
+                        items: [
+                            "Erweiterungseinstellungen und -präferenzen",
+                            "Zuletzt verwendete Umgebungen",
+                            "Benutzerdefinierte Verknüpfungen und Hotkeys"
+                        ]
+                    },
+                    privacy: {
+                        title: "Ihre Privatsphäre hat Priorität:",
+                        desc: "Alle Daten werden lokal im Speicher Ihres Browsers gespeichert und nicht an externe Server übertragen. Wir haben keinen Zugriff auf Ihre JIRA-Anmeldedaten oder Ticket-Informationen."
+                    }
+                }
+            }
+        };
+        
+        // Apply translations based on selected language
+        function applyTranslations(lang) {
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                
+                // Get nested property by path like "nav.introduction"
+                const getValue = (obj, path) => {
+                    return path.split('.').reduce((prev, curr) => {
+                        return prev && prev[curr] ? prev[curr] : null;
+                    }, obj);
+                };
+                
+                const text = getValue(translations[lang], key);
+                if (text) {
+                    // If text contains HTML tags, use innerHTML, otherwise use textContent
+                    if (/<[a-z][\s\S]*>/i.test(text)) {
+                        el.innerHTML = text;
+                    } else {
+                        el.textContent = text;
+                    }
+                }
+            });
+            
+            // Handle list items separately
+            const listElements = document.querySelectorAll('[data-i18n-list]');
+            listElements.forEach(el => {
+                const key = el.getAttribute('data-i18n-list');
+                const items = getValue(translations[lang], key);
+                
+                if (items && Array.isArray(items)) {
+                    el.innerHTML = '';  // Clear existing items
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        el.appendChild(li);
+                    });
+                }
+            });
+            
+            // Helper function to get nested object property
+            function getValue(obj, path) {
+                return path.split('.').reduce((prev, curr) => {
+                    return prev && prev[curr] ? prev[curr] : null;
+                }, obj);
+            }
+        }
+        
+        // Language switcher functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageBtns = document.querySelectorAll('.language-btn');
+            
+            // Apply initial translations
+            applyTranslations('en');
+            
+            languageBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    
+                    // Update active button
+                    languageBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Apply translations
+                    applyTranslations(lang);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
