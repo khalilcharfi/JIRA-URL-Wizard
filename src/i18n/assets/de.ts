@@ -17,6 +17,7 @@ export default {
     copyGeneratedUrl: "Generierte URL kopieren",
     resetChanges: "Änderungen zurücksetzen",
     saveChanges: "Änderungen speichern",
+    savingChanges: "Änderungen werden gespeichert...",
     import: "Importieren",
     export: "Exportieren",
     pattern: "Muster",

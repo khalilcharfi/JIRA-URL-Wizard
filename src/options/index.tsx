@@ -521,7 +521,7 @@ const IndexOptions = () => {
   // Use standard useState for managing settings
   const [settings, setSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
   const [tempSettings, setTempSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const [isLoading, setIsLoading] = useState(true); // Keep loading state for initial load only
 
   const [selectedLanguage, setSelectedLanguage] = useState<string>("auto");
   const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
@@ -635,10 +635,9 @@ const IndexOptions = () => {
   }, []); // Empty dependency array to run only on mount/unmount
 
   const isDirty = useMemo(() => {
-    // Only compare if settings have loaded
-    if (isLoading) return false;
+    // Only compare if we have both settings loaded
     return JSON.stringify(settings) !== JSON.stringify(tempSettings);
-  }, [settings, tempSettings, isLoading]);
+  }, [settings, tempSettings]);
 
   const showToast = useCallback((message: string, type: string) => {
     setToast({ message, type });
@@ -816,18 +815,20 @@ const IndexOptions = () => {
   );
 
   const savePreferences = useCallback(async () => {
-    // const languageToSet = tempSettings.language; // No longer need this variable here
     try {
-      await saveSettings(tempSettings); // Save all settings including the language preference
-      setSettings(tempSettings); // Update the main 'saved' state
-
-      // Language instance was already set by handleLanguageChange, no need to set it again here
-      // await changeLanguage(languageToSet); // Remove this call
-
+      // Force UI update immediately by setting settings = tempSettings
+      // This makes isDirty false right away, disabling the button
+      setSettings({...tempSettings});
+      
+      // Now do the actual async save operation
+      await saveSettings(tempSettings);
       showToast(t('common.settingsSaved'), "success");
     } catch (error) {
-      console.error("Error saving settings:", error); // Simplified error message
+      console.error("Error saving settings:", error);
       showToast(t('common.settingsError'), "error"); 
+      // If save fails, revert settings to differentiate from tempSettings
+      // This will re-enable the button since isDirty will be true again
+      setSettings(prev => ({...prev}));
     }
   }, [tempSettings, showToast, t]);
 
@@ -1206,11 +1207,20 @@ const IndexOptions = () => {
     return text;
   }, [settings.urls, settings.prefixes, settings.ticketTypes, settings.urlStructure]); // Depend on saved settings
 
-  // Use the isLoading state for the loading indicator
+  // Use the isLoading state for the initial loading indicator
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading settings...
+      <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin w-10 h-10 mx-auto mb-4 text-blue-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+              </svg>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300">{t('common.loadingSettings')}</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1869,7 +1879,7 @@ const IndexOptions = () => {
             variant="secondary"
             size="sm"
             onClick={resetChanges}
-            disabled={!isDirty || isLoading} // Disable if loading
+            disabled={!isDirty || isLoading} // Remove isSaving reference
             >
             {t('common.resetChanges')}
           </Button>
@@ -1877,7 +1887,7 @@ const IndexOptions = () => {
             variant="primary"
             size="sm"
             onClick={savePreferences}
-            disabled={!isDirty || isLoading} // Disable if loading
+            disabled={!isDirty || isLoading} // Remove isSaving reference
             >
             {t('common.saveChanges')}
           </Button>
