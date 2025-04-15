@@ -525,17 +525,17 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     
     // Data initialization with useMemo
     const initialComponents = useMemo(() => [
-        { id: 'ticket-type', text: '', type: 'ticket-type', description: 'Ticket Type' },
-        { id: 'issue-prefix', text: '', type: 'issue-prefix', description: 'Issue Prefix' },
-        { id: 'base-url', text: '', type: 'base-url', description: 'Base URL' }
-    ] as ComponentData[], []);
+        { id: 'ticket-type', text: '', type: 'ticket-type', description: t('urlBuilder.ticketType') },
+        { id: 'issue-prefix', text: '', type: 'issue-prefix', description: t('urlBuilder.issuePrefix') },
+        { id: 'base-url', text: '', type: 'base-url', description: t('urlBuilder.baseUrl') }
+    ] as ComponentData[], [t]);
 
     const separatorComponents = useMemo(() => [
-        { id: 'sep-hyphen', text: '-', type: 'separator', description: 'Hyphen' },
-        { id: 'sep-dot', text: '.', type: 'separator', description: 'Dot' },
-        { id: 'sep-underscore', text: '_', type: 'separator', description: 'Underscore' },
-        { id: 'sep-slash', text: '/', type: 'separator', description: 'Slash' }
-    ] as ComponentData[], []);
+        { id: 'sep-hyphen', text: '-', type: 'separator', description: t('urlBuilder.hyphen') },
+        { id: 'sep-dot', text: '.', type: 'separator', description: t('urlBuilder.dot') },
+        { id: 'sep-underscore', text: '_', type: 'separator', description: t('urlBuilder.underscore') },
+        { id: 'sep-slash', text: '/', type: 'separator', description: t('urlBuilder.slash') }
+    ] as ComponentData[], [t]);
 
     const regexComponents = useMemo(() => [
         { id: 'regex-numeric', text: '[0-9]+', type: 'regex', description: t('urlBuilder.numericDigits') },

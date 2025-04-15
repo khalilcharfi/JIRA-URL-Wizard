@@ -32,7 +32,7 @@ i18n
     
     // options for language detection
     detection: {
-      order: ['navigator', 'localStorage', 'htmlTag'],
+      order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
     },
   });

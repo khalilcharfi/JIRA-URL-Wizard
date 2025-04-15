@@ -20,7 +20,7 @@ import {
 } from "../services/storageService";
 // Add i18n imports
 import { useTranslation } from 'react-i18next';
-import { changeLanguage } from '../services/i18nService';
+import { changeLanguage, initializeLanguage } from '../services/i18nService';
 import '../i18n'; // ensure i18n is initialized
 import { 
   LightThemeIcon, 
@@ -537,35 +537,71 @@ const IndexOptions = () => {
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
-    getSettings().then((loadedSettings) => {
-      if (isMounted) {
-        // Ensure the loaded settings match the required structure
-        const validatedSettings: SettingsStorage = {
-          ...DEFAULT_SETTINGS,
-          ...loadedSettings,
-          urls: {
-            mobile: loadedSettings.urls?.mobile || DEFAULT_SETTINGS.urls.mobile,
-            desktop: loadedSettings.urls?.desktop || DEFAULT_SETTINGS.urls.desktop,
-            bo: loadedSettings.urls?.bo || DEFAULT_SETTINGS.urls.bo,
-            drupal7: loadedSettings.urls?.drupal7 || DEFAULT_SETTINGS.urls.drupal7,
-            drupal9: loadedSettings.urls?.drupal9 || DEFAULT_SETTINGS.urls.drupal9,
-          }
-        };
-        
-        setSettings(validatedSettings);
-        setTempSettings(validatedSettings);
-        setSelectedLanguage(
-          validatedSettings.language || navigator.language.split("-")[0] || "auto"
-        );
-        setIsLoading(false);
-      }
+    
+    // First initialize language from storage
+    initializeLanguage().then(() => {
+      // Then load settings
+      getSettings().then((loadedSettings) => {
+        if (isMounted) {
+          // Ensure the loaded settings match the required structure
+          const validatedSettings: SettingsStorage = {
+            ...DEFAULT_SETTINGS,
+            ...loadedSettings,
+            urls: {
+              mobile: loadedSettings.urls?.mobile || DEFAULT_SETTINGS.urls.mobile,
+              desktop: loadedSettings.urls?.desktop || DEFAULT_SETTINGS.urls.desktop,
+              bo: loadedSettings.urls?.bo || DEFAULT_SETTINGS.urls.bo,
+              drupal7: loadedSettings.urls?.drupal7 || DEFAULT_SETTINGS.urls.drupal7,
+              drupal9: loadedSettings.urls?.drupal9 || DEFAULT_SETTINGS.urls.drupal9,
+            }
+          };
+          
+          setSettings(validatedSettings);
+          setTempSettings(validatedSettings);
+          setSelectedLanguage(
+            validatedSettings.language || navigator.language.split("-")[0] || "auto"
+          );
+          setIsLoading(false);
+        }
+      }).catch(error => {
+        console.error("Failed to load initial settings:", error);
+        if (isMounted) {
+          setSettings(DEFAULT_SETTINGS);
+          setTempSettings(DEFAULT_SETTINGS);
+          setSelectedLanguage("auto");
+          setIsLoading(false);
+        }
+      });
     }).catch(error => {
-      console.error("Failed to load initial settings:", error);
+      console.error("Failed to initialize language:", error);
       if (isMounted) {
-        setSettings(DEFAULT_SETTINGS);
-        setTempSettings(DEFAULT_SETTINGS);
-        setSelectedLanguage("auto");
-        setIsLoading(false);
+        getSettings().then((loadedSettings) => {
+          if (isMounted) {
+            // Ensure the loaded settings match the required structure
+            const validatedSettings: SettingsStorage = {
+              ...DEFAULT_SETTINGS,
+              ...loadedSettings,
+              urls: {
+                mobile: loadedSettings.urls?.mobile || DEFAULT_SETTINGS.urls.mobile,
+                desktop: loadedSettings.urls?.desktop || DEFAULT_SETTINGS.urls.desktop,
+                bo: loadedSettings.urls?.bo || DEFAULT_SETTINGS.urls.bo,
+                drupal7: loadedSettings.urls?.drupal7 || DEFAULT_SETTINGS.urls.drupal7,
+                drupal9: loadedSettings.urls?.drupal9 || DEFAULT_SETTINGS.urls.drupal9,
+              }
+            };
+            setSettings(validatedSettings);
+            setTempSettings(validatedSettings);
+            setSelectedLanguage("auto");
+            setIsLoading(false);
+          }
+        }).catch(() => {
+          if (isMounted) {
+            setSettings(DEFAULT_SETTINGS);
+            setTempSettings(DEFAULT_SETTINGS);
+            setSelectedLanguage("auto");
+            setIsLoading(false);
+          }
+        });
       }
     });
 

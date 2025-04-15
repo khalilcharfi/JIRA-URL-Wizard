@@ -56,6 +56,10 @@ export default {
     openExtensionSettings: "Erweiterungseinstellungen öffnen",
     generalSettings: "Allgemeine Einstellungen",
     advancedSettings: "Erweiterte Einstellungen",
+    features: "Funktionen",
+    urls: "URLs",
+    advanced: "Erweitert",
+    back: "Zurück",
   },
   
   // Settings page
@@ -186,6 +190,38 @@ export default {
     validationRules: "Validierungsregeln"
   },
   
+  // Validation Rules
+  validationRules: {
+    baseUrlRequired: {
+      title: "Basis-URL erforderlich",
+      description: "Das Muster muss eine Basis-URL-Komponente enthalten"
+    },
+    issuePrefixRequired: {
+      title: "Problem-Präfix erforderlich",
+      description: "Das Muster muss eine Problem-Präfix-Komponente enthalten"
+    },
+    ticketNumberRequired: {
+      title: "Ticket-Nummer erforderlich",
+      description: "Das Muster muss eine Ticket-Nummer-Komponente enthalten"
+    },
+    validTld: {
+      title: "Gültige Top-Level-Domain (TLD)",
+      description: "Stellt sicher, dass der Domain-Teil mit einer gültigen TLD endet (z.B. .com, .org). Wird in der URL-Vorschau überprüft."
+    },
+    noAdjacentSeparators: {
+      title: "Keine benachbarten Trennzeichen",
+      description: "Das Muster darf keine zwei Trennzeichen-Komponenten nebeneinander haben"
+    },
+    noAdjacentRegex: {
+      title: "Keine benachbarten Regex-Muster",
+      description: "Es können nicht zwei Regex-Muster nebeneinander platziert werden"
+    },
+    noLeadingSymbols: {
+      title: "Keine führenden Symbole",
+      description: "Die URL darf nicht mit Symbolen oder Punkten beginnen"
+    }
+  },
+  
   // Messages
   messages: {
     confirmDelete: "Möchten Sie dieses Element wirklich löschen?",
@@ -240,7 +276,7 @@ export default {
     noPatternsDefined: "Keine JIRA-Muster definiert. Klicken Sie auf 'Neues Muster hinzufügen', um zu beginnen.",
     urlBuilderInfo: "Erstellen Sie Ihre benutzerdefinierte JIRA-URL-Struktur durch Ziehen und Ablegen von Komponenten. Das Muster definiert, wie Ihre JIRA-Ticket-IDs in URLs umgewandelt werden.",
     jiraPatternsInfo: "Definieren Sie URL-Muster (Regex), um JIRA-Tabs zu identifizieren. Wird für Funktionen wie die Extraktion von Ticket-IDs verwendet.",
-    selectEnvironment: "Wählen Sie eine Umgebung",
+    selectEnvironment: "Wählen Sie eine Umgebung.",
     copyFailed: "Kopieren fehlgeschlagen!",
     errorDetectingTicket: "Fehler beim Erkennen des Tickets",
     couldNotAccessTabUrl: "Konnte nicht auf die aktuelle Tab-URL zugreifen",
@@ -305,6 +341,15 @@ export default {
     jiraPatternMustHavePattern: "JIRA-Muster an Index {{index}} muss eine \"pattern\"-Eigenschaft haben",
     urlStructureMustBeArray: "URL-Struktur muss ein Array sein",
     invalidJsonFile: "Die Datei enthält kein gültiges JSON. Gefundener Text beginnt mit: \"{{sample}}\"",
+    enterTicketId: "Bitte geben Sie eine Ticket-ID ein.",
+    ticketIdCopied: "Ticket-ID in die Zwischenablage kopiert!",
+    linkCopied: "Link in die Zwischenablage kopiert!",
+    refreshing: "Aktualisierung von aktuellem Tab...",
+    noTicketFound: "Keine Ticket-ID im aktuellen Tab gefunden",
+    refreshError: "Fehler beim Aktualisieren der Ticket-ID",
+    noUrlInTab: "Keine URL im aktuellen Tab verfügbar",
+    noEnvironmentsConfigured: "Es wurden keine Umgebungs-URLs konfiguriert. Bitte besuchen Sie die Erweiterungseinstellungen, um URLs hinzuzufügen.",
+    configurationNeeded: "Konfiguration erforderlich",
   },
   
   // URL Builder components

@@ -56,6 +56,10 @@ export default {
     openExtensionSettings: "Open Extension Settings",
     generalSettings: "General Settings",
     advancedSettings: "Advanced Settings",
+    features: "Features",
+    urls: "URLs",
+    advanced: "Advanced",
+    back: "Back",
   },
   
   // Settings page
@@ -195,6 +199,38 @@ export default {
     validationRules: "Validation Rules"
   },
   
+  // Validation Rules
+  validationRules: {
+    baseUrlRequired: {
+      title: "Base URL Required",
+      description: "The pattern must include a base URL component"
+    },
+    issuePrefixRequired: {
+      title: "Issue Prefix Required",
+      description: "The pattern must include an issue prefix component"
+    },
+    ticketNumberRequired: {
+      title: "Ticket Number Required",
+      description: "The pattern must include a ticket number component"
+    },
+    validTld: {
+      title: "Valid Top-Level Domain (TLD)",
+      description: "Ensures the domain part ends with a valid TLD (e.g., .com, .org). Checked in URL Preview."
+    },
+    noAdjacentSeparators: {
+      title: "No Adjacent Separators",
+      description: "The pattern cannot have two separator components next to each other"
+    },
+    noAdjacentRegex: {
+      title: "No Adjacent Regex Patterns",
+      description: "Cannot place two regex patterns next to each other"
+    },
+    noLeadingSymbols: {
+      title: "No Leading Symbols",
+      description: "The URL cannot start with symbols or dots"
+    }
+  },
+  
   // URL Builder components
   urlBuilder: {
     dynamicFields: "Dynamic Fields",
@@ -270,8 +306,8 @@ export default {
     noPatternsDefined: "No JIRA patterns defined. Click 'Add New Pattern' to start.",
     urlBuilderInfo: "Build your custom JIRA URL structure by dragging and dropping components. The pattern defines how your JIRA ticket IDs are converted to URLs.",
     jiraPatternsInfo: "Define URL patterns (regex) to help identify JIRA tabs. Used for features like extracting ticket IDs.",
-    selectEnvironment: "Select an environment",
-    enterTicketId: "Please enter a Ticket ID",
+    selectEnvironment: "Select an environment.",
+    enterTicketId: "Please enter a Ticket ID.",
     copyFailed: "Copy failed!",
     errorDetectingTicket: "Error detecting ticket",
     couldNotAccessTabUrl: "Could not access current tab URL",
@@ -335,6 +371,14 @@ export default {
     jiraPatternMustHavePattern: "JIRA pattern at index {{index}} must have a \"pattern\" property",
     urlStructureMustBeArray: "URL structure must be an array",
     invalidJsonFile: "The file does not contain valid JSON. Found text starting with: \"{{sample}}\"",
+    ticketIdCopied: "Ticket ID copied to clipboard!",
+    linkCopied: "Link copied to clipboard!",
+    refreshing: "Refreshing from current tab...",
+    noTicketFound: "No ticket ID found in current tab",
+    refreshError: "Error refreshing ticket ID",
+    noUrlInTab: "No URL available in current tab",
+    noEnvironmentsConfigured: "No environment URLs have been configured. Please visit the extension settings to add URLs.",
+    configurationNeeded: "Configuration Needed",
   },
   
   // Credits

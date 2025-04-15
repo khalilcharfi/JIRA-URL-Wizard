@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import '../i18n'; // ensure i18n is initialized
 import '../style.css';
 import { QRCode } from 'react-qrcode-logo';
 import imageAssets, {
@@ -159,8 +160,8 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           type="button"
           onClick={onToggleRecentTickets}
           className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          title={t('jira.recentTickets')}
-          aria-label={t('jira.showRecentTickets')}
+          title={t('messages.recentTickets')}
+          aria-label={t('messages.showRecentTickets')}
         >
           <ClockIcon size={18} />
         </button>
@@ -180,7 +181,7 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
                 </li>
               ))
             ) : (
-              <li className="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">{t('jira.noRecentTickets')}</li>
+              <li className="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">{t('messages.noRecentTickets')}</li>
             )}
           </ul>
         </div>
@@ -246,6 +247,7 @@ interface UrlOutputProps {
   settings: SettingsStorage;
 }
 const UrlOutput: React.FC<UrlOutputProps> = ({ url, onCopyUrl, settings }) => {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2 h-[36px] bg-gray-50 dark:bg-gray-800 rounded-md px-3 pr-0 w-full max-w-[420px]" id="url-output-mobile">
       <a
@@ -253,15 +255,15 @@ const UrlOutput: React.FC<UrlOutputProps> = ({ url, onCopyUrl, settings }) => {
         target="_blank"
         rel="noopener noreferrer"
         className="flex-grow text-blue-600 dark:text-blue-400 hover:underline truncate text-sm"
-        title={url || 'No URL generated'}
+        title={url || t('messages.noUrlGenerated')}
       >
-        {url || 'No URL generated'}
+        {url || t('messages.noUrlGenerated')}
       </a>
       <button
         onClick={onCopyUrl}
         className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
-        title="Copy URL"
-        aria-label="Copy Generated URL"
+        title={t('common.copyUrl')}
+        aria-label={t('common.copyGeneratedUrl')}
         disabled={!url}
       >
         <CopyIcon size={18} />
@@ -316,6 +318,7 @@ const QrCodeSection: React.FC<QrCodeSectionProps> = ({
   ticketId, environments, qrCodeEnvId, qrCodeUrl, onSelectQrEnv, onCopyQrCode, isAnimating,
   integrateQrImage
 }) => {
+  const { t } = useTranslation();
   // Determine the logo source based on the selected QR environment ID
   const logoSrc = useMemo((): string | undefined => {
     switch (qrCodeEnvId) {
@@ -386,18 +389,18 @@ const QrCodeSection: React.FC<QrCodeSectionProps> = ({
                 />
               ) : (
                 <p className="text-center text-gray-500 dark:text-gray-400 h-[200px] flex items-center justify-center">
-                  Select an environment to generate QR code.
+                  {t('qrCode.selectEnvironmentForQr')}
                 </p>
               )}
               <div className="qr-code-caption text-center mt-2">
                 <div className="qr-code-caption-text text-xs text-gray-500 dark:text-gray-400">
-                  Click QR Code to copy image
+                  {t('qrCode.clickToCopy')}
                 </div>
               </div>
             </div>
           </div>
           <div className="qr-section-caption text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Scan QR code to access this URL
+            {t('qrCode.scanToAccess')}
           </div>
         </div>
       </div>
@@ -421,6 +424,7 @@ const OutputArea: React.FC<OutputAreaProps> = ({
   environments, qrCodeEnvId, qrCodeUrl, onSelectQrEnv, onCopyQrCode, isAnimating,
   integrateQrImage, settings
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="p-3 space-y-2 min-h-[80px] flex items-center justify-center">
       {activeEnv === 'qrcode' ? (
@@ -439,9 +443,9 @@ const OutputArea: React.FC<OutputAreaProps> = ({
       ) : currentEnv && ticketId ? (
         <MemoizedUrlOutput url={currentFullUrl} onCopyUrl={onCopyUrl} settings={settings} />
       ) : !currentEnv && activeEnv !== 'qrcode' ? (
-         <p className="text-gray-500 dark:text-gray-400 text-center text-xs pt-4">Select an environment.</p>
+         <p className="text-gray-500 dark:text-gray-400 text-center text-xs pt-4">{t('messages.selectEnvironment')}</p>
       ) : !ticketId && activeEnv !== 'qrcode' ? (
-         <p className="text-gray-500 dark:text-gray-400 text-center text-xs pt-4">Please enter a Ticket ID.</p>
+         <p className="text-gray-500 dark:text-gray-400 text-center text-xs pt-4">{t('messages.enterTicketId')}</p>
       ) : null}
     </div>
   );
@@ -453,14 +457,15 @@ interface PopupFooterProps {
   onOpenOptions: () => void;
 }
 const PopupFooter: React.FC<PopupFooterProps> = ({ onOpenOptions }) => {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between p-1 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-      <span className="text-[10px] text-gray-500 dark:text-gray-400">Developed by Khalil Charfi</span>
+      <span className="text-[10px] text-gray-500 dark:text-gray-400">{t('credits.developedBy')}</span>
       <button
         className="flex items-center justify-center w-[24px] h-[24px] rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
         onClick={onOpenOptions}
-        title="Open Settings"
-        aria-label="Open Extension Settings"
+        title={t('navigation.openSettings')}
+        aria-label={t('navigation.openSettings')}
       >
         <SettingsIcon size={16} />
       </button>
@@ -883,15 +888,15 @@ const JiraUrlWizard = () => {
     
     return (
       <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-md m-3">
-        <h3 className="text-sm font-medium text-amber-800 dark:text-amber-400 mb-1">Configuration Needed</h3>
+        <h3 className="text-sm font-medium text-amber-800 dark:text-amber-400 mb-1">{t('messages.configurationNeeded')}</h3>
         <p className="text-xs text-amber-700 dark:text-amber-500 mb-2">
-          No environment URLs have been configured. Please visit the extension settings to add URLs.
+          {t('messages.noEnvironmentsConfigured')}
         </p>
         <button
           onClick={openOptionsPage}
           className="text-xs bg-amber-600 text-white dark:bg-amber-700 px-2 py-1 rounded hover:bg-amber-700 dark:hover:bg-amber-600 transition-colors"
         >
-          Open Settings
+          {t('navigation.openSettings')}
         </button>
       </div>
     );
