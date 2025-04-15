@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JIRA URL Wizard - Privacy Policy</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png">
+    <link rel="shortcut icon" href="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png">
     <style>
         :root {
             --primary-color: #0052CC;
@@ -17,6 +21,10 @@
             --white: #FFFFFF;
             --success: #36B37E;
             --warning: #FFAB00;
+            --transition-speed: 0.3s;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --hover-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         
         * {
@@ -30,6 +38,8 @@
             line-height: 1.6;
             color: var(--text-color);
             background-color: #FAFBFC;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         .container {
@@ -40,76 +50,101 @@
         
         header {
             text-align: center;
-            padding: 30px 0;
+            padding: 40px 0;
             background-color: var(--white);
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
             margin-bottom: 30px;
+            transition: transform var(--transition-speed);
+        }
+        
+        header:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
         }
         
         .header-content {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
+            gap: 20px;
+            margin-bottom: 15px;
         }
         
         .header-content img {
             width: 64px;
             height: 64px;
+            transition: transform var(--transition-speed);
+        }
+        
+        .header-content img:hover {
+            transform: scale(1.1);
         }
         
         h1 {
             font-size: 2.2rem;
             color: var(--primary-color);
             margin: 0;
+            font-weight: 600;
         }
         
         .last-updated {
             color: var(--text-light);
             font-style: italic;
             margin-top: 10px;
+            font-size: 0.9rem;
         }
         
         .intro-box {
             background-color: var(--white);
-            padding: 20px;
-            border-radius: 8px;
+            padding: 25px;
+            border-radius: var(--border-radius);
             margin-bottom: 30px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow);
             border-left: 4px solid var(--success);
+            transition: transform var(--transition-speed);
         }
         
-        .intro-box p {
-            margin-bottom: 0;
+        .intro-box:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
         }
         
         .toc {
             background-color: var(--white);
-            padding: 20px;
-            border-radius: 8px;
+            padding: 25px;
+            border-radius: var(--border-radius);
             margin-bottom: 30px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow);
+            transition: transform var(--transition-speed);
+        }
+        
+        .toc:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
         }
         
         .toc h2 {
             margin-top: 0;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-size: 1.3rem;
             color: var(--primary-color);
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .toc ul {
             list-style-type: none;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
+            gap: 15px;
         }
         
         .toc li {
-            margin-bottom: 8px;
+            margin-bottom: 0;
         }
         
         .toc a {
@@ -117,49 +152,59 @@
             text-decoration: none;
             display: flex;
             align-items: center;
-            transition: color 0.2s;
-            padding: 8px;
-            border-radius: 4px;
+            transition: all var(--transition-speed);
+            padding: 12px;
+            border-radius: 6px;
+            background-color: var(--bg-light);
         }
         
         .toc a:hover {
             color: var(--primary-color);
-            background-color: var(--bg-light);
+            background-color: var(--primary-light);
+            transform: translateX(5px);
         }
         
         .toc-icon {
-            margin-right: 8px;
+            margin-right: 10px;
             color: var(--primary-color);
+            font-size: 1.2rem;
         }
         
         section {
             background-color: var(--white);
             padding: 30px;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             margin-bottom: 25px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow);
+            transition: transform var(--transition-speed);
+        }
+        
+        section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
         }
         
         h2 {
             color: var(--primary-color);
             font-size: 1.5rem;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
+            gap: 10px;
         }
         
         h2 svg {
-            margin-right: 10px;
+            color: var(--primary-color);
         }
         
         h3 {
             color: var(--secondary-color);
             font-size: 1.2rem;
-            margin: 20px 0 10px;
+            margin: 25px 0 15px;
         }
         
         p, ul, ol {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: var(--text-color);
         }
         
@@ -168,126 +213,478 @@
         }
         
         li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            position: relative;
         }
+
         
         .data-type {
             background-color: var(--primary-light);
-            padding: 15px 20px;
-            border-radius: 6px;
-            margin: 15px 0;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
             border-left: 4px solid var(--primary-color);
+            transition: transform var(--transition-speed);
         }
         
-        .data-type h3 {
-            color: var(--primary-color);
-            margin-top: 0;
+        .data-type:hover {
+            transform: translateX(5px);
         }
         
         .feature-box {
             background-color: var(--bg-light);
-            padding: 15px 20px;
-            border-radius: 6px;
-            margin: 15px 0;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
             display: flex;
-            gap: 15px;
+            gap: 20px;
             align-items: flex-start;
+            transition: transform var(--transition-speed);
+        }
+        
+        .feature-box:hover {
+            transform: translateX(5px);
         }
         
         .feature-icon {
             background-color: var(--primary-light);
-            padding: 10px;
+            padding: 12px;
             border-radius: 50%;
             color: var(--primary-color);
             flex-shrink: 0;
+            transition: transform var(--transition-speed);
+        }
+        
+        .feature-box:hover .feature-icon {
+            transform: rotate(15deg);
         }
         
         .feature-text h4 {
             color: var(--secondary-color);
             font-size: 1.1rem;
-            margin: 0 0 5px;
+            margin: 0 0 8px;
         }
         
         .permission {
             background-color: var(--bg-light);
-            padding: 20px;
-            border-radius: 6px;
-            margin: 20px 0;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin: 25px 0;
+            transition: transform var(--transition-speed);
+        }
+        
+        .permission:hover {
+            transform: translateX(5px);
         }
         
         .permission h4 {
             color: var(--secondary-color);
             font-size: 1.1rem;
-            margin: 0 0 10px;
+            margin: 0 0 15px;
             display: flex;
             align-items: center;
-        }
-        
-        .permission h4 svg {
-            margin-right: 8px;
-            color: var(--primary-color);
+            gap: 10px;
         }
         
         .purpose {
             background-color: var(--primary-light);
-            padding: 8px 12px;
-            border-radius: 4px;
+            padding: 10px 15px;
+            border-radius: 6px;
             display: inline-block;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-weight: 500;
+            transition: transform var(--transition-speed);
         }
         
-        strong {
-            color: var(--secondary-color);
+        .purpose:hover {
+            transform: translateY(-2px);
         }
         
         .important-note {
             background-color: #FFEBE6;
             border-left: 4px solid var(--accent-color);
-            padding: 12px 16px;
-            border-radius: 4px;
-            margin: 15px 0;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            transition: transform var(--transition-speed);
         }
         
-        .important-note strong {
-            color: var(--accent-color);
+        .important-note:hover {
+            transform: translateX(5px);
         }
         
         .privacy-highlight {
             background-color: #E3FCEF;
             border-left: 4px solid var(--success);
-            padding: 12px 16px;
-            border-radius: 4px;
-            margin: 15px 0;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            transition: transform var(--transition-speed);
         }
         
-        .privacy-highlight strong {
-            color: var(--success);
+        .privacy-highlight:hover {
+            transform: translateX(5px);
         }
         
         .back-to-top {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             background-color: var(--bg-light);
             color: var(--secondary-color);
-            padding: 5px 12px;
-            border-radius: 4px;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
             text-decoration: none;
             font-size: 0.9rem;
-            margin-top: 15px;
-            transition: background-color 0.2s;
+            margin-top: 20px;
+            transition: all var(--transition-speed);
         }
         
         .back-to-top:hover {
-            background-color: var(--border-color);
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            transform: translateY(-2px);
         }
         
-        footer {
+        /* Browser Download Buttons */
+        .browser-buttons {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
             text-align: center;
-            padding: 20px;
-            color: var(--text-light);
-            font-size: 0.9rem;
+            transition: transform var(--transition-speed);
         }
         
+        .browser-buttons:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .browser-buttons h3 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+        }
+        
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .browser-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            min-width: 160px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+        }
+        
+        .browser-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .browser-btn:active {
+            transform: translateY(0);
+        }
+        
+        .browser-btn img {
+            transition: transform var(--transition-speed);
+            background-color: white;
+            padding: 4px;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+        
+        .browser-btn:hover img {
+            transform: scale(1.1);
+        }
+        
+        .chrome-btn {
+            background-color: #4285F4;
+        }
+        
+        .firefox-btn, .edge-btn, .safari-btn {
+            background-color: var(--secondary-color);
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+        
+        .firefox-btn:hover, .edge-btn:hover, .safari-btn:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .firefox-btn:hover img, .edge-btn:hover img, .safari-btn:hover img {
+            transform: none;
+        }
+        
+        .settings-option {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .storage-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 30px;
+            border-radius: var(--border-radius);
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            margin: 0 auto;
+            transition: all var(--transition-speed);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .storage-btn:hover {
+            background-color: #344563;
+            transform: translateY(-3px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .storage-btn:active {
+            transform: translateY(0);
+        }
+        
+        .storage-btn svg {
+            transition: transform var(--transition-speed);
+        }
+        
+        .storage-btn:hover svg {
+            transform: rotate(180deg);
+        }
+        
+        .settings-info {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            overflow: auto;
+            animation: modalFadeIn var(--transition-speed) ease-in-out;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Add this new CSS class */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto;
+            padding: 0;
+            width: 95%;
+            max-width: 1200px;
+            max-height: 90vh;
+            border-radius: var(--border-radius);
+            box-shadow: var(--hover-shadow);
+            animation: modalSlideIn 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes modalSlideIn {
+            from {transform: translateY(-30px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+        
+        .modal-header {
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: white;
+        }
+        
+        .close-modal {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform var(--transition-speed);
+        }
+        
+        .close-modal:hover {
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .browser-instructions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .instruction-item {
+            background-color: var(--bg-light);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            transition: transform var(--transition-speed);
+        }
+        
+        .instruction-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .instruction-item h4 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instruction-item ol {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        
+        .browser-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-light);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        /* Language switcher styles */
+        .language-switcher {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        
+        .language-btn {
+            padding: 8px 20px;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .language-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .language-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Collapsible sections */
+        .collapsible-section {
+            margin-bottom: 20px;
+            transition: transform var(--transition-speed);
+        }
+        
+        .collapsible-section:hover {
+            transform: translateX(5px);
+        }
+        
+        .collapsible-header {
+            background-color: var(--bg-light);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: all var(--transition-speed);
+        }
+        
+        .collapsible-header:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .collapsible-header.active {
+            background-color: var(--primary-light);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+        
+        .collapsible-content {
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            display: none;
+            background-color: var(--white);
+            animation: fadeIn var(--transition-speed) ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(-10px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .collapsible-header.active + .collapsible-content {
+            display: block;
+        }
+        
+        /* Responsive design */
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -311,74 +708,68 @@
             
             .feature-box {
                 flex-direction: column;
-            }
-        }
-        
-        .collapsible-section {
-            margin-bottom: 15px;
-        }
-        
-        .collapsible-header {
-            background-color: var(--bg-light);
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-        }
-        
-        .collapsible-header:hover {
-            background-color: var(--border-color);
-        }
-        
-        .collapsible-content {
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-top: none;
-            border-radius: 0 0 4px 4px;
-            display: none;
-            background-color: var(--white);
-        }
-        
-        .collapsible-header.active + .collapsible-content {
-            display: block;
-        }
-        
-        /* Language switcher styles */
-        .language-switcher {
-            display: flex;
-            justify-content: center;
-            margin-top: 15px;
-            gap: 10px;
-        }
-        
-        .language-btn {
-            padding: 5px 15px;
-            background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .language-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        /* No need for language-specific classes anymore as we'll use data attributes */
-        @media (min-width: 1200px) {
-            .bilingual-content {
-                display: flex;
-                gap: 20px;
+                align-items: center;
+                text-align: center;
             }
             
-            .bilingual-content .language-section {
-                flex: 1;
+            .browser-instructions {
+                grid-template-columns: 1fr;
             }
+            
+            .modal-content {
+                margin: 15% auto;
+                width: 95%;
+            }
+            
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .browser-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        /* Loading state */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .loading::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% {transform: translateX(-100%);}
+            100% {transform: translateX(100%);}
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
         }
     </style>
 </head>
@@ -395,6 +786,92 @@
                 <button class="language-btn" data-lang="de">Deutsch</button>
             </div>
         </header>
+        
+        <!-- Browser Download Buttons -->
+        <div class="browser-buttons">
+            <h3 data-i18n="browserButtons.title">Download JIRA URL Wizard</h3>
+            <div class="button-container">
+                <a href="https://chromewebstore.google.com/detail/jira-url-wizard/opfnbeleknbmdnemmnlhigmmmkghncak" target="_blank" class="browser-btn chrome-btn" rel="noopener noreferrer">
+                    <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome Logo" width="20" height="20">
+                    <span data-i18n="browserButtons.chrome">Chrome</span>
+                </a>
+                <a href="#" onclick="alert(translations[document.querySelector('.language-btn.active').getAttribute('data-lang')].browserButtons.firefoxAlert); return false;" class="browser-btn firefox-btn">
+                    <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" alt="Firefox Logo" width="20" height="20">
+                    <span data-i18n="browserButtons.firefox">Firefox (Soon)</span>
+                </a>
+                <a href="#" onclick="alert(translations[document.querySelector('.language-btn.active').getAttribute('data-lang')].browserButtons.edgeAlert); return false;" class="browser-btn edge-btn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg" alt="Edge Logo" width="20" height="20">
+                    <span data-i18n="browserButtons.edge">Edge (Soon)</span>
+                </a>
+                <a href="#" onclick="alert(translations[document.querySelector('.language-btn.active').getAttribute('data-lang')].browserButtons.safariAlert); return false;" class="browser-btn safari-btn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/Safari_browser_logo.svg" alt="Safari Logo" width="20" height="20">
+                    <span data-i18n="browserButtons.safari">Safari (Soon)</span>
+                </a>
+            </div>
+            
+            <div class="settings-option">
+                <button id="openOptionsBtn" class="storage-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <span data-i18n="settings.button">Manage Extension Settings</span>
+                </button>
+                <p class="settings-info" data-i18n="settings.info">Access your extension's storage and configuration</p>
+            </div>
+        </div>
+        
+        <!-- Settings Instructions Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Extension Settings</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>To access the extension settings, please use one of the following methods based on your browser:</p>
+                    
+                    <div class="browser-instructions">
+                        <div class="instruction-item">
+                            <h4><span class="browser-icon">C</span> Chrome</h4>
+                            <ol>
+                                <li>Click the extensions icon (puzzle piece) in the browser toolbar</li>
+                                <li>Find "JIRA URL Wizard" in the list</li>
+                                <li>Click the three dots (⋮) next to the extension</li>
+                                <li>Select "Options" or "Extension options"</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="instruction-item">
+                            <h4><span class="browser-icon">F</span> Firefox</h4>
+                            <ol>
+                                <li>Click the menu button (≡) in the top right</li>
+                                <li>Select "Add-ons and themes"</li>
+                                <li>Click on "Extensions" in the sidebar</li>
+                                <li>Find "JIRA URL Wizard" and click the three dots (⋮)</li>
+                                <li>Select "Options" or "Preferences"</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="instruction-item">
+                            <h4><span class="browser-icon">E</span> Edge</h4>
+                            <ol>
+                                <li>Click the extensions icon (puzzle piece) in the browser toolbar</li>
+                                <li>Find "JIRA URL Wizard" in the list</li>
+                                <li>Click the three dots (⋮) next to the extension</li>
+                                <li>Select "Manage extension"</li>
+                                <li>Scroll down and click on "Extension options"</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="instruction-item">
+                            <h4><span class="browser-icon">D</span> Direct Access</h4>
+                            <ol>
+                                <li>Click the JIRA URL Wizard icon in your browser toolbar</li>
+                                <li>When the popup opens, click on "Manage Extension Settings"</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="intro-box">
             <p data-i18n="introText"></p>
@@ -456,12 +933,6 @@
                     <a href="#changes">
                         <span class="toc-icon">📝</span>
                         <span data-i18n="nav.changes"></span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#contact">
-                        <span class="toc-icon">✉️</span>
-                        <span data-i18n="nav.contact"></span>
                     </a>
                 </li>
                 <li>
@@ -591,9 +1062,9 @@
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                Permissions Usage
+                <span data-i18n="permissions.title">Permissions Usage</span>
             </h2>
-            <p>JIRA URL Wizard requires the following permissions to provide its functionality. Here's why each permission is needed:</p>
+            <p data-i18n="permissions.intro">JIRA URL Wizard requires the following permissions to provide its functionality. Here's why each permission is needed:</p>
 
             <div class="collapsible-section">
                 <div class="collapsible-header">
@@ -603,20 +1074,15 @@
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                             <line x1="12" y1="22.08" x2="12" y2="12"></line>
                         </svg>
-                        storage
+                        <span data-i18n="permissions.storage.name">storage</span>
                     </h4>
                     <span>+</span>
                 </div>
                 <div class="collapsible-content">
-                    <p class="purpose"><strong>Purpose:</strong> To save your environments and preferences</p>
-                    <p><strong>Usage:</strong> This permission allows the extension to:</p>
-                    <ul>
-                        <li>Save your JIRA environment configurations for quick switching</li>
-                        <li>Store your favorite tickets for easy access</li>
-                        <li>Remember your preferences and settings</li>
-                        <li>Maintain your quick access lists</li>
-                    </ul>
-                    <p><strong>Data Handling:</strong> All data is stored locally using Chrome's storage API. No data is sent to external servers.</p>
+                    <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.storage.purpose">To save your environments and preferences</span></p>
+                    <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.storage.usage">This permission allows the extension to:</span></p>
+                    <ul data-i18n-list="permissions.storage.items"></ul>
+                    <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.storage.dataHandling">All data is stored locally using Chrome's storage API. No data is sent to external servers.</span></p>
                 </div>
             </div>
 
@@ -628,20 +1094,15 @@
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <line x1="3" y1="18" x2="21" y2="18"></line>
                         </svg>
-                        tabs
+                        <span data-i18n="permissions.tabs.name">tabs</span>
                     </h4>
                     <span>+</span>
                 </div>
                 <div class="collapsible-content">
-                    <p class="purpose"><strong>Purpose:</strong> To detect JIRA tabs and enable quick switching</p>
-                    <p><strong>Usage:</strong> This permission enables the extension to:</p>
-                    <ul>
-                        <li>Detect when you're viewing a JIRA ticket</li>
-                        <li>Extract the current ticket ID for quick environment switching</li>
-                        <li>Generate the appropriate URLs for different environments</li>
-                        <li>Switch between development, staging, and production views</li>
-                    </ul>
-                    <p><strong>Data Handling:</strong> The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored.</p>
+                    <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.tabs.purpose">To detect JIRA tabs and enable quick switching</span></p>
+                    <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.tabs.usage">This permission enables the extension to:</span></p>
+                    <ul data-i18n-list="permissions.tabs.items"></ul>
+                    <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.tabs.dataHandling">The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored.</span></p>
                 </div>
             </div>
 
@@ -652,22 +1113,18 @@
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
-                        activeTab
+                        <span data-i18n="permissions.activeTab.name">activeTab</span>
                     </h4>
                     <span>+</span>
                 </div>
                 <div class="collapsible-content">
-                    <p class="purpose"><strong>Purpose:</strong> To read current tab information when needed</p>
-                    <p><strong>Usage:</strong> This permission allows the extension to:</p>
-                    <ul>
-                        <li>Read the current tab's URL when you click the extension icon</li>
-                        <li>Generate environment-specific links based on your current ticket</li>
-                        <li>Enable quick environment switching for your current view</li>
-                    </ul>
-                    <p><strong>Data Handling:</strong> The extension only accesses the active tab when you explicitly interact with it. No background monitoring occurs.</p>
+                    <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.activeTab.purpose">To read current tab information when needed</span></p>
+                    <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.activeTab.usage">This permission allows the extension to:</span></p>
+                    <ul data-i18n-list="permissions.activeTab.items"></ul>
+                    <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.activeTab.dataHandling">The extension only accesses the active tab when you explicitly interact with it. No background monitoring occurs.</span></p>
                 </div>
             </div>
-            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
         </section>
         
         <section id="storage">
@@ -675,21 +1132,16 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                 </svg>
-                Data Storage and Security
+                <span data-i18n="storage.title">Data Storage and Security</span>
             </h2>
-            <p>All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We prioritize your security with these measures:</p>
-            <ul>
-                <li>All data is encrypted using Chrome's built-in storage encryption</li>
-                <li>No data is transmitted to external servers - everything stays on your device</li>
-                <li>No tracking or analytics services are used</li>
-                <li>Regular security audits of our codebase</li>
-                <li>Secure handling of sensitive information</li>
-            </ul>
+            <p data-i18n="storage.intro">All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We prioritize your security with these measures:</p>
+            <ul data-i18n-list="storage.measures"></ul>
             
             <div class="privacy-highlight">
-                <strong>Enterprise-Ready:</strong> Our local-only approach to data storage makes JIRA URL Wizard suitable for enterprise environments with strict security requirements.
+                <strong data-i18n="storage.highlight.title">Enterprise-Ready:</strong>
+                <span data-i18n="storage.highlight.desc">Our local-only approach to data storage makes JIRA URL Wizard suitable for enterprise environments with strict security requirements.</span>
             </div>
-            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
         </section>
         
         <section id="rights">
@@ -698,17 +1150,11 @@
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                Your Rights and Controls
+                <span data-i18n="rights.title">Your Rights and Controls</span>
             </h2>
-            <p>You have complete control over your data in JIRA URL Wizard:</p>
-            <ul>
-                <li>Access your stored configurations through the extension's options page</li>
-                <li>Delete any or all of your stored data at any time</li>
-                <li>Export your configurations for backup or sharing with team members</li>
-                <li>Import configurations from other devices or team members</li>
-                <li>Reset all settings to default with a single click</li>
-            </ul>
-            <a href="#toc" class="back-to-top">↑ Back to Top</a>
+            <p data-i18n="rights.intro">You have complete control over your data in JIRA URL Wizard:</p>
+            <ul data-i18n-list="rights.controls"></ul>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
         </section>
         
         <section id="retention">
@@ -717,17 +1163,43 @@
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                Data Retention
+                <span data-i18n="retention.title">Data Retention</span>
             </h2>
-            <p>Since all data is stored locally on your device, it remains available until you:</p>
-            <ul>
-                <li>Explicitly delete it through the extension's options</li>
-                <li>Uninstall the JIRA URL Wizard extension</li>
-                <li>Clear your browser's extension data storage</li>
-            </ul>
-            <p>We have no access to your data and therefore no
+            <p data-i18n="retention.intro">Since all data is stored locally on your device, it remains available until you:</p>
+            <ul data-i18n-list="retention.conditions"></ul>
+            <p data-i18n="retention.conclusion">We have no access to your data and therefore no</p>
 
+        </section>
+        
+        <section id="changes">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <span data-i18n="changes.title">Policy Changes</span>
+            </h2>
+            <p data-i18n="changes.p1">We may update our Privacy Policy from time to time. When we do, we will post the new Privacy Policy on this page and update the "Last Updated" date.</p>
+            <p data-i18n="changes.p2">Significant changes will be notified to users through a notification in the extension. We encourage you to review this Privacy Policy periodically for any changes.</p>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
+        </section>
+        
+        <section id="compliance">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span data-i18n="compliance.title">Legal Compliance</span>
+            </h2>
+            <p data-i18n="compliance.p1">JIRA URL Wizard is designed to comply with applicable data protection regulations, including the General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA).</p>
+            <p data-i18n="compliance.p2">Our local-only approach to data handling ensures that we respect your privacy rights by default. Since we never collect or process your data on our servers, many traditional privacy concerns are inherently addressed.</p>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
+        </section>
     </div>
+    
+    <footer>
+        <span data-i18n="footer.copyright">&copy; <span id="copyright-year"></span> JIRA URL Wizard</span> | <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard" target="_blank" data-i18n="footer.github">View on GitHub</a>
+    </footer>
     
     <script>
         // Language translations
@@ -747,7 +1219,6 @@
                     rights: "Your Rights & Controls",
                     retention: "Data Retention",
                     changes: "Policy Changes",
-                    contact: "Contact Us",
                     compliance: "Legal Compliance"
                 },
                 introduction: {
@@ -805,40 +1276,160 @@
                         title: "Your Privacy is Our Priority:",
                         desc: "All data is stored locally in your browser's storage and is not transmitted to any external servers. We have no access to your JIRA credentials or ticket information."
                     }
+                },
+                permissions: {
+                    title: "Permissions Usage",
+                    intro: "JIRA URL Wizard requires the following permissions to provide its functionality. Here's why each permission is needed:",
+                    purpose: "Purpose:",
+                    usage: "Usage:",
+                    dataHandling: "Data Handling:",
+                    storage: {
+                        name: "storage",
+                        purpose: "To save your environments and preferences",
+                        usage: "This permission allows the extension to:",
+                        items: [
+                            "Save your JIRA environment configurations for quick switching",
+                            "Store your favorite tickets for easy access",
+                            "Remember your preferences and settings",
+                            "Maintain your quick access lists"
+                        ],
+                        dataHandling: "All data is stored locally using Chrome's storage API. No data is sent to external servers."
+                    },
+                    tabs: {
+                        name: "tabs",
+                        purpose: "To detect JIRA tabs and enable quick switching",
+                        usage: "This permission enables the extension to:",
+                        items: [
+                            "Detect when you're viewing a JIRA ticket",
+                            "Extract the current ticket ID for quick environment switching",
+                            "Generate the appropriate URLs for different environments",
+                            "Switch between development, staging, and production views"
+                        ],
+                        dataHandling: "The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored."
+                    },
+                    activeTab: {
+                        name: "activeTab",
+                        purpose: "To read current tab information when needed",
+                        usage: "This permission allows the extension to:",
+                        items: [
+                            "Read the current tab's URL when you click the extension icon",
+                            "Generate environment-specific links based on your current ticket",
+                            "Enable quick environment switching for your current view"
+                        ],
+                        dataHandling: "The extension only accesses the active tab when you explicitly interact with it. No background monitoring occurs."
+                    }
+                },
+                storage: {
+                    title: "Data Storage and Security",
+                    intro: "All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We prioritize your security with these measures:",
+                    measures: [
+                        "All data is encrypted using Chrome's built-in storage encryption",
+                        "No data is transmitted to external servers - everything stays on your device",
+                        "No tracking or analytics services are used",
+                        "Regular security audits of our codebase",
+                        "Secure handling of sensitive information"
+                    ],
+                    highlight: {
+                        title: "Enterprise-Ready:",
+                        desc: "Our local-only approach to data storage makes JIRA URL Wizard suitable for enterprise environments with strict security requirements."
+                    }
+                },
+                rights: {
+                    title: "Your Rights and Controls",
+                    intro: "You have complete control over your data in JIRA URL Wizard:",
+                    controls: [
+                        "Access your stored configurations through the extension's options page",
+                        "Delete any or all of your stored data at any time",
+                        "Export your configurations for backup or sharing with team members",
+                        "Import configurations from other devices or team members",
+                        "Reset all settings to default with a single click"
+                    ]
+                },
+                retention: {
+                    title: "Data Retention",
+                    intro: "Since all data is stored locally on your device, it remains available until you:",
+                    conditions: [
+                        "Explicitly delete it through the extension's options",
+                        "Uninstall the JIRA URL Wizard extension",
+                        "Clear your browser's extension data storage"
+                    ],
+                    conclusion: "We have no access to your data and therefore no ability to delete or retain it on our servers."
+                },
+                changes: {
+                    title: "Policy Changes",
+                    p1: "We may update our Privacy Policy from time to time. When we do, we will post the new Privacy Policy on this page and update the \"Last Updated\" date.",
+                    p2: "Significant changes will be notified to users through a notification in the extension. We encourage you to review this Privacy Policy periodically for any changes."
+                },
+                compliance: {
+                    title: "Legal Compliance",
+                    p1: "JIRA URL Wizard is designed to comply with applicable data protection regulations, including the General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA).",
+                    p2: "Our local-only approach to data handling ensures that we respect your privacy rights by default. Since we never collect or process your data on our servers, many traditional privacy concerns are inherently addressed."
+                },
+                footer: {
+                    copyright: "&copy; <span id=\"copyright-year\"></span> JIRA URL Wizard",
+                    github: "View on GitHub"
+                },
+                browserButtons: {
+                    title: "Download JIRA URL Wizard",
+                    chrome: "Chrome",
+                    firefox: "Firefox (Soon)",
+                    edge: "Edge (Soon)",
+                    safari: "Safari (Soon)",
+                    firefoxAlert: "Firefox extension coming soon!",
+                    edgeAlert: "Edge extension coming soon!",
+                    safariAlert: "Safari extension coming soon!"
+                },
+                settings: {
+                    button: "Erweiterungseinstellungen verwalten",
+                    info: "Zugriff auf den Speicher und die Konfiguration Ihrer Erweiterung"
+                },
+                changes: {
+                    title: "Änderungen der Richtlinie",
+                    p1: "Wir können unsere Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wenn wir dies tun, werden wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen und das Datum der \"Letzten Aktualisierung\" ändern.",
+                    p2: "Wesentliche Änderungen werden den Nutzern durch eine Benachrichtigung in der Erweiterung mitgeteilt. Wir empfehlen Ihnen, diese Datenschutzrichtlinie regelmäßig auf Änderungen zu überprüfen."
+                },
+                contact: {
+                    title: "Kontakt",
+                    p1: "Wenn Sie Fragen zu dieser Datenschutzrichtlinie oder unseren Datenpraktiken haben, kontaktieren Sie uns bitte:",
+                    github: "Über unsere <a href=\"https://github.com/khalilcharfi/JIRA-URL-Wizard/issues\" target=\"_blank\">GitHub-Repository-Issues-Seite</a>"
+                },
+                compliance: {
+                    title: "Rechtliche Einhaltung",
+                    p1: "JIRA URL Wizard wurde entwickelt, um geltende Datenschutzbestimmungen einzuhalten, einschließlich der Datenschutz-Grundverordnung (DSGVO) und des California Consumer Privacy Act (CCPA).",
+                    p2: "Unser rein lokaler Ansatz bei der Datenverarbeitung stellt sicher, dass wir Ihre Datenschutzrechte standardmäßig respektieren. Da wir Ihre Daten niemals auf unseren Servern sammeln oder verarbeiten, werden viele herkömmliche Datenschutzbedenken von Natur aus berücksichtigt."
                 }
             },
             de: {
-                title: "JIRA URL Wizard Datenschutzerklärung",
-                lastUpdated: "Zuletzt aktualisiert: 10. April 2024",
-                introText: "<strong>JIRA URL Wizard</strong> wurde entwickelt, um die Arbeit mit mehreren JIRA-Umgebungen zu vereinfachen. Wir priorisieren Ihre Privatsphäre und Sicherheit - alle Daten werden lokal auf Ihrem Gerät gespeichert, und keine Informationen werden an externe Server gesendet.",
+                title: "JIRA URL Wizard - Datenschutzerklärung",
+                lastUpdated: "Letzte Aktualisierung: 10. April 2024",
+                introText: "<strong>JIRA URL Wizard</strong> wurde entwickelt, um die Arbeit mit mehreren JIRA-Umgebungen zu vereinfachen. Wir legen höchsten Wert auf Ihre Privatsphäre und Sicherheit - alle Daten werden lokal auf Ihrem Gerät gespeichert und keine Informationen werden an externe Server übertragen.",
                 quickNav: "Schnellnavigation",
-                backToTop: "↑ Zurück nach oben",
+                backToTop: "↑ Nach oben",
                 nav: {
-                    introduction: "Einleitung",
+                    introduction: "Einführung",
                     features: "Hauptfunktionen",
-                    information: "Informationen, die wir sammeln",
-                    permissions: "Nutzung von Berechtigungen",
+                    information: "Erfasste Informationen",
+                    permissions: "Berechtigungen",
                     storage: "Datenspeicherung & Sicherheit",
-                    rights: "Ihre Rechte & Kontrollen",
-                    retention: "Datenspeicherung",
-                    changes: "Änderungen der Richtlinie",
-                    contact: "Kontakt",
-                    compliance: "Rechtliche Einhaltung"
+                    rights: "Ihre Rechte",
+                    retention: "Datenaufbewahrung",
+                    changes: "Änderungen",
+                    compliance: "Rechtliche Konformität"
                 },
                 introduction: {
-                    title: "Einleitung",
-                    p1: "JIRA URL Wizard (\"wir\", \"unser\" oder \"uns\") verpflichtet sich zum Schutz Ihrer Privatsphäre. Diese Datenschutzrichtlinie erklärt, wie wir Ihre Informationen sammeln, verwenden und schützen, wenn Sie unsere Chrome-Erweiterung nutzen. Wir nehmen Ihre Privatsphäre ernst und sind transparent bezüglich unserer Datenpraktiken.",
-                    p2: "Unsere Erweiterung wurde entwickelt, um Entwicklern, Testern und Projektmanagern zu helfen, einfach zwischen verschiedenen JIRA-Umgebungen zu navigieren, ohne URLs manuell ändern zu müssen."
+                    title: "Einführung",
+                    p1: "JIRA URL Wizard (\"wir\", \"uns\" oder \"unser\") ist bestrebt, Ihre Privatsphäre zu schützen. Diese Datenschutzerklärung erläutert, wie wir Ihre Informationen erfassen, verwenden und schützen, wenn Sie unsere Chrome-Erweiterung nutzen. Wir nehmen Ihre Privatsphäre ernst und sind transparent in Bezug auf unsere Datenpraktiken.",
+                    p2: "Unsere Erweiterung wurde entwickelt, um Entwicklern, Testern und Projektmanagern das einfache Navigieren zwischen verschiedenen JIRA-Umgebungen zu ermöglichen, ohne URLs manuell ändern zu müssen."
                 },
                 features: {
                     title: "Hauptfunktionen",
                     switching: {
                         title: "Schneller Umgebungswechsel",
-                        desc: "Wechseln Sie mit einem einzigen Klick sofort zwischen Entwicklungs-, Staging- und Produktions-JIRA-Umgebungen."
+                        desc: "Wechseln Sie mit einem Klick zwischen Entwicklungs-, Staging- und Produktionsumgebungen von JIRA."
                     },
                     config: {
-                        title: "Benutzerdefinierte Umgebungskonfiguration",
-                        desc: "Erstellen und passen Sie JIRA-Umgebungskonfigurationen an, um sie an die spezifische Einrichtung Ihrer Organisation anzupassen."
+                        title: "Anpassbare Umgebungskonfiguration",
+                        desc: "Erstellen und passen Sie JIRA-Umgebungskonfigurationen an die spezifischen Anforderungen Ihres Unternehmens an."
                     },
                     organization: {
                         title: "Ticket-Organisation",
@@ -846,57 +1437,161 @@
                     },
                     detection: {
                         title: "Automatische Ticket-Erkennung",
-                        desc: "Extrahieren Sie Ticket-Informationen automatisch von jeder JIRA-Seite, die Sie betrachten."
+                        desc: "Extrahiert automatisch Ticket-Informationen von jeder JIRA-Seite, die Sie anzeigen."
                     }
                 },
                 information: {
-                    title: "Informationen, die wir sammeln",
-                    intro: "JIRA URL Wizard sammelt und speichert die folgenden Informationen lokal auf Ihrem Gerät:",
+                    title: "Erfasste Informationen",
+                    intro: "JIRA URL Wizard erfasst und speichert folgende Informationen lokal auf Ihrem Gerät:",
                     config: {
                         title: "Konfigurationsdaten",
                         items: [
-                            "JIRA-Umgebungskonfigurationen (URLs, Namen, Authentifizierungsdetails)",
+                            "JIRA-Umgebungskonfigurationen (URLs, Namen, Authentifizierungsdaten)",
                             "Benutzerdefinierte Umgebungseinstellungen und Präferenzen",
-                            "Benutzeroberflächen-Präferenzen (Theme, Layout, usw.)"
+                            "Benutzeroberflächeneinstellungen (Design, Layout, etc.)"
                         ]
                     },
                     ticket: {
                         title: "Ticket-Daten",
                         items: [
                             "Gespeicherte Ticket-Informationen (Ticket-IDs, Beschreibungen)",
-                            "Ticket-Kategorisierung und -Organisation",
-                            "Schnellzugriffslisten für Tickets"
+                            "Ticket-Kategorisierung und Organisation",
+                            "Schnellzugriffs-Ticketlisten"
                         ]
                     },
                     usage: {
                         title: "Nutzungsdaten",
                         items: [
-                            "Erweiterungseinstellungen und -präferenzen",
-                            "Zuletzt verwendete Umgebungen",
-                            "Benutzerdefinierte Verknüpfungen und Hotkeys"
+                            "Erweiterungseinstellungen und Präferenzen",
+                            "Zuletzt aufgerufene Umgebungen",
+                            "Benutzerdefinierte Tastenkombinationen"
                         ]
                     },
                     privacy: {
                         title: "Ihre Privatsphäre hat Priorität:",
-                        desc: "Alle Daten werden lokal im Speicher Ihres Browsers gespeichert und nicht an externe Server übertragen. Wir haben keinen Zugriff auf Ihre JIRA-Anmeldedaten oder Ticket-Informationen."
+                        desc: "Alle Daten werden lokal in Ihrem Browser-Speicher gespeichert und nicht an externe Server übertragen. Wir haben keinen Zugriff auf Ihre JIRA-Anmeldedaten oder Ticket-Informationen."
                     }
+                },
+                permissions: {
+                    title: "Berechtigungen",
+                    intro: "JIRA URL Wizard benötigt folgende Berechtigungen, um seine Funktionalität bereitzustellen. Hier ist der Grund für jede Berechtigung:",
+                    purpose: "Zweck:",
+                    usage: "Verwendung:",
+                    dataHandling: "Datenverarbeitung:",
+                    storage: {
+                        name: "storage",
+                        purpose: "Zum Speichern Ihrer Umgebungen und Einstellungen",
+                        usage: "Diese Berechtigung ermöglicht der Erweiterung:",
+                        items: [
+                            "Ihre JIRA-Umgebungskonfigurationen für schnelles Wechseln zu speichern",
+                            "Ihre bevorzugten Tickets für einfachen Zugriff zu speichern",
+                            "Ihre Präferenzen und Einstellungen zu speichern",
+                            "Ihre Schnellzugriffslisten zu verwalten"
+                        ],
+                        dataHandling: "Alle Daten werden lokal mit der Chrome-Speicher-API gespeichert. Keine Daten werden an externe Server übertragen."
+                    },
+                    tabs: {
+                        name: "tabs",
+                        purpose: "Zum Erkennen von JIRA-Tabs und schnellem Wechseln",
+                        usage: "Diese Berechtigung ermöglicht der Erweiterung:",
+                        items: [
+                            "Zu erkennen, wenn Sie ein JIRA-Ticket anzeigen",
+                            "Die aktuelle Ticket-ID für schnelles Umgebungswechseln zu extrahieren",
+                            "Die entsprechenden URLs für verschiedene Umgebungen zu generieren",
+                            "Zwischen Entwicklungs-, Staging- und Produktionsansichten zu wechseln"
+                        ],
+                        dataHandling: "Die Erweiterung liest nur die URL und den Titel von JIRA-bezogenen Tabs. Keine anderen Tab-Informationen werden abgerufen oder gespeichert."
+                    },
+                    activeTab: {
+                        name: "activeTab",
+                        purpose: "Zum Lesen aktueller Tab-Informationen bei Bedarf",
+                        usage: "Diese Berechtigung ermöglicht der Erweiterung:",
+                        items: [
+                            "Die URL des aktuellen Tabs zu lesen, wenn Sie auf das Erweiterungssymbol klicken",
+                            "Umgebungsspezifische Links basierend auf Ihrem aktuellen Ticket zu generieren",
+                            "Schnelles Umgebungswechseln für Ihre aktuelle Ansicht zu ermöglichen"
+                        ],
+                        dataHandling: "Die Erweiterung greift nur auf den aktiven Tab zu, wenn Sie explizit mit ihm interagieren. Es findet keine Hintergrundüberwachung statt."
+                    }
+                },
+                storage: {
+                    title: "Datenspeicherung und Sicherheit",
+                    intro: "Alle von JIRA URL Wizard erfassten Daten werden lokal auf Ihrem Gerät mit der Chrome-Speicher-API gespeichert. Wir priorisieren Ihre Sicherheit mit folgenden Maßnahmen:",
+                    measures: [
+                        "Alle Daten werden mit der integrierten Chrome-Speicherverschlüsselung verschlüsselt",
+                        "Keine Daten werden an externe Server übertragen - alles bleibt auf Ihrem Gerät",
+                        "Es werden keine Tracking- oder Analysedienste verwendet",
+                        "Regelmäßige Sicherheitsaudits unseres Codebestands",
+                        "Sichere Handhabung sensibler Informationen"
+                    ],
+                    highlight: {
+                        title: "Unternehmensgeeignet:",
+                        desc: "Unser rein lokaler Ansatz bei der Datenspeicherung macht JIRA URL Wizard für Unternehmensumgebungen mit strengen Sicherheitsanforderungen geeignet."
+                    }
+                },
+                rights: {
+                    title: "Ihre Rechte",
+                    intro: "Sie haben vollständige Kontrolle über Ihre Daten in JIRA URL Wizard:",
+                    controls: [
+                        "Zugriff auf Ihre gespeicherten Konfigurationen über die Erweiterungsoptionen",
+                        "Löschen aller oder einzelner gespeicherter Daten jederzeit",
+                        "Exportieren Ihrer Konfigurationen für Backup oder Team-Sharing",
+                        "Importieren von Konfigurationen von anderen Geräten oder Teammitgliedern",
+                        "Zurücksetzen aller Einstellungen auf Standard mit einem Klick"
+                    ]
+                },
+                retention: {
+                    title: "Datenaufbewahrung",
+                    intro: "Da alle Daten lokal auf Ihrem Gerät gespeichert werden, bleiben sie verfügbar, bis Sie:",
+                    conditions: [
+                        "Diese explizit über die Erweiterungsoptionen löschen",
+                        "Die JIRA URL Wizard-Erweiterung deinstallieren",
+                        "Den Erweiterungsdatenspeicher Ihres Browsers löschen"
+                    ],
+                    conclusion: "Wir haben keinen Zugriff auf Ihre Daten und daher keine Möglichkeit, diese auf unseren Servern zu löschen oder zu behalten."
+                },
+                changes: {
+                    title: "Änderungen",
+                    p1: "Wir können unsere Datenschutzerklärung von Zeit zu Zeit aktualisieren. Wenn wir dies tun, werden wir die neue Datenschutzerklärung auf dieser Seite veröffentlichen und das Datum der \"Letzten Aktualisierung\" ändern.",
+                    p2: "Wesentliche Änderungen werden den Nutzern durch eine Benachrichtigung in der Erweiterung mitgeteilt. Wir empfehlen Ihnen, diese Datenschutzerklärung regelmäßig auf Änderungen zu überprüfen."
+                },
+                compliance: {
+                    title: "Rechtliche Konformität",
+                    p1: "JIRA URL Wizard wurde entwickelt, um geltende Datenschutzbestimmungen einzuhalten, einschließlich der Datenschutz-Grundverordnung (DSGVO) und des California Consumer Privacy Act (CCPA).",
+                    p2: "Unser rein lokaler Ansatz bei der Datenverarbeitung stellt sicher, dass wir Ihre Datenschutzrechte standardmäßig respektieren. Da wir Ihre Daten niemals auf unseren Servern sammeln oder verarbeiten, werden viele herkömmliche Datenschutzbedenken von Natur aus berücksichtigt."
+                },
+                footer: {
+                    copyright: "&copy; <span id=\"copyright-year\"></span> JIRA URL Wizard",
+                    github: "Auf GitHub anzeigen"
+                },
+                browserButtons: {
+                    title: "JIRA URL Wizard herunterladen",
+                    chrome: "Chrome",
+                    firefox: "Firefox (Bald verfügbar)",
+                    edge: "Edge (Bald verfügbar)",
+                    safari: "Safari (Bald verfügbar)",
+                    firefoxAlert: "Die Firefox-Erweiterung wird in Kürze verfügbar sein!",
+                    edgeAlert: "Die Edge-Erweiterung wird in Kürze verfügbar sein!",
+                    safariAlert: "Die Safari-Erweiterung wird in Kürze verfügbar sein!"
+                },
+                settings: {
+                    button: "Erweiterungseinstellungen verwalten",
+                    info: "Zugriff auf den Speicher und die Konfiguration Ihrer Erweiterung"
                 }
             }
         };
         
         // Apply translations based on selected language
+        function getValue(obj, path) {
+            return path.split('.').reduce((prev, curr) => {
+                return prev && prev[curr] ? prev[curr] : null;
+            }, obj);
+        }
+
         function applyTranslations(lang) {
             const elements = document.querySelectorAll('[data-i18n]');
             elements.forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                
-                // Get nested property by path like "nav.introduction"
-                const getValue = (obj, path) => {
-                    return path.split('.').reduce((prev, curr) => {
-                        return prev && prev[curr] ? prev[curr] : null;
-                    }, obj);
-                };
-                
                 const text = getValue(translations[lang], key);
                 if (text) {
                     // If text contains HTML tags, use innerHTML, otherwise use textContent
@@ -923,18 +1618,14 @@
                     });
                 }
             });
-            
-            // Helper function to get nested object property
-            function getValue(obj, path) {
-                return path.split('.').reduce((prev, curr) => {
-                    return prev && prev[curr] ? prev[curr] : null;
-                }, obj);
-            }
         }
         
         // Language switcher functionality
         document.addEventListener('DOMContentLoaded', function() {
             const languageBtns = document.querySelectorAll('.language-btn');
+            
+            // Set current year in the copyright
+            document.getElementById('copyright-year').textContent = new Date().getFullYear();
             
             // Apply initial translations
             applyTranslations('en');
@@ -949,6 +1640,59 @@
                     
                     // Apply translations
                     applyTranslations(lang);
+                });
+            });
+            
+            // Modal functionality
+            const modal = document.getElementById('settingsModal');
+            const settingsBtn = document.getElementById('openOptionsBtn');
+            const closeModal = document.querySelector('.close-modal');
+            
+            settingsBtn.addEventListener('click', function() {
+                // Try to open Chrome extension options first
+                try {
+                    if (chrome && chrome.runtime && chrome.runtime.openOptionsPage) {
+                        chrome.runtime.openOptionsPage();
+                    } else if (typeof browser !== 'undefined' && browser.runtime && browser.runtime.openOptionsPage) {
+                        browser.runtime.openOptionsPage();
+                    } else {
+                        // Open modal with instructions if extension APIs aren't available
+                        modal.style.display = 'block';
+                        document.body.classList.add('modal-open');
+                    }
+                } catch (e) {
+                    // If any error occurs (likely due to extension APIs not being available)
+                    modal.style.display = 'block';
+                    document.body.classList.add('modal-open');
+                }
+            });
+            
+            // Close modal when clicking the X
+            closeModal.addEventListener('click', function() {
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+            });
+            
+            // Close modal when clicking outside the modal content
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                }
+            });
+            
+            // Make collapsible sections work
+            const collapsibles = document.querySelectorAll('.collapsible-header');
+            collapsibles.forEach(header => {
+                header.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    
+                    // Toggle the + and - signs
+                    if (this.classList.contains('active')) {
+                        this.querySelector('span').textContent = '-';
+                    } else {
+                        this.querySelector('span').textContent = '+';
+                    }
                 });
             });
         });
