@@ -538,9 +538,9 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     ] as ComponentData[], []);
 
     const regexComponents = useMemo(() => [
-        { id: 'regex-numeric', text: '[0-9]+', type: 'regex', description: 'Any Numeric Digits (e.g., 12345)' },
-        { id: 'regex-alphanumeric', text: '[a-zA-Z0-9]+', type: 'regex', description: 'Alphanumeric Characters' }
-    ] as ComponentData[], []);
+        { id: 'regex-numeric', text: '[0-9]+', type: 'regex', description: t('urlBuilder.numericDigits') },
+        { id: 'regex-alphanumeric', text: '[a-zA-Z0-9]+', type: 'regex', description: t('urlBuilder.alphanumericChars') }
+    ] as ComponentData[], [t]);
 
     const allAvailableComponents = useMemo(() => 
         [...initialComponents, ...separatorComponents, ...regexComponents],
@@ -610,44 +610,44 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     const validationRules = useMemo(() => [
         {
             id: 'required-base-url',
-            name: 'Base URL Required',
-            description: 'The pattern must include a base URL component',
+            name: t('validationRules.baseUrlRequired.title'),
+            description: t('validationRules.baseUrlRequired.description'),
             validate: (pattern: string[]) => {
                 const isValid = pattern.some(id => {
                     const component = getBaseComponentData(id, allAvailableComponents);
                     return component?.type === 'base-url';
                 });
-                return { valid: isValid, message: isValid ? undefined : 'Base URL is required' };
+                return { valid: isValid, message: isValid ? undefined : t('validationRules.baseUrlRequired.description') };
             }
         },
         {
             id: 'required-issue-prefix',
-            name: 'Issue Prefix Required',
-            description: 'The pattern must include an issue prefix component',
+            name: t('validationRules.issuePrefixRequired.title'),
+            description: t('validationRules.issuePrefixRequired.description'),
             validate: (pattern: string[]) => {
                 const isValid = pattern.some(id => {
                     const component = getBaseComponentData(id, allAvailableComponents);
                     return component?.type === 'issue-prefix';
                 });
-                return { valid: isValid, message: isValid ? undefined : 'Issue Prefix is required' };
+                return { valid: isValid, message: isValid ? undefined : t('validationRules.issuePrefixRequired.description') };
             }
         },
         {
             id: 'required-ticket-number',
-            name: 'Ticket Number Required',
-            description: 'The pattern must include a ticket number component',
+            name: t('validationRules.ticketNumberRequired.title'),
+            description: t('validationRules.ticketNumberRequired.description'),
             validate: (pattern: string[]) => {
                 const isValid = pattern.some(id => {
                     const component = getBaseComponentData(id, allAvailableComponents);
                     return component?.type === 'regex' && component.text === '[0-9]+';
                 });
-                return { valid: isValid, message: isValid ? undefined : 'Ticket number is required' };
+                return { valid: isValid, message: isValid ? undefined : t('validationRules.ticketNumberRequired.description') };
             }
         },
         {
             id: 'valid-tld',
-            name: 'Valid Top-Level Domain (TLD)',
-            description: 'Ensures the domain part ends with a valid TLD (e.g., .com, .org). Checked in URL Preview.',
+            name: t('validationRules.validTld.title'),
+            description: t('validationRules.validTld.description'),
             validate: (pattern: string[]) => {
                 let structuralIssueFound = false;
                 const baseUrlIndex = pattern.findIndex(id => getBaseComponentData(id, allAvailableComponents)?.type === 'base-url');
@@ -683,15 +683,15 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                 return { 
                     valid: !structuralIssueFound, 
                     message: structuralIssueFound 
-                        ? "Pattern structure might lead to an invalid domain/TLD. Check URL previews carefully."
+                        ? t('validationRules.validTld.description')
                         : undefined
                 }; 
             }
         },
         {
             id: 'no-adjacent-separators',
-            name: 'No Adjacent Separators',
-            description: 'The pattern cannot have two separator components next to each other',
+            name: t('validationRules.noAdjacentSeparators.title'),
+            description: t('validationRules.noAdjacentSeparators.description'),
             validate: (pattern: string[]) => {
                 let isValid = true;
                 for (let i = 0; i < pattern.length - 1; i++) {
@@ -702,13 +702,13 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                         break;
                     }
                 }
-                return { valid: isValid, message: isValid ? undefined : 'Avoid placing separators directly next to each other' };
+                return { valid: isValid, message: isValid ? undefined : t('validationRules.noAdjacentSeparators.description') };
             }
         },
         {
             id: 'no-adjacent-regex',
-            name: 'No Adjacent Regex Patterns',
-            description: 'Cannot place two regex patterns next to each other',
+            name: t('validationRules.noAdjacentRegex.title'),
+            description: t('validationRules.noAdjacentRegex.description'),
             validate: (pattern: string[]) => {
                 let isValid = true;
                 for (let i = 0; i < pattern.length - 1; i++) {
@@ -721,14 +721,14 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                 }
                 return { 
                     valid: isValid, 
-                    message: isValid ? undefined : 'Avoid placing regex patterns directly next to each other' 
+                    message: isValid ? undefined : t('validationRules.noAdjacentRegex.description') 
                 };
             }
         },
         {
             id: 'no-leading-symbols',
-            name: 'No Leading Symbols',
-            description: 'The URL cannot start with symbols or dots',
+            name: t('validationRules.noLeadingSymbols.title'),
+            description: t('validationRules.noLeadingSymbols.description'),
             validate: (pattern: string[]) => {
                 if (pattern.length === 0) return { valid: true };
                 
@@ -736,11 +736,11 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                 const isValid = firstComponent?.type !== 'separator' && firstComponent?.type !== 'regex';
                 return { 
                     valid: isValid, 
-                    message: isValid ? undefined : 'URL cannot start with symbols or dots' 
+                    message: isValid ? undefined : t('validationRules.noLeadingSymbols.description') 
                 };
             }
         }
-    ], [allAvailableComponents]);
+    ], [allAvailableComponents, t]);
         
     // Improved sensor configuration for better drag detection
     const sensors = useSensors(

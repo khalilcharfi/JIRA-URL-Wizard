@@ -31,6 +31,16 @@ export default {
     reset: "Zurücksetzen",
   },
   
+  // Validation messages
+  validation: {
+    prefixEmpty: "Präfix darf nicht leer sein",
+    prefixAlphanumeric: "Präfix darf nur Buchstaben und Zahlen enthalten",
+    prefixExists: "Dieses Präfix existiert bereits",
+    ticketTypeEmpty: "Ticket-Typ darf nicht leer sein",
+    ticketTypeAlphanumeric: "Ticket-Typ darf nur Buchstaben und Zahlen enthalten",
+    ticketTypeExists: "Dieser Ticket-Typ existiert bereits"
+  },
+  
   // Language names
   Auto: "Automatisch",
   English: "Englisch",
@@ -85,6 +95,7 @@ export default {
     drupal7: "Legacy CMS-System",
     drupal9: "Aktuelles CMS-System",
     baseUrl: "Basis-URL",
+    baseUrls: "Basis-URLs",
     environments: "Frontend-Umgebungen",
     cms: "CMS-Umgebungen",
   },
@@ -133,6 +144,10 @@ export default {
     markdownCopyDesc: "Inhalte als Markdown-Format statt als Klartext kopieren (falls zutreffend)",
     manualTicketInput: "Manuelle Ticket-Eingabe erlauben",
     manualTicketInputDesc: "Manuelle Eingabe der Ticket-ID in der Popup-Oberfläche aktivieren",
+    allowManualTicketInput: "Manuelle Ticket-Eingabe erlauben",
+    advancedConfig: "Erweiterte Konfiguration",
+    advancedConfigDesc: "Erweiterte Einstellungen und Konfigurationsoptionen aktivieren",
+    issuePrefixes: "Problem-Präfixe",
     urlStructure: "URL-Struktur",
     qrIntegrationLabel: "Logo in QR-Codes integrieren",
     markdownCopyLabel: "Markdown beim Kopieren verwenden",
@@ -146,13 +161,15 @@ export default {
     toggleEffects: "Effekte umschalten",
     copyPreview: "Vorschau kopieren",
     useMarkdownFormatting: "Markdown-Formatierung beim Kopieren generierter Inhalte verwenden",
+    ticketTypes: "Ticket-Typen (Optional)",
+    jiraUrlPatterns: "JIRA-URL-Muster"
   },
   
   // Sections
   sections: {
     prefixesTitle: "Präfixe & Ticket-Typen",
     prefixesInfo: "Definieren Sie Projektpräfixe (z.B. PROJ) und optionale Ticket-Typen (z.B. BUG). Drücken Sie Enter zum Hinzufügen.",
-    urlBuilderTitle: "Dynamische Felder",
+    urlBuilderTitle: "URL-Builder",
     urlStructureTitle: "URL-Struktur",
     urlBuilderInfo: "Erstellen Sie Ihre benutzerdefinierte JIRA-URL-Struktur durch Ziehen und Ablegen von Komponenten. Das Muster definiert, wie Ihre JIRA-Ticket-IDs in URLs umgewandelt werden.",
     urlBuilderDetailsInfo: "Erstellen Sie Ihre benutzerdefinierte JIRA-URL-Struktur durch Ziehen und Ablegen von Komponenten. Dieses Muster definiert, wie Ihre JIRA-Ticket-IDs in URLs umgewandelt werden. Stellen Sie sicher, dass Muster gültige URLs erzeugen (korrekte TLDs, keine ungültigen Startzeichen) und vermeiden Sie, Regex-Muster nacheinander zu platzieren.",
@@ -222,7 +239,7 @@ export default {
     loadingSettings: "Lade Einstellungen...",
     noPatternsDefined: "Keine JIRA-Muster definiert. Klicken Sie auf 'Neues Muster hinzufügen', um zu beginnen.",
     urlBuilderInfo: "Erstellen Sie Ihre benutzerdefinierte JIRA-URL-Struktur durch Ziehen und Ablegen von Komponenten. Das Muster definiert, wie Ihre JIRA-Ticket-IDs in URLs umgewandelt werden.",
-    jiraPatternsInfo: "Definieren Sie URL-Muster (Regex), um JIRA-Tabs zu identifizieren. Wird für Funktionen wie das Extrahieren von Ticket-IDs verwendet.",
+    jiraPatternsInfo: "Definieren Sie URL-Muster (Regex), um JIRA-Tabs zu identifizieren. Wird für Funktionen wie die Extraktion von Ticket-IDs verwendet.",
     selectEnvironment: "Wählen Sie eine Umgebung",
     copyFailed: "Kopieren fehlgeschlagen!",
     errorDetectingTicket: "Fehler beim Erkennen des Tickets",
@@ -322,4 +339,77 @@ export default {
     scanToAccess: "Scannen Sie den QR-Code, um auf diese URL zuzugreifen",
     copied: "QR-Code-Bild kopiert!"
   },
+  
+  // Options page
+  options: {
+    title: 'Einstellungen',
+    language: {
+      title: 'Sprache',
+      auto: 'Automatisch',
+      english: 'Englisch',
+      german: 'Deutsch',
+      success: 'Sprache erfolgreich geändert',
+      error: 'Sprache konnte nicht geändert werden'
+    },
+    theme: {
+      title: 'Design',
+      light: 'Hell',
+      dark: 'Dunkel',
+      system: 'System'
+    },
+    advanced: {
+      title: 'Erweiterte Einstellungen',
+      show: 'Erweiterte Einstellungen anzeigen',
+      hide: 'Erweiterte Einstellungen ausblenden'
+    },
+    copy: {
+      markdown: 'Als Markdown kopieren',
+      plain: 'Als Klartext kopieren'
+    },
+    ticket: {
+      manual: 'Manuelle Ticket-Eingabe erlauben',
+      types: 'Ticket-Typen',
+      prefixes: 'Präfixe',
+      add: 'Hinzufügen',
+      remove: 'Entfernen',
+      pattern: 'Muster',
+      save: 'Speichern',
+      cancel: 'Abbrechen',
+      edit: 'Bearbeiten',
+      delete: 'Löschen',
+      confirmDelete: 'Möchten Sie dieses Muster wirklich löschen?'
+    },
+    qr: {
+      title: 'QR-Code',
+      integrate: 'QR-Code in URL integrieren'
+    },
+    importExport: {
+      title: 'Einstellungen importieren/exportieren',
+      import: 'Importieren',
+      export: 'Exportieren',
+      success: 'Einstellungen erfolgreich importiert',
+      error: 'Einstellungen konnten nicht importiert werden',
+      invalid: 'Ungültige Einstellungsdatei'
+    }
+  },
+  
+  // Pattern related
+  pattern: {
+    edit: "Muster bearbeiten",
+    enterRegex: "Regex direkt eingeben",
+    useUrlGeneration: "URL-Generierung verwenden",
+    generateFromUrl: "Aus Beispiel-URL generieren",
+    label: "Muster",
+    enable: "Dieses Muster aktivieren",
+    cancel: "Abbrechen",
+    save: "Änderungen speichern"
+  },
+  
+  urls: {
+    boDesc: "Backend Office Tool für administrative Aufgaben",
+    drupal7Desc: "Altes CMS-System für die Inhaltsverwaltung",
+    mobileDesc: "Mobil optimierte Web-Oberfläche",
+    desktopDesc: "Desktop-Webschnittstelle",
+    drupal9Desc: "Aktuelles CMS-System für die Inhaltsverwaltung"
+  }
 };

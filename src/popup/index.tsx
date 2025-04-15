@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../style.css';
 import { QRCode } from 'react-qrcode-logo';
 import imageAssets, {
@@ -13,6 +14,9 @@ import { generateMarkdownLinks, generatePlainTextLinks } from '../services/templ
 import { buildUrlFromPattern } from '../utils/urlBuilder';
 import { getCurrentTabUrl } from '../utils/urlUtils';
 import { detectTicketFromCurrentTab, extractIssueIdFromUrl } from '../services/ticketService';
+
+// Update IconName type to include all possible values
+type IconName = 'smartphone' | 'monitor' | 'building' | 'layout' | 'qr-code' | 'copy' | 'markdownCopy' | 'settings' | 'clock' | 'check' | 'refresh' | 'sun' | 'language';
 
 interface Environment {
   id: string;
@@ -92,6 +96,7 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
   onToggleRecentTickets, onSelectRecentTicket, onRefreshFromCurrentTab,
   onTicketIdChange, settings
 }) => {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState(ticketId);
   
   useEffect(() => {
@@ -117,17 +122,17 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           id="ticket-id"
           value={inputValue}
           onChange={handleInputChange}
-          placeholder="Enter Ticket ID"
+          placeholder={t('jira.enterTicketId')}
           className="flex-grow px-2 py-1 border border-gray-300 rounded-md text-base font-semibold bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
           disabled={!settings.allowManualTicketInput}
-          title={!settings.allowManualTicketInput ? "Manual ticket ID input is disabled in settings" : "Enter Ticket ID"}
+          title={!settings.allowManualTicketInput ? t('jira.manualInputDisabled') : t('jira.enterTicketId')}
         />
         {settings.allowManualTicketInput && (
           <button
             type="submit"
             className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            title="Apply Ticket ID"
-            aria-label="Apply Ticket ID"
+            title={t('jira.applyTicketId')}
+            aria-label={t('jira.applyTicketId')}
           >
             <CheckIcon size={18} />
           </button>
@@ -136,8 +141,8 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           type="button"
           onClick={onRefreshFromCurrentTab}
           className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          title="Refresh from Current Tab"
-          aria-label="Refresh from Current Tab"
+          title={t('jira.refreshFromCurrentTab')}
+          aria-label={t('jira.refreshFromCurrentTab')}
         >
           <RefreshIcon size={18} />
         </button>
@@ -145,8 +150,8 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           type="button"
           onClick={onCopyEnvironmentLinks}
           className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          title="Copy Environment Links"
-          aria-label="Copy Environment Links"
+          title={t('jira.copyEnvironmentLinks')}
+          aria-label={t('jira.copyEnvironmentLinks')}
         >
           {settings.useMarkdownCopy ? <MarkdownCopyIcon size={18} /> : <CopyIcon size={18} />}
         </button>
@@ -154,8 +159,8 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
           type="button"
           onClick={onToggleRecentTickets}
           className="p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          title="Recent Tickets"
-          aria-label="Show Recent Tickets"
+          title={t('jira.recentTickets')}
+          aria-label={t('jira.showRecentTickets')}
         >
           <ClockIcon size={18} />
         </button>
@@ -175,7 +180,7 @@ const PopupHeader: React.FC<PopupHeaderProps> = ({
                 </li>
               ))
             ) : (
-              <li className="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">No recent tickets</li>
+              <li className="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">{t('jira.noRecentTickets')}</li>
             )}
           </ul>
         </div>
@@ -465,6 +470,7 @@ const PopupFooter: React.FC<PopupFooterProps> = ({ onOpenOptions }) => {
 const MemoizedPopupFooter = React.memo(PopupFooter);
 
 const JiraUrlWizard = () => {
+  const { t } = useTranslation();
   // --- State ---
   const [settings, setSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
@@ -610,7 +616,18 @@ const JiraUrlWizard = () => {
         // 1. Load settings first - we need these for URL detection
         const loadedSettings = await getSettings();
         if (!isMounted) return;
-        setSettings(loadedSettings);
+        
+        // Ensure the settings match the expected type
+        const validatedSettings: SettingsStorage = {
+          ...DEFAULT_SETTINGS,
+          ...loadedSettings,
+          urls: {
+            ...DEFAULT_SETTINGS.urls,
+            ...loadedSettings.urls
+          }
+        };
+        
+        setSettings(validatedSettings);
         
         // 2. Get stored recent tickets and last detected ticket info
         const [storedTicketsData, lastTicketData] = await Promise.all([
@@ -653,8 +670,8 @@ const JiraUrlWizard = () => {
           // Extract ticket ID from URL using optimized function
           const extractedTicketId = extractTicketFromUrl(
             currentUrl, 
-            loadedSettings.jiraPatterns || [],
-            loadedSettings.prefixes || []
+            validatedSettings.jiraPatterns || [],
+            validatedSettings.prefixes || []
           );
           
           if (extractedTicketId && isMounted) {

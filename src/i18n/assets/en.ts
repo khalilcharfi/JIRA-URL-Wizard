@@ -31,6 +31,16 @@ export default {
     reset: "Reset",
   },
   
+  // Validation messages
+  validation: {
+    prefixEmpty: "Prefix cannot be empty",
+    prefixAlphanumeric: "Prefix must contain only letters and numbers",
+    prefixExists: "This prefix already exists",
+    ticketTypeEmpty: "Ticket type cannot be empty",
+    ticketTypeAlphanumeric: "Ticket type must contain only letters and numbers",
+    ticketTypeExists: "This ticket type already exists"
+  },
+  
   // Language names
   Auto: "Auto",
   English: "English",
@@ -85,8 +95,18 @@ export default {
     drupal7: "Legacy CMS system",
     drupal9: "Current CMS system",
     baseUrl: "Base URL",
+    baseUrls: "Base URLs",
     environments: "Frontend Environments",
     cms: "CMS Environments",
+  },
+  
+  // URLs descriptions 
+  urls: {
+    boDesc: "Backend Office Tool for administrative tasks",
+    desktopDesc: "Desktop web interface",
+    drupal7Desc: "Legacy CMS system for content management",
+    drupal9Desc: "Current CMS system for content management",
+    mobileDesc: "Mobile-optimized web interface",
   },
   
   // JIRA related
@@ -133,6 +153,10 @@ export default {
     markdownCopyDesc: "Copy content as Markdown format instead of plain text (if applicable)",
     manualTicketInput: "Allow manual ticket input",
     manualTicketInputDesc: "Enable manual ticket ID input in the popup interface",
+    allowManualTicketInput: "Allow manual ticket input",
+    advancedConfig: "Advanced Configuration",
+    advancedConfigDesc: "Enable advanced settings and configuration options",
+    issuePrefixes: "Issue Prefixes",
     urlStructure: "URL Structure",
     qrIntegrationLabel: "Integrate logo within QR codes",
     markdownCopyLabel: "Use Markdown when copying",
@@ -146,13 +170,15 @@ export default {
     toggleEffects: "Toggle Effects",
     copyPreview: "Copy Preview",
     useMarkdownFormatting: "Use Markdown formatting when copying generated content",
+    ticketTypes: "Ticket Types (Optional)",
+    jiraUrlPatterns: "JIRA URL Patterns"
   },
   
   // Sections
   sections: {
     prefixesTitle: "Prefixes & Ticket Types",
     prefixesInfo: "Define project prefixes (e.g., PROJ) and optional ticket types (e.g., BUG). Press Enter to add.",
-    urlBuilderTitle: "Dynamic Fields",
+    urlBuilderTitle: "URL Builder",
     urlStructureTitle: "URL Structure",
     urlBuilderInfo: "Build your custom JIRA URL structure by dragging and dropping components. The pattern defines how your JIRA ticket IDs are converted to URLs.",
     urlBuilderDetailsInfo: "Build your custom JIRA URL structure by dragging and dropping components. This pattern defines how your JIRA ticket IDs will be transformed into URLs. Ensure patterns create valid URLs (correct TLDs, no invalid starting characters) and avoid placing regex patterns consecutively.",
@@ -322,4 +348,69 @@ export default {
     scanToAccess: "Scan QR code to access this URL",
     copied: "QR code image copied!"
   },
+  
+  // Options
+  options: {
+    title: 'Settings',
+    language: {
+      title: 'Language',
+      auto: 'Auto',
+      english: 'English',
+      german: 'German',
+      success: 'Language changed successfully',
+      error: 'Failed to change language'
+    },
+    theme: {
+      title: 'Theme',
+      light: 'Light',
+      dark: 'Dark',
+      system: 'System'
+    },
+    advanced: {
+      title: 'Advanced Settings',
+      show: 'Show Advanced Settings',
+      hide: 'Hide Advanced Settings'
+    },
+    copy: {
+      markdown: 'Copy as Markdown',
+      plain: 'Copy as Plain Text'
+    },
+    ticket: {
+      manual: 'Allow Manual Ticket Input',
+      types: 'Ticket Types',
+      prefixes: 'Prefixes',
+      add: 'Add',
+      remove: 'Remove',
+      pattern: 'Pattern',
+      save: 'Save',
+      cancel: 'Cancel',
+      edit: 'Edit',
+      delete: 'Delete',
+      confirmDelete: 'Are you sure you want to delete this pattern?'
+    },
+    qr: {
+      title: 'QR Code',
+      integrate: 'Integrate QR Code in URL'
+    },
+    importExport: {
+      title: 'Import/Export Settings',
+      import: 'Import',
+      export: 'Export',
+      success: 'Settings imported successfully',
+      error: 'Failed to import settings',
+      invalid: 'Invalid settings file'
+    }
+  },
+  
+  // Pattern related
+  pattern: {
+    edit: "Edit Pattern",
+    enterRegex: "Enter Regex Directly",
+    useUrlGeneration: "Use URL generation",
+    generateFromUrl: "Generate from Sample URL",
+    label: "Pattern",
+    enable: "Enable this pattern",
+    cancel: "Cancel",
+    save: "Save Changes"
+  }
 };

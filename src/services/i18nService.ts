@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+import i18n from '../i18n/config';
 import type { SettingsStorage } from "../shared/settings";
 import { saveSettings, getSettings } from './storageService';
 

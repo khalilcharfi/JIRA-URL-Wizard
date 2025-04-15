@@ -282,6 +282,7 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
   handleCancelEditPattern,
   index
 }) => {
+  const { t } = useTranslation(); // Add translation hook
   const [isGeneratingFromUrl, setIsGeneratingFromUrl] = useState(false);
   const [sampleUrl, setSampleUrl] = useState("");
 
@@ -360,7 +361,7 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
       {/* Toggle Switch for pattern input mode */}
       <div className="flex items-center mb-4">
         <label htmlFor={`generate-mode-toggle-${index}`} className="text-sm font-medium mr-3 text-gray-600 dark:text-gray-300 cursor-pointer">
-          Enter Regex Directly
+          {t('pattern.enterRegex')}
         </label>
       <button
         type="button"
@@ -372,7 +373,7 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
             isGeneratingFromUrl ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
           } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900`}
         >
-          <span className="sr-only">Use URL generation</span>
+          <span className="sr-only">{t('pattern.useUrlGeneration')}</span>
           <span
             aria-hidden="true"
             className={`${
@@ -381,7 +382,7 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
           />
         </button>
         <label htmlFor={`generate-mode-toggle-${index}`} className="text-sm font-medium ml-3 text-gray-600 dark:text-gray-300 cursor-pointer">
-          Generate from Sample URL
+          {t('pattern.generateFromUrl')}
         </label>
       </div>
 
@@ -476,7 +477,7 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
         <label
           htmlFor={`pattern-enabled-${index}`}
           className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-          Enable this pattern
+          {t('pattern.enable')}
         </label>
       </div>
 
@@ -485,38 +486,37 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
           type="button"
           className="inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1 text-sm border focus:ring-blue-500 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-offset-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 dark:focus:ring-offset-gray-900 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
           onClick={handleCancelEditPattern}>
-          Cancel
+          {t('pattern.cancel')}
         </button>
         <button
           type="button"
           className={`inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1 text-sm bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 ${!isCurrentPatternValid ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={handleSavePattern}
           disabled={!patternData?.pattern || !isCurrentPatternValid}>
-          {index === -1 ? 'Add Pattern' : 'Save Changes'}
+          {index === -1 ? t('jira.addPattern') : t('pattern.save')}
         </button>
       </div>
     </div>
   );
 };
 
-// Add the getUrlDescription helper function before the IndexOptions component
-function getUrlDescription(key: string): string {
+// Move getUrlDescription outside the component
+const getUrlDescription = (key: string, t: (key: string) => string): string => {
   const descriptions: Record<string, string> = {
-    bo: "Backend Office Tool",
-    desktop: "Desktop web interface",
-    mobile: "Mobile web interface",
-    drupal7: "Legacy CMS system",
-    drupal9: "Current CMS system",
-    // Add more descriptions as needed
+    bo: t('urls.boDesc'),
+    desktop: t('urls.desktopDesc'),
+    mobile: t('urls.mobileDesc'),
+    drupal7: t('urls.drupal7Desc'),
+    drupal9: t('urls.drupal9Desc'),
   };
   
   return descriptions[key] || "";
-}
+};
 
 type UrlKey = 'mobile' | 'desktop' | 'bo' | 'drupal7' | 'drupal9';
 
 const IndexOptions = () => {
-  const { t } = useTranslation(); // Add translation hook
+  const { t } = useTranslation(); // Add translation hook at the top level
   
   // Use standard useState for managing settings
   const [settings, setSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
@@ -612,11 +612,11 @@ const IndexOptions = () => {
   const addPrefix = (prefixToAdd: string) => {
     const trimmedPrefix = prefixToAdd.trim();
     if (trimmedPrefix === "") {
-      showToast("Prefix cannot be empty", "error");
+      showToast(t('validation.prefixEmpty'), "error");
       return false;
     }
     if (!/^[A-Za-z0-9]+$/.test(trimmedPrefix)) {
-      showToast("Prefix can only contain letters and numbers", "error");
+      showToast(t('validation.prefixAlphanumeric'), "error");
       return false;
     }
     if (!tempSettings.prefixes.includes(trimmedPrefix)) {
@@ -626,7 +626,7 @@ const IndexOptions = () => {
       }));
       return true;
     } else {
-      showToast("This prefix already exists", "error");
+      showToast(t('validation.prefixExists'), "error");
       return false;
     }
   };
@@ -641,11 +641,11 @@ const IndexOptions = () => {
   const addTicketType = (typeToAdd: string) => {
     const trimmedType = typeToAdd.trim();
     if (trimmedType === "") {
-      showToast("Ticket type cannot be empty", "error");
+      showToast(t('validation.ticketTypeEmpty'), "error");
       return false;
     }
     if (!/^[A-Za-z0-9]+$/.test(trimmedType)) {
-      showToast("Ticket type can only contain letters and numbers", "error");
+      showToast(t('validation.ticketTypeAlphanumeric'), "error");
       return false;
     }
     if (!tempSettings.ticketTypes.includes(trimmedType)) {
@@ -655,7 +655,7 @@ const IndexOptions = () => {
       }));
       return true;
     } else {
-      showToast("This ticket type already exists", "error");
+      showToast(t('validation.ticketTypeExists'), "error");
       return false;
     }
   };
@@ -781,18 +781,16 @@ const IndexOptions = () => {
     try {
       await saveSettings(tempSettings); // Use the new service function
       setSettings(tempSettings); // Update the local 'saved' state
-      showToast("Settings saved successfully!", "success");
+      showToast(t('common.settingsSaved'), "success");
     } catch (error) {
       console.error("Error saving settings:", error);
-      showToast("Error saving settings", "error");
+      showToast(t('common.settingsError'), "error");
     }
   }, [tempSettings, showToast]);
 
   const resetChanges = useCallback(() => {
     if (
-      window.confirm(
-        "Are you sure you want to reset all settings to the last saved state (or defaults if never saved)? Any unsaved changes will be lost."
-      )
+      window.confirm(t('common.confirmReset'))
     ) {
       // Use the current 'saved' state (settings) for reset
       setTempSettings(settings);
@@ -801,7 +799,7 @@ const IndexOptions = () => {
           ? navigator.language.split("-")[0]
           : settings.language
       );
-      showToast("Changes reset", "info");
+      showToast(t('common.changesReset'), "info");
     }
   }, [settings, showToast]); // Depend on the actual saved settings state
 
@@ -836,10 +834,10 @@ const IndexOptions = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      showToast("Settings exported successfully!", "success");
+      showToast(t('common.settingsExported'), "success");
     } catch (error) {
       console.error("Error exporting settings:", error);
-      showToast("Error exporting settings", "error");
+      showToast(t('common.settingsExportError'), "error");
     }
   }, [settings, showToast]);
 
@@ -922,9 +920,8 @@ const IndexOptions = () => {
           );
         } catch (error) {
           console.error("Error importing settings:", error);
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          showToast(`Error importing settings: ${errorMessage}`, "error");
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          showToast(t('common.settingsImportError', { error: errorMessage }), "error");
         } finally {
           event.target.value = ""; // Clear the file input
         }
@@ -935,7 +932,7 @@ const IndexOptions = () => {
       };
       reader.readAsText(file);
     },
-    [showToast] // Removed tempSettings dependency as we now start from defaults
+    [showToast, t] // Removed tempSettings dependency as we now start from defaults
   );
 
   const sampleUrl = useMemo(() => {
@@ -1002,14 +999,14 @@ const IndexOptions = () => {
     const newPattern = editingPatternData.pattern.trim();
 
     if (!newPattern) {
-      showToast("Pattern cannot be empty.", "error");
+      showToast(t('common.patternCannotBeEmpty'), "error");
       return;
     }
 
     try {
       new RegExp(newPattern);
     } catch (e) {
-      showToast("Invalid Regex Syntax. Pattern not saved.", "error");
+      showToast(t('common.invalidRegexSyntax'), "error");
       return;
     }
 
@@ -1029,7 +1026,7 @@ const IndexOptions = () => {
     });
 
     handleCancelEditPattern();
-    showToast("Pattern updated. Remember to save overall settings.", "info");
+    showToast(t('common.patternUpdated'), "info");
   };
 
   const handleRemovePattern = (indexToRemove: number) => {
@@ -1045,7 +1042,7 @@ const IndexOptions = () => {
       if (editingPatternIndex === indexToRemove) {
         handleCancelEditPattern()
       }
-      showToast("Pattern removed. Remember to save overall settings.", "info")
+      showToast(t('common.patternRemoved'), "info")
     }
   }
 
@@ -1062,7 +1059,7 @@ const IndexOptions = () => {
       };
     });
     
-    showToast("Pattern " + (enabled ? "enabled" : "disabled") + ". Remember to save overall settings.", "info");
+    showToast(t('common.patternStatus', { status: enabled ? t('common.enabled') : t('common.disabled') }), "info");
   };
 
   console.log(
@@ -1232,6 +1229,9 @@ const IndexOptions = () => {
     )
   }
 
+  // Update the usage of getUrlDescription to pass the t function
+  const urlDescription = (key: UrlKey) => getUrlDescription(key, t);
+
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
       {toast && (
@@ -1239,7 +1239,13 @@ const IndexOptions = () => {
           id="options-toast"
           role="alert"
           aria-live="assertive"
-          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center options-toast options-toast--${toast.type} ${toast.type === "success" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100" : toast.type === "error" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100" : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"}`}>
+          className={`fixed left-1/2 transform -translate-x-1/2 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center options-toast mt-16 ${
+            toast.type === "success" 
+              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' 
+              : toast.type === "error" 
+                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100' 
+                : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
+          }`}>
           <span id="options-toast-message">{toast.message}</span>
         </div>
       )}
@@ -1400,9 +1406,9 @@ const IndexOptions = () => {
                     <div className="flex-1">
                       <label htmlFor="allow-manual-ticket-input" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
                         <ManualTicketIcon className="mr-2 text-gray-500 dark:text-gray-400" />
-                        Allow manual ticket input
+                        {t('features.allowManualTicketInput')}
                       </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Enable manual ticket ID input in the popup interface</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">{t('features.manualTicketInputDesc')}</p>
                     </div>
                     <Toggle
                       id="allow-manual-ticket-input"
@@ -1418,9 +1424,9 @@ const IndexOptions = () => {
                     <div className="flex-1">
                       <label htmlFor="show-advanced-settings" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
                         <AdvancedSettingsIcon className="mr-2 text-gray-500 dark:text-gray-400" />
-                        Show advanced settings
+                        {t('features.advancedConfig')}
                       </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">Display advanced configuration options in the settings page</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">{t('features.advancedConfigDesc')}</p>
                     </div>
                     <Toggle
                       id="show-advanced-settings"
@@ -1441,7 +1447,7 @@ const IndexOptions = () => {
                     aria-expanded={showPreviewDemo} // Add aria-expanded for accessibility
                   >
                     <EyeIcon className="mr-2" />
-                    {showPreviewDemo ? 'Hide' : 'Preview'} Toggle Effects
+                    {showPreviewDemo ? 'Hide' : 'Preview'} {t('features.toggleEffects')}
                   </Button>
                 </div>
               </div> 
@@ -1453,7 +1459,7 @@ const IndexOptions = () => {
                   <div className="space-y-4">
                     {/* QR Code Logo Demo - Updated with react-qrcode-logo */}
                     <div>
-                      <h5 className="text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">QR Code Logo Integration Preview:</h5>
+                      <h5 className="text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">{t('features.qrCodePreview')}</h5>
                       <div className="flex flex-col items-center justify-center p-4 rounded border bg-white dark:bg-gray-800 dark:border-gray-600 min-h-[150px]">
                         <QRCode 
                           value="https://example-jira.com/browse/EXAMPLE-123" // Sample QR value
@@ -1472,20 +1478,20 @@ const IndexOptions = () => {
                           removeQrCodeBehindLogo={tempSettings.integrateQrImage}
                           />
                         <p className={`mt-3 text-center text-xs font-medium ${tempSettings.integrateQrImage ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                         Logo Integration Preview: {tempSettings.integrateQrImage ? 'ON' : 'OFF'}
+                         {t('features.logoIntegrationPreview')}: {tempSettings.integrateQrImage ? t('common.on') : t('common.off')}
                        </p>
                       </div>
                     </div>
 
                     {/* Markdown/Plain Text Copy Demo - Updated to show only active mode */}
                     <div>
-                      <h5 className="text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">Copy Format Preview (Based on current settings):</h5>
+                      <h5 className="text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">{t('features.copyFormatPreview')}</h5>
                       <div className="text-xs">
                         {tempSettings.useMarkdownCopy ? (
                           // Show Markdown Preview when active
                           <div className={`p-2 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30`}>
                              <p className={`font-semibold mb-1 text-blue-800 dark:text-blue-300`}>
-                               Markdown Format is Active
+                               {t('features.markdownFormatActive')}
                              </p>
                             {/* Use MarkdownRenderer with generated markdown */}
                             <MarkdownRenderer 
@@ -1498,11 +1504,11 @@ const IndexOptions = () => {
                                   size="sm"
                                   onClick={() => {
                                     navigator.clipboard.writeText(generateMarkdownOutput());
-                                    showToast("Generated Markdown copied!", "success");
+                                    showToast(t('common.markdownCopied'), "success");
                                   }}
                                   className="text-xs"
                                >
-                                 Copy Preview
+                                 {t('common.copyPreview')}
                                </Button>
                              </div>
                           </div>
@@ -1510,7 +1516,7 @@ const IndexOptions = () => {
                           // Show Plain Text Preview when active
                           <div className={`p-2 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30`}>
                             <p className={`font-semibold mb-1 text-blue-800 dark:text-blue-300`}>
-                              Plain Text Format is Active
+                              {t('features.plainTextFormatActive')}
                             </p>
                             <pre className="whitespace-pre-wrap font-mono text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed">
                               {generatePlainTextOutput()}
@@ -1521,7 +1527,7 @@ const IndexOptions = () => {
                                   size="sm"
                                   onClick={() => {
                                     navigator.clipboard.writeText(generatePlainTextOutput());
-                                    showToast("Generated Plain Text copied!", "success");
+                                    showToast(t('common.plainTextCopied'), "success");
                                   }}
                                   className="text-xs"
                                >
@@ -1540,32 +1546,32 @@ const IndexOptions = () => {
             <Section id="prefixes-section">
               <SectionHeading
                 id="prefixes-heading"
-                infoText="Define project prefixes (e.g., PROJ) and optional ticket types (e.g., BUG). Press Enter to add.">
-                Prefixes & Ticket Types
+                infoText={t('sections.prefixesInfo')}>
+                {t('sections.prefixesTitle')}
               </SectionHeading>
               <CustomTagInput
                 id="prefix-new-input"
-                label="Issue Prefixes"
+                label={t('features.issuePrefixes')}
                 tags={tempSettings.prefixes}
                 onAddTag={addPrefix}
                 onRemoveTag={removePrefix}
-                placeholder="Add prefix + Enter"
+                placeholder={t('jira.addPrefix')}
               />
               <CustomTagInput
                 id="ticket-type-new-input"
-                label="Ticket Types (Optional)"
+                label={t('features.ticketTypes')}
                 tags={tempSettings.ticketTypes}
                 onAddTag={addTicketType}
                 onRemoveTag={removeTicketType}
-                placeholder="Add ticket type + Enter"
+                placeholder={t('jira.addTicketType')}
               />
             </Section>
 
             <Section id="base-urls-section">
               <SectionHeading
                 id="base-urls-heading"
-                infoText="Enter base URLs for different environments. All URLs use HTTPS protocol.">
-                Base URLs
+                infoText={t('settings.baseUrlsInfo')}>
+                {t('url.baseUrls')}
               </SectionHeading>
               
               <div className="space-y-4">
@@ -1596,7 +1602,7 @@ const IndexOptions = () => {
                       </div>
                       
                       <p id={`url-description-${key}`} className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {getUrlDescription(key)}
+                        {urlDescription(key)}
                       </p>
                     </InputGroup>
                   </div>
@@ -1612,7 +1618,7 @@ const IndexOptions = () => {
                 style={{ display: tempSettings.showAdvancedSettings ? 'block' : 'none' }}
             >
                 <summary className="p-4 bg-gray-50 dark:bg-gray-800 cursor-pointer flex items-center justify-between">
-                    <span className="font-medium text-lg text-gray-900 dark:text-gray-100">Advanced Settings</span>
+                    <span className="font-medium text-lg text-gray-900 dark:text-gray-100">{t('settings.advanced')}</span>
                     {advancedSettingsOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
                 </summary>
                 <div className="p-4 space-y-6">
@@ -1624,9 +1630,9 @@ const IndexOptions = () => {
                             <h3
                                 id="jira-patterns-heading"
                                 className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                                <span>JIRA URL Patterns</span>
+                                <span>{t('jira.urlPatterns')}</span>
                                 <InfoPopup
-                                    text="Define URL patterns (regex) to help identify JIRA tabs. Used for features like extracting ticket IDs."
+                                    text={t('jira.urlPatternsInfo')}
                                     darkMode={document.documentElement.classList.contains('dark')}
                                 />
                             </h3>
@@ -1636,7 +1642,7 @@ const IndexOptions = () => {
                                     size="sm"
                                     id="jira-patterns-add-new-button"
                                     onClick={() => handleEditPattern(null)}>
-                                    Add New Pattern
+                                    {t('jira.addPattern')}
                                 </Button>
                             )}
                         </div>
@@ -1649,7 +1655,7 @@ const IndexOptions = () => {
                                 <h4
                                     id="jira-patterns-add-form-heading"
                                 className="text-md font-semibold options-form__heading">
-                                    Add New Pattern
+                                    {t('jira.addPattern')}
                                 </h4>
                               {/* Added visual indicator for form state */}
                               {!isCurrentPatternValid && (
@@ -1659,7 +1665,7 @@ const IndexOptions = () => {
                               )}
                               {isCurrentPatternValid && isPreviewMatch && (
                                 <span className="text-xs text-green-600 dark:text-green-400">
-                                  Pattern matches preview
+                                  {t('common.patternMatchesPreview')}
                                 </span>
                                         )}
                                     </div>
@@ -1690,7 +1696,7 @@ const IndexOptions = () => {
                                           <>
                                             <div className="flex justify-between items-center p-4 pb-2">
                                               <h4 className="text-md font-semibold options-form__heading">
-                                                Edit Pattern
+                                                {t('pattern.edit')}
                                               </h4>
                                               {/* Added visual indicators for form state */}
                                               {!isCurrentPatternValid && (
@@ -1700,7 +1706,7 @@ const IndexOptions = () => {
                                               )}
                                               {isCurrentPatternValid && isPreviewMatch && (
                                                 <span className="text-xs text-green-600 dark:text-green-400">
-                                                  Pattern matches preview
+                                                  {t('common.patternMatchesPreview')}
                                                 </span>
                                                     )}
                                                 </div>
@@ -1748,8 +1754,8 @@ const IndexOptions = () => {
                                                         id={`pattern-readonly-edit-button-${index}`}
                                                         onClick={() => handleEditPattern(index)}
                                                         disabled={editingPatternIndex !== null}
-                                                        title="Edit Pattern"
-                                                        aria-label="Edit Pattern">
+                                                        title={t('pattern.edit')}
+                                                        aria-label={t('pattern.edit')}>
                                                         <PencilIcon />
                                                     </Button>
                                                     <Button
@@ -1772,8 +1778,7 @@ const IndexOptions = () => {
                                 <p
                                     id="jira-patterns-empty-message"
                                     className="text-gray-500 dark:text-gray-400 text-center py-4 options-list-item__empty-message">
-                                    No JIRA patterns defined. Click 'Add New Pattern' to
-                                    start.
+                                    {t('jira.noPatterns')}
                                 </p>
                             )}
                         </div>
@@ -1781,9 +1786,9 @@ const IndexOptions = () => {
                     <section id="url-structure" className="mb-10">
                         <div id="url-structure-header" className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header border-t border-gray-100 dark:border-gray-700 pt-3">
                         <h3 id="jira-patterns-heading" className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                                <span>URL Builder</span>
+                                <span>{t('sections.urlBuilderTitle')}</span>
                                 <InfoPopup
-                                    text="Build your custom JIRA URL structure by dragging and dropping components. The pattern defines how your JIRA ticket IDs are converted to URLs."
+                                    text={t('sections.urlBuilderInfo')}
                                     darkMode={document.documentElement.classList.contains('dark')}
                                 />
                             </h3>
@@ -1807,7 +1812,7 @@ const IndexOptions = () => {
         </div>
       </main>
 
-      <footer className="sticky bottom-0 z-10 flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <footer className="sticky bottom-0 z-50 flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto p-3 md:p-4 flex justify-end space-x-2">
           <Button
             variant="secondary"
@@ -1815,7 +1820,7 @@ const IndexOptions = () => {
             onClick={resetChanges}
             disabled={!isDirty || isLoading} // Disable if loading
             >
-            Reset Changes
+            {t('common.resetChanges')}
           </Button>
           <Button
             variant="primary"
@@ -1823,7 +1828,7 @@ const IndexOptions = () => {
             onClick={savePreferences}
             disabled={!isDirty || isLoading} // Disable if loading
             >
-            Save Changes
+            {t('common.saveChanges')}
           </Button>
         </div>
       </footer>
