@@ -94,4 +94,4 @@ For support, please:
 
 ---
 
-Made with ❤️ by the JIRA URL Wizard team
+Made with ❤️ by [Khalil Charfi](https://github.com/khalilcharfi)
