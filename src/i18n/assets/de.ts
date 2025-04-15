@@ -29,6 +29,8 @@ export default {
     addChanges: "Änderungen hinzufügen",
     savePattern: "Muster speichern",
     reset: "Zurücksetzen",
+    settingsSaved: "Einstellungen erfolgreich gespeichert",
+    settingsError: "Fehler beim Speichern der Einstellungen",
   },
   
   // Validation messages
