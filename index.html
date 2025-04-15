@@ -33,12 +33,12 @@
             --font-size-md: 1.125rem; /* 18px */
             --font-size-lg: 1.25rem;  /* 20px */
             --font-size-xl: 1.5rem;   /* 24px */
-            --font-size-2xl: 1.875rem; /* 30px */
-            --font-size-3xl: 2.25rem;  /* 36px */
+            --font-size-2xl: 1.75rem; /* 28px */
+            --font-size-3xl: 2rem;    /* 32px */
             
-            /* Fluid typography formula: calc([minimum size] + ([maximum size] - [minimum size]) * ((100vw - [minimum viewport width]) / ([maximum viewport width] - [minimum viewport width]))) */
-            --fluid-typography: calc(var(--font-size-base) + 0.5vw);
-            --header-fluid: clamp(1.75rem, 4vw, 2.5rem);
+            /* Fluid typography formula */
+            --fluid-typography: var(--font-size-base);
+            --header-fluid: clamp(1.5rem, 3vw, 2rem);
         }
         
         * {
@@ -710,11 +710,11 @@
         /* Responsive design with improved font sizes */
         @media (max-width: 1200px) {
             :root {
-                --fluid-typography: calc(var(--font-size-base) + 0.25vw);
+                --fluid-typography: var(--font-size-base);
             }
             
             h1 {
-                font-size: clamp(1.5rem, 3vw, 2.2rem);
+                font-size: clamp(1.5rem, 3vw, 1.75rem);
             }
             
             h2 {
@@ -728,7 +728,7 @@
         
         @media (max-width: 768px) {
             :root {
-                --fluid-typography: var(--font-size-base);
+                --fluid-typography: var(--font-size-sm);
             }
             
             .container {
@@ -740,7 +740,7 @@
             }
             
             h1 {
-                font-size: clamp(1.25rem, 5vw, 1.8rem);
+                font-size: clamp(1.25rem, 4vw, 1.5rem);
             }
             
             h2 {
@@ -787,7 +787,7 @@
         
         @media (max-width: 480px) {
             :root {
-                --fluid-typography: calc(var(--font-size-base) - 0.05rem);
+                --fluid-typography: var(--font-size-xs);
             }
             
             .container {
@@ -799,7 +799,7 @@
             }
             
             h1 {
-                font-size: clamp(1.125rem, 4vw, 1.5rem);
+                font-size: clamp(1.125rem, 3vw, 1.25rem);
             }
             
             .header-content img {
@@ -816,7 +816,7 @@
             }
             
             .feature-text h4, .permission h4, .instruction-item h4 {
-                font-size: var(--font-size-base);
+                font-size: var(--font-size-sm);
             }
             
             .browser-btn {
