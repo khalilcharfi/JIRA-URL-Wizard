@@ -32,7 +32,6 @@ function createButtonHTML(browser, info, releaseDate) {
   const hrefValue = browser === 'chrome' ? CONFIG.CHROME_STORE_URL : (isEnabled ? info.url : '#');
   const linkTarget = (browser === 'chrome' || isEnabled) ? 'target="_blank" rel="noopener noreferrer"' : '';
   const buttonClass = `browser-btn ${browser}-btn${!isEnabled ? ' disabled' : ''}`;
-  const buttonStyle = !isEnabled ? 'style="cursor: not-allowed; opacity: 0.7;"' : '';
   
   // Title text differs based on browser and availability
   const titleText = browser === 'chrome' 
@@ -41,24 +40,22 @@ function createButtonHTML(browser, info, releaseDate) {
       ? `Latest version: ${info.version} (${releaseDate})`
       : `${browserName} version not available in latest release`;
 
-  // Version and date information
-  const versionInfo = browser === 'chrome' 
-    ? `<span class="version-info">${info.version} • Released ${releaseDate}</span>` 
-    : isEnabled 
-      ? `<span class="version-info">${info.version} • Released ${releaseDate}</span>`
-      : `<span class="version-info">${info.version} • Coming Soon</span>`;
+  // Version and date information text
+  const versionText = isEnabled
+    ? `${info.version} • Released ${releaseDate}`
+    : `${info.version} • Coming Soon`; // Assuming version is still known even if URL is null
 
+  // Construct the new HTML structure
   return `<a href="${hrefValue}" 
-          ${linkTarget}
-          class="${buttonClass}" 
-          title="${titleText}" 
-          data-version="${info.version}"
-          data-release-date="${releaseDate}"
-          ${buttonStyle}>
-          <img src="${CONFIG.BROWSER_ICONS[browser]}" alt="${browserName} Logo" width="20" height="20">
+             ${linkTarget} 
+             class="${buttonClass}" 
+             title="${titleText}"
+             data-version="${info.version}"
+             data-release-date="${releaseDate}">
+          <img src="${CONFIG.BROWSER_ICONS[browser]}" alt="${browserName} Logo" class="browser-logo">
           <div class="browser-info">
-            <span data-i18n="browserButtons.${browser}">${browserName}</span>
-            ${versionInfo}
+            <div class="browser-name" data-i18n="browserButtons.${browser}">${browserName}</div>
+            <div class="version-info">${versionText}</div>
           </div>
         </a>`;
 }
@@ -137,19 +134,23 @@ async function updateHTMLFile() {
     const releaseInfo = await getLatestReleaseInfo();
     const html = await fs.readFile(CONFIG.HTML_FILE, 'utf8');
 
-    // Create buttons HTML for each browser
+    // Create buttons HTML for each browser using the updated function
     const browsers = ['chrome', 'firefox', 'edge', 'safari'];
-    const buttons = browsers
+    const buttonsHTML = browsers
       .map(browser => createButtonHTML(browser, releaseInfo.browsers[browser], releaseInfo.releaseDate))
-      .join('\n                ');
+      .join('\n          '); // Adjust indentation as needed
 
-    // Create the complete button container section
-    const buttonContainer = `<div class="button-container">
-                ${buttons}
-            </div>`;
+    // Regex to find the content within the browser-options div
+    const replacementRegex = /(<div class="browser-options">)(?:[\s\S]*?)(<\/div>)/;
+    
+    // Check if the container exists before attempting replacement
+    if (!replacementRegex.test(html)) {
+        console.error('Error: Could not find the <div class="browser-options"> container in index.html.');
+        process.exit(1);
+    }
 
-    // Replace the existing button container in the HTML
-    const updatedHTML = html.replace(/<div class="button-container">[\s\S]*?<\/div>(?=\s*<div class="settings-option")/, buttonContainer);
+    // Replace the content inside the browser-options div
+    const updatedHTML = html.replace(replacementRegex, `$1\n          ${buttonsHTML}\n        $2`);
 
     // Write updated HTML back to file
     await fs.writeFile(CONFIG.HTML_FILE, updatedHTML);

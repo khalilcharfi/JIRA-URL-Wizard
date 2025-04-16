@@ -891,6 +891,146 @@
             font-size: var(--font-size-base); /* Increased size */
             color: white; /* Changed to white */
         }
+        
+        /* === START NEW BUTTON STYLES === */
+        .download-section {
+            max-width: 720px;
+            margin: 30px auto; /* Adjusted margin */
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 32px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a3b66;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .browser-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .browser-btn {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #e4e9f0;
+            border-radius: 8px;
+            padding: 16px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            border-left: 4px solid transparent; /* Added for hover effect */
+        }
+        
+        .browser-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #d0d7e2;
+        }
+        
+        .browser-logo {
+            width: 28px;
+            height: 28px;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        
+        .browser-info {
+            flex: 1;
+        }
+        
+        .browser-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #1a3b66;
+        }
+        
+        .version-info {
+            font-size: 13px;
+            color: #68778d;
+        }
+        
+        .browser-btn.disabled {
+            background-color: #f5f7fa;
+            color: #8a94a6;
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+            border-left-color: #e4e9f0;
+        }
+
+        .browser-btn.disabled:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: #e4e9f0; /* Ensure border color doesn't change on hover */
+        }
+        
+        /* Browser-specific accent colors on hover */
+        .chrome-btn:hover {
+            border-left-color: #4285F4;
+        }
+        
+        .firefox-btn:hover {
+            border-left-color: #FF9500;
+        }
+        
+        .edge-btn:hover {
+            border-left-color: #0078D7;
+        }
+        
+        .safari-btn:hover {
+            border-left-color: #006CFF;
+        }
+        
+        .settings-section {
+            background-color: #f8fafd;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px dashed #e4e9f0;
+        }
+        
+        .settings-button {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #e4e9f0;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a3b66;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .settings-button:hover {
+            background-color: #f5f7fa;
+        }
+        
+        .settings-button svg {
+            margin-right: 10px;
+        }
+        
+        .settings-info {
+            font-size: 13px;
+            color: #68778d;
+            margin-top: 12px;
+            text-align: center;
+        }
+        /* === END NEW BUTTON STYLES === */
     </style>
 </head>
 <body>
@@ -908,70 +1048,67 @@
         </header>
         
         <!-- Browser Download Buttons -->
-        <div class="browser-buttons">
-            <h3 data-i18n="browserButtons.title">Download JIRA URL Wizard</h3>
-            <div class="button-container">
-                <a href="https://chromewebstore.google.com/detail/jira-url-wizard/opfnbeleknbmdnemmnlhigmmmkghncak" 
-          target="_blank" rel="noopener noreferrer"
-          class="browser-btn chrome-btn" 
-          title="Available on Chrome Web Store (April 16, 2025)" 
-          data-version="v1.0.4"
-          data-release-date="April 16, 2025"
-          >
-          <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome Logo" width="20" height="20">
+        <div class="download-section">
+          <h2 class="section-title">Download JIRA URL Wizard</h2>
+          
+          <div class="browser-options">
+          <a href="https://chromewebstore.google.com/detail/jira-url-wizard/opfnbeleknbmdnemmnlhigmmmkghncak" 
+             target="_blank" rel="noopener noreferrer" 
+             class="browser-btn chrome-btn" 
+             title="Available on Chrome Web Store (April 16, 2025)"
+             data-version="v1.0.4"
+             data-release-date="April 16, 2025">
+          <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome Logo" class="browser-logo">
           <div class="browser-info">
-            <span data-i18n="browserButtons.chrome">Chrome</span>
-            <span class="version-info">v1.0.4 • Released April 16, 2025</span>
+            <div class="browser-name" data-i18n="browserButtons.chrome">Chrome</div>
+            <div class="version-info">v1.0.4 • Released April 16, 2025</div>
           </div>
         </a>
-                <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/firefox-mv3-v1.0.4.zip" 
-          target="_blank" rel="noopener noreferrer"
-          class="browser-btn firefox-btn" 
-          title="Latest version: v1.0.4 (April 16, 2025)" 
-          data-version="v1.0.4"
-          data-release-date="April 16, 2025"
-          >
-          <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" alt="Firefox Logo" width="20" height="20">
+          <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/firefox-mv3-v1.0.4.zip" 
+             target="_blank" rel="noopener noreferrer" 
+             class="browser-btn firefox-btn" 
+             title="Latest version: v1.0.4 (April 16, 2025)"
+             data-version="v1.0.4"
+             data-release-date="April 16, 2025">
+          <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" alt="Firefox Logo" class="browser-logo">
           <div class="browser-info">
-            <span data-i18n="browserButtons.firefox">Firefox</span>
-            <span class="version-info">v1.0.4 • Released April 16, 2025</span>
+            <div class="browser-name" data-i18n="browserButtons.firefox">Firefox</div>
+            <div class="version-info">v1.0.4 • Released April 16, 2025</div>
           </div>
         </a>
-                <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/edge-mv3-v1.0.4.zip" 
-          target="_blank" rel="noopener noreferrer"
-          class="browser-btn edge-btn" 
-          title="Latest version: v1.0.4 (April 16, 2025)" 
-          data-version="v1.0.4"
-          data-release-date="April 16, 2025"
-          >
-          <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg" alt="Edge Logo" width="20" height="20">
+          <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/edge-mv3-v1.0.4.zip" 
+             target="_blank" rel="noopener noreferrer" 
+             class="browser-btn edge-btn" 
+             title="Latest version: v1.0.4 (April 16, 2025)"
+             data-version="v1.0.4"
+             data-release-date="April 16, 2025">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg" alt="Edge Logo" class="browser-logo">
           <div class="browser-info">
-            <span data-i18n="browserButtons.edge">Edge</span>
-            <span class="version-info">v1.0.4 • Released April 16, 2025</span>
+            <div class="browser-name" data-i18n="browserButtons.edge">Edge</div>
+            <div class="version-info">v1.0.4 • Released April 16, 2025</div>
           </div>
         </a>
-                <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/safari-mv3-v1.0.4.zip" 
-          target="_blank" rel="noopener noreferrer"
-          class="browser-btn safari-btn" 
-          title="Latest version: v1.0.4 (April 16, 2025)" 
-          data-version="v1.0.4"
-          data-release-date="April 16, 2025"
-          >
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/Safari_browser_logo.svg" alt="Safari Logo" width="20" height="20">
+          <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/safari-mv3-v1.0.4.zip" 
+             target="_blank" rel="noopener noreferrer" 
+             class="browser-btn safari-btn" 
+             title="Latest version: v1.0.4 (April 16, 2025)"
+             data-version="v1.0.4"
+             data-release-date="April 16, 2025">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/Safari_browser_logo.svg" alt="Safari Logo" class="browser-logo">
           <div class="browser-info">
-            <span data-i18n="browserButtons.safari">Safari</span>
-            <span class="version-info">v1.0.4 • Released April 16, 2025</span>
+            <div class="browser-name" data-i18n="browserButtons.safari">Safari</div>
+            <div class="version-info">v1.0.4 • Released April 16, 2025</div>
           </div>
         </a>
-            </div>
-            
-            <div class="settings-option">
-                <button id="openOptionsBtn" class="storage-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    <span data-i18n="settings.button">Manage Extension Settings</span>
-                </button>
-                <p class="settings-info" data-i18n="settings.info">Access your extension's storage and configuration</p>
-            </div>
+        </div>
+          
+          <div class="settings-section">
+            <button id="openOptionsBtn" class="settings-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span data-i18n="settings.button">Manage Extension Settings</span> 
+            </button>
+            <p class="settings-info" data-i18n="settings.info">Access your extension's storage and configuration</p> 
+          </div>
         </div>
         
         <!-- Settings Instructions Modal -->
