@@ -1,0 +1,14 @@
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    volumes:
+      - ./build:/app/build
+      - ./.pnpm-store:/app/.pnpm-store
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - LOG_LEVEL=verbose
+      - PNPM_HOME=/app/.pnpm-store
+    command: bash -c "apt-get update && apt-get install -y curl gnupg build-essential python3 libc6-dev libglib2.0-0 libnss3 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxtst6 pngquant optipng jpegoptim gifsicle webp ca-certificates && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs && npm install -g pnpm@10 && pnpm install --no-optional && pnpm add -D sharp --platform=linux --arch=x64 && pnpm build && pnpm build:firefox && pnpm build:edge && pnpm package:all && echo 'Build artifacts:' && ls -la build/ && echo 'Packaged files:' && find build -maxdepth 1 -name '*.zip' -exec ls -lh {} \;" 
