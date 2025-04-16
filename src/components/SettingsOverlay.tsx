@@ -22,8 +22,9 @@ const SettingsOverlay: React.FC<SettingsOverlayProps> = ({
       aria-modal="true"
       aria-labelledby="settings-overlay-title"
       onClick={(e) => e.stopPropagation()}
+      style={{ height: '235px' }}
     >
-      <div className="w-4/5 p-5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/30 rounded-md shadow-lg text-center">
+      <div className="w-[468px] h-[235px] p-5 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/30 rounded-md shadow-lg text-center flex flex-col items-center justify-center">
         <AlertIcon 
           size={48} 
           strokeWidth={2}

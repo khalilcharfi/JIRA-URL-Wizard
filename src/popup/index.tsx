@@ -768,6 +768,11 @@ const JiraUrlWizard = () => {
     ];
   }, [settings?.urls]);
 
+  // Define hasEnvironments here based on environments
+  const hasEnvironments = useMemo(() => 
+    environments.filter(env => env.id !== 'qrcode').length > 0, 
+  [environments]);
+
   // Restore the missing useEffect hook for setting the initial environment
   useEffect(() => {
     if (!isLoading && environments.length > 0) {
@@ -874,43 +879,22 @@ const JiraUrlWizard = () => {
     } catch (error) { console.error("Error generating QR code blob: ", error); setToastMessage("QR Code copy failed!"); }
   }, [setToastMessage, setIsQrCodeAnimating]);
 
+  // --- Render Logic ---
   if (isLoading) {
-    return (
-      <div className="w-[468px] min-h-[360px] flex items-center justify-center bg-white dark:bg-gray-900">
-        <p className="text-gray-500 dark:text-gray-400">Loading...</p>
-      </div>
-    );
+    return <div className="w-[450px] h-[300px] flex items-center justify-center"><p>{t('common.loading')}</p></div>;
   }
 
+  const showSettingsOverlay = !hasEnvironments || 
+    ((!settings.prefixes || settings.prefixes.length === 0) && 
+     (!settings.ticketTypes || settings.ticketTypes.length === 0) && 
+     Object.values(settings.urls || {}).every(url => !url));
+
+  // Define isDarkMode for theme support
   const isDarkMode = settings.theme === 'dark' ||
-                     (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-  // Configure available ticketTypes and check if any are present
-  const hasTicketTypes = settings.ticketTypes && settings.ticketTypes.length > 0;
-  const hasEnvironments = environments.length > 1; // At least one real environment plus QR code option
-
-  // Legacy Settings Info section (we'll keep it as fallback but it's now replaced by the overlay)
-  const SettingsInfo = () => {
-    if (hasEnvironments) return null; // Only show when there are no environments
-    
-    return (
-      <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-md m-3">
-        <h3 className="text-sm font-medium text-amber-800 dark:text-amber-400 mb-1">{t('messages.configurationNeeded')}</h3>
-        <p className="text-xs text-amber-700 dark:text-amber-500 mb-2">
-          {t('messages.noEnvironmentsConfigured')}
-        </p>
-        <button
-          onClick={openOptionsPage}
-          className="text-xs bg-amber-600 text-white dark:bg-amber-700 px-2 py-1 rounded hover:bg-amber-700 dark:hover:bg-amber-600 transition-colors"
-        >
-          {t('navigation.openSettings')}
-        </button>
-      </div>
-    );
-  };
+                    (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   return (
-    <div className={`w-[468px] min-w-[468px] max-w-[468px] text-sm font-sans ${isDarkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`} id="jira-url-wizard">
+    <div className={`w-[468px] min-w-[468px] max-w-[468px] text-sm font-sans ${isDarkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-white text-gray-900'} ${showSettingsOverlay ? 'h-[235px]' : ''}`} id="jira-url-wizard">
       <MemoizedPopupHeader
         ticketId={ticketId}
         recentTickets={recentTickets}
@@ -955,10 +939,7 @@ const JiraUrlWizard = () => {
       {toastMessage && <MemoizedToast message={toastMessage} onClose={() => setToastMessage(null)} />}
       
       {/* Settings Overlay */}
-      <SettingsOverlay 
-        isVisible={!hasEnvironments} 
-        onOpenSettings={openOptionsPage} 
-      />
+      {showSettingsOverlay && <SettingsOverlay isVisible={true} onOpenSettings={openOptionsPage} />}
     </div>
   );
 };
