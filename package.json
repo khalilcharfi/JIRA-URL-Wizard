@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build",
+    "build:safe": "node --expose-gc --no-node-snapshot --max-old-space-size=8192 scripts/custom-build.js",
     "build:firefox": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build --target=firefox-mv3",
     "build:edge": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build --target=edge-mv3",
     "postbuild": "node scripts/optimize.js",
@@ -47,11 +48,16 @@
     "clean-css-cli": "^5.6.3",
     "glob": "^11.0.1",
     "html-minifier-terser": "^7.2.0",
+    "parcel": "^2.11.0",
     "postcss": "^8.4.38",
     "prettier": "3.2.4",
     "tailwindcss": "^3",
     "terser": "^5.39.0",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "copy-webpack-plugin": "^12.0.2",
+    "html-webpack-plugin": "^5.6.0"
   },
   "manifest": {
     "name": "__MSG_extensionName__",
