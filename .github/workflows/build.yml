@@ -73,19 +73,26 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Build for Chrome
-        # Run build under strace to get detailed system call info before potential crash
+        # Use our safer build script with retry logic
         run: |
-          strace -f -o strace_output.txt pnpm build
-          BUILD_EXIT_CODE=$? # Capture exit code
-          echo "--- strace output (may be large) ---"
-          cat strace_output.txt || echo "strace output file not found or empty"
-          echo "--- end strace output ---"
-          if [ $BUILD_EXIT_CODE -ne 0 ]; then
-            echo "Chrome build failed with exit code $BUILD_EXIT_CODE"
-            exit $BUILD_EXIT_CODE
-          fi
+          # Fix for segmentation faults
+          echo "Increasing system limits to prevent segmentation fault"
+          # Increase system limits for the current process
+          ulimit -c unlimited
+          ulimit -s unlimited
+          
+          # Make the script executable
+          chmod +x scripts/safe-build.sh
+          
+          # Run the safer build script
+          ./scripts/safe-build.sh
+          
+          # If we got here, build succeeded
+          echo "Chrome build successful"
         env:
-          LOG_LEVEL: verbose # Keep verbose logging
+          LOG_LEVEL: verbose
+          # Disable the V8 code cache which can cause segmentation faults
+          NODE_OPTIONS: "--no-node-snapshot --max-old-space-size=8192"
 
       - name: Debug Chrome Build
         run: |

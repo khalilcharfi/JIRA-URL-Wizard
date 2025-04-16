@@ -6,9 +6,14 @@
   "author": "Khalil Charfi",
   "scripts": {
     "dev": "plasmo dev",
-    "build": "plasmo build",
+    "build": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build",
+    "build:firefox": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build --target=firefox-mv3",
+    "build:edge": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build --target=edge-mv3",
     "postbuild": "node scripts/optimize.js",
     "package": "plasmo package",
+    "package:firefox": "plasmo package --target=firefox-mv3",
+    "package:edge": "plasmo package --target=edge-mv3",
+    "package:all": "pnpm package && pnpm package:firefox && pnpm package:edge",
     "install-image-tools": "./scripts/install-image-tools.sh",
     "optimize-images": "./scripts/optimize-images.sh ./build/chrome-mv3-prod"
   },

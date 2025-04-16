@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
-    NODE_OPTIONS=--max-old-space-size=4096 \
+    NODE_OPTIONS="--no-node-snapshot --max-old-space-size=8192" \
     LOG_LEVEL=verbose
 
 # Install system dependencies
@@ -31,7 +31,9 @@ RUN apt-get update && apt-get install -y \
     gifsicle \
     webp \
     ca-certificates \
-    strace
+    strace \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
@@ -54,14 +56,20 @@ RUN pnpm install --no-optional && \
 # Copy the rest of the application
 COPY . .
 
-# Build command
+# Make the build script executable 
+RUN chmod +x scripts/safe-build.sh
+
+# Build command with memory limits and debugging
 CMD ["bash", "-c", "\
-    echo 'Building Chrome extension...' && \
-    strace -f -o strace_output.txt pnpm build && \
+    echo 'Setting up environment...' && \
+    ulimit -c unlimited && \
+    ulimit -s unlimited && \
+    echo 'Using safe build script...' && \
+    ./scripts/safe-build.sh && \
     echo 'Building Firefox extension...' && \
-    pnpm build:firefox && \
+    NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' pnpm build:firefox && \
     echo 'Building Edge extension...' && \
-    pnpm build:edge && \
+    NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' pnpm build:edge && \
     echo 'Packaging extensions...' && \
     pnpm package:all && \
     echo 'Build artifacts:' && \
