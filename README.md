@@ -10,6 +10,7 @@ A powerful browser extension that simplifies working with multiple JIRA environm
 - **Automatic Ticket Detection**: Extract ticket information from any JIRA page
 - **Privacy-Focused**: All data stored locally on your device
 - **Enterprise-Ready**: Suitable for environments with strict security requirements
+- **Multi-language Support**: Available in English and German
 
 ## 🚀 Installation
 
@@ -18,20 +19,22 @@ A powerful browser extension that simplifies working with multiple JIRA environm
 2. Click "Add to Chrome"
 3. Confirm the installation
 
-### Firefox (Coming Soon)
-- Extension will be available soon in the Firefox Add-ons store
+### Firefox
+1. Visit the [Firefox Add-ons Store](https://addons.mozilla.org/en-US/firefox/addon/jira-url-wizard/)
+2. Click "Add to Firefox"
+3. Confirm the installation
 
-### Edge (Coming Soon)
-- Extension will be available soon in the Microsoft Edge Add-ons store
+### Edge (Coming Soon - Release Date: 2025-04-16)
+- Extension will be available in the Microsoft Edge Add-ons store
 
-### Safari (Coming Soon)
-- Extension will be available soon in the Safari Extensions Gallery
+### Safari (Coming Soon - Release Date: 2025-04-16)
+- Extension will be available in the Safari Extensions Gallery
 
 ## 💡 Usage
 
 1. **Configure Your Environments**
    - Click the extension icon
-   - Select "Manage Extension Settings"
+   - Select "Extension Settings"
    - Add your JIRA environments (development, staging, production)
 
 2. **Switch Between Environments**
@@ -53,6 +56,7 @@ A powerful browser extension that simplifies working with multiple JIRA environm
 - No tracking or analytics
 - Regular security audits
 - GDPR and CCPA compliant
+- Full control over your data
 
 ## 🛠️ Development
 
