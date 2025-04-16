@@ -7,8 +7,10 @@ const CONFIG = {
   HTML_FILE: path.join(__dirname, '../index.html'),
   GITHUB_API_URL: 'https://api.github.com/repos/khalilcharfi/JIRA-URL-Wizard/releases/latest',
   CHROME_STORE_URL: 'https://chromewebstore.google.com/detail/jira-url-wizard/opfnbeleknbmdnemmnlhigmmmkghncak',
-  RELEASE_DATE_FORMAT: { year: 'numeric', month: 'short', day: 'numeric' },
-  COMING_SOON_VERSION: 'v1.0.4 • Coming Soon',
+  DATE_FORMAT: {
+    api: { year: 'numeric', month: '2-digit', day: '2-digit' },
+    display: { year: 'numeric', month: 'long', day: 'numeric' }
+  },
   BROWSER_ICONS: {
     chrome: 'https://www.google.com/chrome/static/images/chrome-logo.svg',
     firefox: 'https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg',
@@ -16,6 +18,22 @@ const CONFIG = {
     safari: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Safari_browser_logo.svg'
   }
 };
+
+/**
+ * Formats a date string according to the specified format
+ * @param {string} dateString - ISO date string
+ * @param {string} formatType - Type of format to use ('api' or 'display')
+ * @returns {string} - Formatted date string
+ */
+function formatDate(dateString, formatType = 'display') {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', CONFIG.DATE_FORMAT[formatType]);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString;
+  }
+}
 
 /**
  * Creates HTML for a browser download button
@@ -27,37 +45,36 @@ const CONFIG = {
 function createButtonHTML(browser, info, releaseDate) {
   const browserName = browser.charAt(0).toUpperCase() + browser.slice(1);
   const isEnabled = browser === 'chrome' ? true : (info.url !== null);
-  
-  // Special handling for Chrome using Chrome Web Store link
   const hrefValue = browser === 'chrome' ? CONFIG.CHROME_STORE_URL : (isEnabled ? info.url : '#');
   const linkTarget = (browser === 'chrome' || isEnabled) ? 'target="_blank" rel="noopener noreferrer"' : '';
   const buttonClass = `browser-btn ${browser}-btn${!isEnabled ? ' disabled' : ''}`;
   
-  // Title text differs based on browser and availability
   const titleText = browser === 'chrome' 
     ? `Available on Chrome Web Store (${releaseDate})`
     : isEnabled 
       ? `Latest version: ${info.version} (${releaseDate})`
       : `${browserName} version not available in latest release`;
 
-  // Version and date information text
   const versionText = isEnabled
-    ? `${info.version} • Released ${releaseDate}`
-    : `${info.version} • Coming Soon`; // Assuming version is still known even if URL is null
+    ? `v${info.version} • Released ${releaseDate}`
+    : `v${info.version} • Coming Soon`;
 
-  // Construct the new HTML structure
-  return `<a href="${hrefValue}" 
-             ${linkTarget} 
-             class="${buttonClass}" 
-             title="${titleText}"
-             data-version="${info.version}"
-             data-release-date="${releaseDate}">
-          <img src="${CONFIG.BROWSER_ICONS[browser]}" alt="${browserName} Logo" class="browser-logo">
-          <div class="browser-info">
-            <div class="browser-name" data-i18n="browserButtons.${browser}">${browserName}</div>
-            <div class="version-info">${versionText}</div>
-          </div>
-        </a>`;
+  return `
+    <a href="${hrefValue}" 
+       ${linkTarget} 
+       class="${buttonClass}" 
+       title="${titleText}"
+       data-version="${info.version}"
+       data-release-date="${releaseDate}">
+      <img src="${CONFIG.BROWSER_ICONS[browser]}" 
+           alt="${browserName} Logo" 
+           class="browser-logo">
+      <div class="browser-info">
+        <div class="browser-name" 
+             data-i18n="browserButtons.${browser}">${browserName}</div>
+        <div class="version-info">${versionText}</div>
+      </div>
+    </a>`.replace(/\n\s+/g, ' ').trim();
 }
 
 /**
@@ -66,21 +83,27 @@ function createButtonHTML(browser, info, releaseDate) {
  */
 async function getLatestReleaseInfo() {
   try {
-    const response = await fetch(CONFIG.GITHUB_API_URL);
-    if (!response.ok) {
-      throw new Error(`GitHub API responded with status: ${response.status}`);
-    }
-    const data = await response.json();
+    const response = await axios.get(CONFIG.GITHUB_API_URL);
+    const data = response.data;
     
-    // Get the release date from the published_at field
-    const releaseDate = new Date(data.published_at);
-    const formattedDate = releaseDate.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    // Format the release date as YYYY-MM-DD
+    const releaseDate = data.published_at.split('T')[0];
 
-    // Extract browser-specific assets
+    // Format date for display
+    const date = new Date(data.published_at);
+    const formattedDate = {
+      en: date.toLocaleDateString('en-US', { 
+        day: 'numeric',
+        month: 'long', 
+        year: 'numeric' 
+      }),
+      de: date.toLocaleDateString('de-DE', { 
+        day: 'numeric',
+        month: 'long', 
+        year: 'numeric' 
+      })
+    };
+
     const assets = data.assets || [];
     const browserAssets = {
       chrome: assets.find(asset => asset.name.includes('chrome-mv3')),
@@ -89,38 +112,81 @@ async function getLatestReleaseInfo() {
       safari: assets.find(asset => asset.name.includes('safari-mv3'))
     };
 
+    // Remove 'v' prefix from version if present
+    const version = data.tag_name.replace(/^v/, '');
+
     return {
-      version: data.tag_name,
-      releaseDate: formattedDate,
+      version,
+      releaseDate,
+      formattedDate,
       browsers: {
         chrome: {
-          version: data.tag_name,
-          url: CONFIG.CHROME_STORE_URL
+          version,
+          url: CONFIG.CHROME_STORE_URL,
+          enabled: true
         },
         firefox: {
-          version: data.tag_name,
-          url: browserAssets.firefox?.browser_download_url || null
+          version,
+          url: browserAssets.firefox?.browser_download_url || null,
+          enabled: !!browserAssets.firefox?.browser_download_url
         },
         edge: {
-          version: data.tag_name,
-          url: browserAssets.edge?.browser_download_url || null
+          version,
+          url: browserAssets.edge?.browser_download_url || null,
+          enabled: !!browserAssets.edge?.browser_download_url
         },
         safari: {
-          version: data.tag_name,
-          url: browserAssets.safari?.browser_download_url || null
+          version,
+          url: browserAssets.safari?.browser_download_url || null,
+          enabled: !!browserAssets.safari?.browser_download_url
         }
       }
     };
   } catch (error) {
-    console.error('Error fetching release info:', error);
+    console.error('Error fetching release info:', error.message);
+    const fallbackVersion = '1.0.4';
+    const fallbackDate = '2025-04-16';
+    
+    // Format fallback date
+    const date = new Date(fallbackDate);
+    const formattedDate = {
+      en: date.toLocaleDateString('en-US', { 
+        day: 'numeric',
+        month: 'long', 
+        year: 'numeric' 
+      }),
+      de: date.toLocaleDateString('de-DE', { 
+        day: 'numeric',
+        month: 'long', 
+        year: 'numeric' 
+      })
+    };
+    
     return {
-      version: 'unknown',
-      releaseDate: 'unknown',
+      version: fallbackVersion,
+      releaseDate: fallbackDate,
+      formattedDate,
       browsers: {
-        chrome: { version: 'unknown', url: CONFIG.CHROME_STORE_URL },
-        firefox: { version: 'unknown', url: null },
-        edge: { version: 'unknown', url: null },
-        safari: { version: 'unknown', url: null }
+        chrome: { 
+          version: fallbackVersion, 
+          url: CONFIG.CHROME_STORE_URL,
+          enabled: true 
+        },
+        firefox: { 
+          version: fallbackVersion, 
+          url: null,
+          enabled: false 
+        },
+        edge: { 
+          version: fallbackVersion, 
+          url: null,
+          enabled: false 
+        },
+        safari: { 
+          version: fallbackVersion, 
+          url: null,
+          enabled: false 
+        }
       }
     };
   }
@@ -134,27 +200,27 @@ async function updateHTMLFile() {
     const releaseInfo = await getLatestReleaseInfo();
     const html = await fs.readFile(CONFIG.HTML_FILE, 'utf8');
 
-    // Create buttons HTML for each browser using the updated function
     const browsers = ['chrome', 'firefox', 'edge', 'safari'];
     const buttonsHTML = browsers
       .map(browser => createButtonHTML(browser, releaseInfo.browsers[browser], releaseInfo.releaseDate))
-      .join('\n          '); // Adjust indentation as needed
+      .join('\n');
 
-    // Regex to find the content within the browser-options div
-    const replacementRegex = /(<div class="browser-options">)(?:[\s\S]*?)(<\/div>)/;
+    const replacementRegex = /<div class="browser-options">([\s\S]*?)<\/div>/;
     
-    // Check if the container exists before attempting replacement
     if (!replacementRegex.test(html)) {
-        console.error('Error: Could not find the <div class="browser-options"> container in index.html.');
-        process.exit(1);
+      throw new Error('Could not find the <div class="browser-options"> container in index.html');
     }
 
-    // Replace the content inside the browser-options div
-    const updatedHTML = html.replace(replacementRegex, `$1\n          ${buttonsHTML}\n        $2`);
+    const updatedHTML = html.replace(
+      replacementRegex, 
+      `<div class="browser-options">\n${buttonsHTML}\n</div>`
+    );
 
-    // Write updated HTML back to file
     await fs.writeFile(CONFIG.HTML_FILE, updatedHTML);
-    console.log('Successfully updated browser links and versions with release date:', releaseInfo.releaseDate);
+    console.log('Successfully updated browser links:');
+    console.log(`- Version: ${releaseInfo.version}`);
+    console.log(`- Release Date: ${releaseInfo.releaseDate}`);
+    console.log('- Updated browsers:', browsers.join(', '));
   } catch (error) {
     console.error('Error updating HTML file:', error.message);
     process.exit(1);
