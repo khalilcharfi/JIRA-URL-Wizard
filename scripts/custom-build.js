@@ -21,7 +21,7 @@ function runCommand(command) {
       stdio: 'inherit',
       env: {
         ...process.env,
-        NODE_OPTIONS: '--no-node-snapshot --max-old-space-size=8192 --gc-interval=100'
+        NODE_OPTIONS: '--no-node-snapshot --max-old-space-size=8192'
       }
     });
     return true;

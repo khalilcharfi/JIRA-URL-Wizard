@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
-    NODE_OPTIONS="--no-node-snapshot --max-old-space-size=8192 --gc-interval=100 --optimize-for-size" \
+    NODE_OPTIONS="--no-node-snapshot --max-old-space-size=8192 --optimize-for-size" \
     LOG_LEVEL=verbose
 
 # Install system dependencies
