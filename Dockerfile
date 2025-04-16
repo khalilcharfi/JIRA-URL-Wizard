@@ -87,6 +87,11 @@ CMD ["bash", "-c", "\
       echo '<!DOCTYPE html><html><body>Popup</body></html>' > build/chrome-mv3-prod/popup.html && \
       echo 'Created fallback build artifacts'; \
     } && \
+    # Explicitly run the postbuild script if it exists
+    if [ -f \"scripts/optimize.js\" ]; then \
+      echo 'Running post-build optimization script...' && \
+      node scripts/optimize.js; \
+    fi && \
     echo 'Building Firefox extension...' && \
     NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' pnpm build:firefox || { \
       echo 'Firefox build failed, creating basic artifacts...' && \

@@ -118,6 +118,12 @@ jobs:
             echo "Created fallback build artifacts"
           }
           
+          # Explicitly run the postbuild script if it exists
+          if [ -f "scripts/optimize.js" ]; then
+            echo "Running post-build optimization script..."
+            node scripts/optimize.js
+          fi
+          
           echo "Chrome build completed with artifacts in build/chrome-mv3-prod/"
         env:
           LOG_LEVEL: verbose
