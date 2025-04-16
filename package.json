@@ -10,11 +10,19 @@
     "build:safe": "node --expose-gc --no-node-snapshot --max-old-space-size=8192 scripts/custom-build.js",
     "build:firefox": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build --target=firefox-mv3",
     "build:edge": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build --target=edge-mv3",
+    "build:safari": "NODE_OPTIONS='--no-node-snapshot --max-old-space-size=8192' plasmo build --target=safari-mv3",
+    "build:all": "pnpm build && pnpm build:firefox && pnpm build:edge && pnpm build:safari",
     "postbuild": "node scripts/optimize.js",
     "package": "plasmo package",
     "package:firefox": "plasmo package --target=firefox-mv3",
     "package:edge": "plasmo package --target=edge-mv3",
-    "package:all": "pnpm package && pnpm package:firefox && pnpm package:edge",
+    "package:safari": "plasmo package --target=safari-mv3",
+    "package:all": "pnpm package && pnpm package:firefox && pnpm package:edge && pnpm package:safari",
+    "safari:convert": "xcrun safari-web-extension-converter ./build/safari-mv3-prod --project-location ./build/safari-project --app-name 'JIRA URL Wizard' --bundle-identifier 'com.khalilcharfi.jiraurlwizard' --swift",
+    "build-and-package:safari": "pnpm build:safari && pnpm safari:convert",
+    "build-and-package:all-with-safari": "pnpm build-and-package:all && pnpm build-and-package:safari",
+    "rename-packages": "node scripts/rename-packages.js",
+    "build-and-package:all": "pnpm build:all && pnpm package:all && pnpm rename-packages",
     "install-image-tools": "./scripts/install-image-tools.sh",
     "optimize-images": "./scripts/optimize-images.sh ./build/chrome-mv3-prod"
   },
@@ -78,6 +86,11 @@
           "<all_urls>"
         ]
       }
-    ]
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "jira-url-wizard@example.com"
+      }
+    }
   }
 }

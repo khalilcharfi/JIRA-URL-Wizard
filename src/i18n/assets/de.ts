@@ -32,6 +32,7 @@ export default {
     reset: "Zurücksetzen",
     settingsSaved: "Einstellungen erfolgreich gespeichert",
     settingsError: "Fehler beim Speichern der Einstellungen",
+    settingsExported: "Einstellungen erfolgreich exportiert",
   },
   
   // Validation messages

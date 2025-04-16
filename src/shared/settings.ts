@@ -29,14 +29,14 @@ const SHOW_ADVANCED_SETTINGS = process.env.PLASMO_PUBLIC_SHOW_ADVANCED_SETTINGS 
 
 export const DEFAULT_SETTINGS: SettingsStorage = {
   theme: "system",
-  prefixes: ["JIRA", "CHECK", "CHECK24", "CHECK24-"],
-  ticketTypes: ["Task", "Bug", "Story", "Epic", "Sub-task"],
+  prefixes: [],
+  ticketTypes: [],
   urls: {
-    mobile: "https://jira.check24.de/browse",
-    desktop: "https://jira.check24.de/browse",
-    bo: "https://jira.check24.de/browse",
-    drupal7: "https://jira.check24.de/browse",
-    drupal9: "https://jira.check24.de/browse",
+    mobile: "",
+    desktop: "",
+    bo: "",
+    drupal7: "",
+    drupal9: "",
   },
   jiraPatterns: [],
   integrateQrImage: false,

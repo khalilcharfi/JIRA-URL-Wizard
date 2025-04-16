@@ -1,8 +1,12 @@
 import { getSettings } from '../services/storageService';
 import type { JiraPattern } from '../shared/settings';
 
+// Use cross-browser compatible API
+import { getBrowser } from '../utils/browser-polyfill';
+const browser = getBrowser();
+
 // Listen for tab URL changes
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Only proceed if URL changed and we have a complete URL
   if (changeInfo.url) {
     try {
@@ -38,22 +42,22 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       
       if (extractedTicketId) {
         // Store the extracted ticket ID for the popup to use
-        await chrome.storage.local.set({ 
+        await browser.storage.local.set({ 
           lastTicketId: extractedTicketId,
           lastTicketDetectedAt: Date.now() 
         });
         
         // Add to recent tickets
-        const recentTicketsData = await chrome.storage.sync.get('recentTickets');
+        const recentTicketsData = await browser.storage.sync.get('recentTickets');
         const recentTickets = recentTicketsData.recentTickets || [];
         
         if (!recentTickets.includes(extractedTicketId)) {
           const updatedTickets = [extractedTicketId, ...recentTickets.filter(t => t !== extractedTicketId)].slice(0, 5);
-          await chrome.storage.sync.set({ recentTickets: updatedTickets });
+          await browser.storage.sync.set({ recentTickets: updatedTickets });
         }
         
         // Notify any open popup
-        chrome.runtime.sendMessage({ 
+        browser.runtime.sendMessage({ 
           action: 'ticketDetected', 
           ticketId: extractedTicketId 
         }).catch(() => {
@@ -67,9 +71,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 });
 
 // Listen for messages from the popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'getCurrentTabUrl') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.url) {
         sendResponse({ url: tabs[0].url });
       } else {

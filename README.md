@@ -210,51 +210,84 @@ For support, please:
 - [ ] Team collaboration features
 - [ ] Analytics dashboard
 
-## Browser Compatibility
+## Cross-Browser Compatibility
 
-The JIRA URL Wizard extension is now compatible with the following browsers:
-
+This extension is designed to work on:
 - Google Chrome
 - Mozilla Firefox
 - Microsoft Edge
+- Safari (macOS and iOS)
 
-### Building for Different Browsers
+The codebase uses Plasmo's cross-browser build system and a custom browser polyfill to ensure consistent functionality across all supported browsers.
 
-To build the extension for different browsers, use the following commands:
+## Building for Different Browsers
+
+To build the extension for all supported browsers at once:
 
 ```bash
-# Build for Chrome (default)
-npm run build
-
-# Build for Firefox
-npm run build:firefox
-
-# Build for Edge
-npm run build:edge
-
-# Build for all browsers
-npm run build:all
+pnpm build:all
 ```
 
-### Packaging for Different Browsers
-
-To create distribution packages for different browsers:
+To build for specific browsers:
 
 ```bash
-# Package for Chrome (default)
-npm run package
+# Chrome (default)
+pnpm build
 
-# Package for Firefox
-npm run package:firefox
+# Firefox
+pnpm build:firefox
 
-# Package for Edge
-npm run package:edge
+# Edge
+pnpm build:edge
 
+# Safari
+pnpm build:safari
+```
+
+## Packaging
+
+To package the extension for distribution:
+
+```bash
 # Package for all browsers
-npm run package:all
+pnpm package:all
+
+# Package with version in filename
+pnpm build-and-package:all
 ```
 
-The packages will be available in the `build` directory.
+## Safari Support
+
+Safari requires an additional conversion step to create an Xcode project:
+
+```bash
+# Build and convert for Safari
+pnpm build-and-package:safari
+```
+
+This requires:
+- macOS
+- Xcode 12 or later
+- Xcode Command Line Tools
+
+The conversion process creates an Xcode project in `./build/safari-project`. To submit to the App Store:
+1. Open the generated Xcode project
+2. Configure signing certificates
+3. Build and export the package
+
+For a complete workflow including Safari:
+
+```bash
+pnpm build-and-package:all-with-safari
+```
+
+## Development
+
+To run the development server:
+
+```bash
+pnpm dev
+```
 
 ## Production Builds
 
