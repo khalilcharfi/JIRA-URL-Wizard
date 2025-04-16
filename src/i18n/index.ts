@@ -5,6 +5,18 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enTranslation from './assets/en';
 import deTranslation from './assets/de';
 
+// Check if we're in a browser environment where localStorage is available
+const isStorageAvailable = (): boolean => {
+  try {
+    const testKey = '__storage_test__';
+    window.localStorage.setItem(testKey, testKey);
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 // the translations
 const resources = {
   en: {
@@ -14,6 +26,17 @@ const resources = {
     translation: deTranslation
   }
 };
+
+// Configure detection options based on environment
+const detectionOptions = isStorageAvailable() 
+  ? {
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage']
+    } 
+  : {
+      order: ['navigator', 'htmlTag'],
+      caches: [] // No caching when localStorage is unavailable
+    };
 
 i18n
   // detect user language
@@ -31,10 +54,7 @@ i18n
     },
     
     // options for language detection
-    detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage'],
-    },
+    detection: detectionOptions,
   });
 
 export default i18n; 

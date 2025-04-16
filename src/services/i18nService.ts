@@ -2,6 +2,18 @@ import i18n from '../i18n/config';
 import type { SettingsStorage } from "../shared/settings";
 import { saveSettings, getSettings } from './storageService';
 
+// Helper function to check if localStorage is available
+const isLocalStorageAvailable = (): boolean => {
+  try {
+    const testKey = '__storage_test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 /**
  * Sets the application's active language instance (for immediate UI update)
  * and updates localStorage.
@@ -15,7 +27,12 @@ export const setI18nLanguage = async (language: string): Promise<void> => {
         ? navigator.language.split('-')[0]
         : language;
     await i18n.changeLanguage(actualLanguage);
-    localStorage.setItem('i18nextLng', actualLanguage); // Keep localStorage cache in sync
+    
+    // Only try to use localStorage if it's available (not in service workers)
+    if (isLocalStorageAvailable()) {
+      localStorage.setItem('i18nextLng', actualLanguage); // Keep localStorage cache in sync
+    }
+    
     console.log(
       `i18n language instance set to: ${actualLanguage} (preference: ${language})`
     );

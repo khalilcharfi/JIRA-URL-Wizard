@@ -3,6 +3,21 @@ import { initReactI18next } from 'react-i18next';
 import en from './assets/en';
 import de from './assets/de';
 
+// Check if we're in a browser environment where localStorage and window are available
+const isStorageAvailable = (): boolean => {
+  try {
+    // Check if window exists (will throw in service workers)
+    if (typeof window === 'undefined') return false;
+    
+    const testKey = '__storage_test__';
+    window.localStorage.setItem(testKey, testKey);
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 // the translations
 const resources = {
   en: {

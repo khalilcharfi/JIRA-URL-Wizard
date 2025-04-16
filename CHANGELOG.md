@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed issue requiring users to click "Save Changes" button twice
 - Improved saving state management to provide immediate UI feedback
 - Enhanced error handling for failed save operations
+- Fixed localStorage access errors in service worker environment by adding proper environment detection
+- Improved i18n initialization to handle environments where localStorage is not available
+- Added safety checks before accessing browser storage APIs
 
 ## [1.0.3] - 2023-06-20
 ### Added
