@@ -385,15 +385,15 @@
         
         .browser-buttons h3 {
             color: var(--primary-color);
-            margin-bottom: 25px;
             font-size: var(--font-size-lg);
+            margin-bottom: 15px; /* Reduced margin */
         }
         
         .button-container {
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
-            gap: 20px;
+            gap: 10px; /* Reduced gap */
+            flex-wrap: wrap;
         }
         
         .browser-btn {
@@ -426,31 +426,52 @@
             background-color: white;
             padding: 4px;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 32px; /* Increased size */
+            height: 32px; /* Increased size */
             object-fit: contain;
         }
         
         .browser-btn:hover img {
             transform: scale(1.1);
         }
+
+        .version-info {
+            display: block;
+            font-size: var(--font-size-sm); /* Increased size */
+            color: white; /* Changed to white */
+            opacity: 0.85; /* Slight opacity for contrast */
+            margin-top: 2px;
+        }
         
         .chrome-btn {
             background-color: #4285F4;
         }
         
-        .firefox-btn, .edge-btn, .safari-btn {
-            background-color: var(--secondary-color);
-            opacity: 0.8;
-            cursor: not-allowed;
+        .firefox-btn {
+            background-color: #FF7139;
         }
-        
-        .firefox-btn:hover, .edge-btn:hover, .safari-btn:hover {
+
+        .edge-btn {
+            background-color: #0078D7;
+        }
+
+        .safari-btn {
+            background-color: #1B88CA;
+        }
+
+        .browser-btn.disabled {
+            background-color: var(--secondary-color);
+            opacity: 0.7;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .browser-btn.disabled:hover {
             transform: none;
             box-shadow: none;
         }
         
-        .firefox-btn:hover img, .edge-btn:hover img, .safari-btn:hover img {
+        .browser-btn.disabled:hover img {
             transform: none;
         }
         
@@ -864,6 +885,12 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--secondary-color);
         }
+        
+        .browser-info span:first-child {
+            font-weight: 500;
+            font-size: var(--font-size-base); /* Increased size */
+            color: white; /* Changed to white */
+        }
     </style>
 </head>
 <body>
@@ -884,22 +911,58 @@
         <div class="browser-buttons">
             <h3 data-i18n="browserButtons.title">Download JIRA URL Wizard</h3>
             <div class="button-container">
-                <a href="https://chromewebstore.google.com/detail/jira-url-wizard/opfnbeleknbmdnemmnlhigmmmkghncak" target="_blank" class="browser-btn chrome-btn" rel="noopener noreferrer">
-                    <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome Logo" width="20" height="20">
-                    <span data-i18n="browserButtons.chrome">Chrome</span>
-                </a>
-                <a href="#" onclick="alert(translations[document.querySelector('.language-btn.active').getAttribute('data-lang')].browserButtons.firefoxAlert); return false;" class="browser-btn firefox-btn">
-                    <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" alt="Firefox Logo" width="20" height="20">
-                    <span data-i18n="browserButtons.firefox">Firefox (Soon)</span>
-                </a>
-                <a href="#" onclick="alert(translations[document.querySelector('.language-btn.active').getAttribute('data-lang')].browserButtons.edgeAlert); return false;" class="browser-btn edge-btn">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg" alt="Edge Logo" width="20" height="20">
-                    <span data-i18n="browserButtons.edge">Edge (Soon)</span>
-                </a>
-                <a href="#" onclick="alert(translations[document.querySelector('.language-btn.active').getAttribute('data-lang')].browserButtons.safariAlert); return false;" class="browser-btn safari-btn">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/Safari_browser_logo.svg" alt="Safari Logo" width="20" height="20">
-                    <span data-i18n="browserButtons.safari">Safari (Soon)</span>
-                </a>
+                <a href="https://chromewebstore.google.com/detail/jira-url-wizard/opfnbeleknbmdnemmnlhigmmmkghncak" 
+          target="_blank" rel="noopener noreferrer"
+          class="browser-btn chrome-btn" 
+          title="Available on Chrome Web Store (April 16, 2025)" 
+          data-version="v1.0.4"
+          data-release-date="April 16, 2025"
+          >
+          <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome Logo" width="20" height="20">
+          <div class="browser-info">
+            <span data-i18n="browserButtons.chrome">Chrome</span>
+            <span class="version-info">v1.0.4 • Released April 16, 2025</span>
+          </div>
+        </a>
+                <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/firefox-mv3-v1.0.4.zip" 
+          target="_blank" rel="noopener noreferrer"
+          class="browser-btn firefox-btn" 
+          title="Latest version: v1.0.4 (April 16, 2025)" 
+          data-version="v1.0.4"
+          data-release-date="April 16, 2025"
+          >
+          <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" alt="Firefox Logo" width="20" height="20">
+          <div class="browser-info">
+            <span data-i18n="browserButtons.firefox">Firefox</span>
+            <span class="version-info">v1.0.4 • Released April 16, 2025</span>
+          </div>
+        </a>
+                <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/edge-mv3-v1.0.4.zip" 
+          target="_blank" rel="noopener noreferrer"
+          class="browser-btn edge-btn" 
+          title="Latest version: v1.0.4 (April 16, 2025)" 
+          data-version="v1.0.4"
+          data-release-date="April 16, 2025"
+          >
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg" alt="Edge Logo" width="20" height="20">
+          <div class="browser-info">
+            <span data-i18n="browserButtons.edge">Edge</span>
+            <span class="version-info">v1.0.4 • Released April 16, 2025</span>
+          </div>
+        </a>
+                <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.4/safari-mv3-v1.0.4.zip" 
+          target="_blank" rel="noopener noreferrer"
+          class="browser-btn safari-btn" 
+          title="Latest version: v1.0.4 (April 16, 2025)" 
+          data-version="v1.0.4"
+          data-release-date="April 16, 2025"
+          >
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/Safari_browser_logo.svg" alt="Safari Logo" width="20" height="20">
+          <div class="browser-info">
+            <span data-i18n="browserButtons.safari">Safari</span>
+            <span class="version-info">v1.0.4 • Released April 16, 2025</span>
+          </div>
+        </a>
             </div>
             
             <div class="settings-option">
@@ -1465,9 +1528,9 @@
                 browserButtons: {
                     title: "Download JIRA URL Wizard",
                     chrome: "Chrome",
-                    firefox: "Firefox (Soon)",
-                    edge: "Edge (Soon)",
-                    safari: "Safari (Soon)",
+                    firefox: "Firefox",
+                    edge: "Edge",
+                    safari: "Safari",
                     firefoxAlert: "Firefox extension coming soon!",
                     edgeAlert: "Edge extension coming soon!",
                     safariAlert: "Safari extension coming soon!"
@@ -1660,9 +1723,9 @@
                 browserButtons: {
                     title: "JIRA URL Wizard herunterladen",
                     chrome: "Chrome",
-                    firefox: "Firefox (Bald verfügbar)",
-                    edge: "Edge (Bald verfügbar)",
-                    safari: "Safari (Bald verfügbar)",
+                    firefox: "Firefox",
+                    edge: "Edge",
+                    safari: "Safari",
                     firefoxAlert: "Die Firefox-Erweiterung wird in Kürze verfügbar sein!",
                     edgeAlert: "Die Edge-Erweiterung wird in Kürze verfügbar sein!",
                     safariAlert: "Die Safari-Erweiterung wird in Kürze verfügbar sein!"
