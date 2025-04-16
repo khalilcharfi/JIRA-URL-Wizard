@@ -19,10 +19,8 @@ A powerful browser extension that simplifies working with multiple JIRA environm
 2. Click "Add to Chrome"
 3. Confirm the installation
 
-### Firefox
-1. Visit the [Firefox Add-ons Store](https://addons.mozilla.org/en-US/firefox/addon/jira-url-wizard/)
-2. Click "Add to Firefox"
-3. Confirm the installation
+### Firefox (Coming Soon - Release Date: 2025-04-16)
+- Extension will be available in the Firefox Add-ons store
 
 ### Edge (Coming Soon - Release Date: 2025-04-16)
 - Extension will be available in the Microsoft Edge Add-ons store
