@@ -7,10 +7,6 @@ import { DEFAULT_TOAST_TIMEOUT_MS } from "~src/utils/config";
 import { DEFAULT_SETTINGS } from "~src/shared/settings"
 import type { SettingsStorage, JiraPattern } from "~src/shared/settings"
 import { QRCode } from 'react-qrcode-logo';
-// Add import for marked
-import { marked } from 'marked';
-// Import the MarkdownRenderer component
-import MarkdownRenderer from "../components/MarkdownRenderer";
 // Import the new storage service
 import {
   getSettings,
@@ -1208,27 +1204,24 @@ const IndexOptions = () => {
         return `${linkTextPrefix} → ${fullUrl}`;
     };
 
-    // Build Markdown String section by section using the helper
-    let markdown = `🌐 Frontend Environments\n\n`;
-    markdown += createLink('bo', '', '', 'Back Office Tool') + '\n\n';
-    markdown += createLink('mobile', '', '', 'Mobile Version') + '\n\n';
-    markdown += createLink('desktop', '', '', 'Desktop Version') + '\n\n';
+    // Build text output string section by section using the helper
+    let output = `Frontend Environments\n\n`;
+    output += createLink('bo', '', '', 'Back Office Tool') + '\n\n';
+    output += createLink('mobile', '', '', 'Mobile Version') + '\n\n';
+    output += createLink('desktop', '', '', 'Desktop Version') + '\n\n';
     
-    markdown += `📝 CMS Environments\n\n`;
-    markdown += `⏳ Drupal 7\n\n`; // Added emoji
-    markdown += createLink('drupal7', '', '', 'Base CMS') + '\n\n';
-    markdown += createLink('drupal7', '/fahrradversicherung', '?deviceoutput=desktop', 'Desktop View') + '\n\n';
-    markdown += createLink('drupal7', '/fahrradversicherung', '?deviceoutput=mobile', 'Mobile View') + '\n\n';
+    output += `CMS Environments\n\n`;
+    output += `Drupal 7\n\n`;
+    output += createLink('drupal7', '', '', 'Base CMS') + '\n\n';
+    output += createLink('drupal7', '/fahrradversicherung', '?deviceoutput=desktop', 'Desktop View') + '\n\n';
+    output += createLink('drupal7', '/fahrradversicherung', '?deviceoutput=mobile', 'Mobile View') + '\n\n';
     
-    markdown += `✨ Drupal 9\n\n`; // Added emoji
-    markdown += createLink('drupal9', '/fahrradversicherung', '', 'Desktop View') + '\n\n';
-    markdown += createLink('drupal9', '/fahrradversicherung', '', 'Mobile View') + '\n\n';
+    output += `Drupal 9\n\n`;
+    output += createLink('drupal9', '/fahrradversicherung', '', 'Desktop View') + '\n\n';
+    output += createLink('drupal9', '/fahrradversicherung', '', 'Mobile View') + '\n\n';
 
-    // Placeholder for URL structure part - This function doesn't seem to use urlStructure or ticketTypes currently
-    // If needed, add logic here to incorporate urlStructure and ticketTypes
-
-    return markdown;
-  }, [settings.urls, settings.prefixes, settings.ticketTypes, settings.urlStructure]); // Depend on saved settings
+    return output;
+  }, [settings.urls, settings.prefixes, settings.ticketTypes, settings.urlStructure]);
 
   const generatePlainTextOutput = useCallback((): string => {
     // Use saved settings for all relevant parts
@@ -1611,11 +1604,10 @@ const IndexOptions = () => {
                              <p className={`font-semibold mb-1 text-blue-800 dark:text-blue-300`}>
                                {t('features.markdownFormatActive')}
                              </p>
-                            {/* Use MarkdownRenderer with generated markdown */}
-                            <MarkdownRenderer 
-                              markdownText={generateMarkdownOutput()} 
-                              className="prose prose-sm dark:prose-invert max-w-none text-[11px] leading-snug"
-                            />
+                            {/* Replace MarkdownRenderer with a simple pre tag */}
+                            <pre className="whitespace-pre-wrap font-mono text-xs text-gray-700 dark:text-gray-300 leading-snug">
+                              {generateMarkdownOutput()}
+                            </pre>
                             <div className="mt-2 text-right">
                                <Button
                                   variant="ghost"
