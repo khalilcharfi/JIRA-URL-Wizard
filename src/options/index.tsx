@@ -392,7 +392,7 @@ const PatternEditorForm: React.FC<PatternEditorFormProps> = ({
           <label
             htmlFor={`url-input-${index}`}
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Sample JIRA URL
+            {t('pattern.sampleJiraUrl')}
           </label>
           <input
             id={`url-input-${index}`}
@@ -522,6 +522,12 @@ const IndexOptions = () => {
   const [settings, setSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
   const [tempSettings, setTempSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true); // Keep loading state for initial load only
+  // Add local state for URL inputs
+  const [localUrlInputs, setLocalUrlInputs] = useState<Record<string, string>>({});
+  // Add refs for input elements to maintain focus
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  // Add ref for scroll position
+  const scrollPositionRef = useRef<number>(0);
 
   const [selectedLanguage, setSelectedLanguage] = useState<string>("auto");
   const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
@@ -702,18 +708,71 @@ const IndexOptions = () => {
     }));
   };
 
-  const handleUrlChange = (key: UrlKey, event: React.ChangeEvent<HTMLInputElement>) => {
+  // Save scroll position before updates
+  const saveScrollPosition = useCallback(() => {
+    scrollPositionRef.current = window.scrollY;
+  }, []);
+
+  // Restore scroll position after updates
+  const restoreScrollPosition = useCallback(() => {
+    window.scrollTo(0, scrollPositionRef.current);
+  }, []);
+
+  // Update the handleUrlChange function to preserve scroll and focus
+  const handleUrlChange = useCallback((key: UrlKey, event: React.ChangeEvent<HTMLInputElement>) => {
+    saveScrollPosition();
     const value = event.target.value;
     const cleanValue = value.replace(/^(https?:\/\/)/, '');
-
-    setTempSettings((prev) => {
-      const newUrls = { ...prev.urls, [key]: cleanValue };
-      return {
-        ...prev,
-        urls: newUrls
-      };
+    
+    // Store current focus element
+    const focusedElement = document.activeElement;
+    const focusedId = focusedElement instanceof HTMLElement ? focusedElement.id : '';
+    
+    // Update only the local state during typing
+    setLocalUrlInputs(prev => ({
+      ...prev,
+      [key]: cleanValue
+    }));
+    
+    // Use requestAnimationFrame to restore focus and scroll position after render
+    requestAnimationFrame(() => {
+      // Restore scroll position
+      restoreScrollPosition();
+      
+      // Restore focus if we lost it
+      if (focusedId && document.activeElement !== focusedElement) {
+        const element = document.getElementById(focusedId);
+        if (element instanceof HTMLInputElement) {
+          element.focus();
+          // Preserve cursor position
+          const length = element.value.length;
+          element.setSelectionRange(length, length);
+        }
+      }
     });
-  };
+  }, [saveScrollPosition, restoreScrollPosition]);
+
+  // Add a handleUrlBlur function to update main state on blur
+  const handleUrlBlur = useCallback((key: UrlKey) => {
+    if (localUrlInputs[key] !== undefined) {
+      setTempSettings((prev) => ({
+        ...prev,
+        urls: {
+          ...prev.urls,
+          [key]: localUrlInputs[key]
+        }
+      }));
+    }
+  }, [localUrlInputs]);
+
+  // Initialize local URL inputs when tempSettings changes
+  useEffect(() => {
+    const initialInputs: Record<string, string> = {};
+    Object.keys(tempSettings.urls).forEach(key => {
+      initialInputs[key] = tempSettings.urls[key as UrlKey] || '';
+    });
+    setLocalUrlInputs(initialInputs);
+  }, [tempSettings.urls]);
 
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = event.clipboardData.getData('text');
@@ -726,8 +785,9 @@ const IndexOptions = () => {
         const strippedValue = match[1];
         const currentCursorPos = input.selectionStart || 0;
         
-        setTempSettings((prev) => {
-          const currentVal = prev.urls[key] || '';
+        // Update local state instead of tempSettings
+        setLocalUrlInputs(prev => {
+          const currentVal = prev[key] || '';
           const textBeforeCursor = currentVal.substring(0, currentCursorPos);
           const textAfterCursor = currentVal.substring(currentCursorPos);
           const newValue = textBeforeCursor + strippedValue + textAfterCursor;
@@ -735,10 +795,7 @@ const IndexOptions = () => {
 
           return {
             ...prev,
-            urls: {
-              ...prev.urls,
-              [key]: cleanValue
-            }
+            [key]: cleanValue
           };
         });
         
@@ -1592,7 +1649,7 @@ const IndexOptions = () => {
                                   }}
                                   className="text-xs"
                                >
-                                 Copy Preview
+                                 {t('common.copyPreview')}
                                </Button>
                              </div>
                           </div>
@@ -1653,8 +1710,10 @@ const IndexOptions = () => {
                         <input
                           type="text"
                           id={`base-url-input-${key}`}
-                          value={tempSettings.urls[key] || ''}
+                          ref={el => inputRefs.current[`base-url-input-${key}`] = el}
+                          value={localUrlInputs[key] !== undefined ? localUrlInputs[key] : (tempSettings.urls[key] || '')}
                           onChange={(e) => handleUrlChange(key, e)}
+                          onBlur={() => handleUrlBlur(key)}
                           placeholder="my-env.example.com"
                           className={`flex-1 min-w-0 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 p-2 options-section__input bg-white text-gray-900 border-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-500 border transition-colors duration-150 focus:outline-none focus:ring-1`}
                           aria-describedby={`url-description-${key}`}
@@ -1721,7 +1780,7 @@ const IndexOptions = () => {
                               {/* Added visual indicator for form state */}
                               {!isCurrentPatternValid && (
                                 <span className="text-xs text-red-500 dark:text-red-400 animate-pulse">
-                                  Invalid pattern
+                                  {t('common.invalidPattern')}
                                 </span>
                               )}
                               {isCurrentPatternValid && isPreviewMatch && (
@@ -1762,7 +1821,7 @@ const IndexOptions = () => {
                                               {/* Added visual indicators for form state */}
                                               {!isCurrentPatternValid && (
                                                 <span className="text-xs text-red-500 dark:text-red-400 animate-pulse">
-                                                  Invalid pattern
+                                                  {t('common.invalidPattern')}
                                                 </span>
                                               )}
                                               {isCurrentPatternValid && isPreviewMatch && (
