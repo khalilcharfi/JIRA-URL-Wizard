@@ -165,7 +165,7 @@ const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({
     const isDynamicField = ['ticket-type', 'issue-prefix', 'base-url'].includes(component.type);
     const isDisabled = isDynamicField && isUsed;
 
-    // Use sortable with modified options for better touch support
+    // Use sortable with aggressive touch options
     const { attributes, listeners, setNodeRef, isDragging } = useSortable({
         id: id,
         data: { type: 'available', componentData: component },
@@ -187,9 +187,141 @@ const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({
         };
     }
 
+    // Create a ref for enhanced touch handling
+    const elementRef = React.useRef<HTMLDivElement>(null);
+    
+    // Set up touch event handlers (combined with the existing ref)
+    const combinedRef = React.useCallback(
+        (node: HTMLDivElement) => {
+            // Call the dnd-kit's setNodeRef
+            setNodeRef(node);
+            // Set our own ref
+            elementRef.current = node;
+        },
+        [setNodeRef]
+    );
+    
+    // Add enhanced touch event handlers
+    React.useEffect(() => {
+        const element = elementRef.current;
+        if (!element || isDisabled) return;
+        
+        let longPressTimer: number | null = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const LONG_PRESS_THRESHOLD = 300; // ms
+        const MOVEMENT_THRESHOLD = 5; // pixels
+        
+        // Handle touchstart - prevent default to allow custom drag behavior
+        const handleTouchStart = (e: TouchEvent) => {
+            if (!isDisabled) {
+                // Prevent default browser behavior like scrolling
+                e.preventDefault();
+                
+                // Record the starting position
+                if (e.touches.length > 0) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                }
+                
+                // Start the long press timer
+                longPressTimer = window.setTimeout(() => {
+                    // Add dragging class to body for global handlers
+                    document.body.classList.add('touch-dragging');
+                    
+                    // Apply styles directly
+                    if (element) {
+                        element.style.touchAction = 'none';
+                        element.style.webkitUserSelect = 'none';
+                        element.style.userSelect = 'none';
+                        element.style.transition = 'transform 0.1s';
+                        
+                        // Apply a slight scale effect to indicate touch
+                        element.style.transform = 'scale(1.05)';
+                        
+                        // Add a vibration feedback if available
+                        if (window.navigator && window.navigator.vibrate) {
+                            navigator.vibrate(50);
+                        }
+                    }
+                    
+                    // Trigger the DnD-kit's drag operation programmatically
+                    // This is done by simulating a pointer down event
+                    const rect = element.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    // Create and dispatch pointer events to simulate drag start
+                    const pointerDownEvent = new PointerEvent('pointerdown', {
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: centerX,
+                        clientY: centerY
+                    });
+                    element.dispatchEvent(pointerDownEvent);
+                    
+                }, LONG_PRESS_THRESHOLD);
+            }
+        };
+        
+        // Handle touchmove - check if user moved too much and cancel long press
+        const handleTouchMove = (e: TouchEvent) => {
+            if (longPressTimer && e.touches.length > 0) {
+                const moveX = Math.abs(e.touches[0].clientX - touchStartX);
+                const moveY = Math.abs(e.touches[0].clientY - touchStartY);
+                
+                // If moved more than threshold, cancel long press
+                if (moveX > MOVEMENT_THRESHOLD || moveY > MOVEMENT_THRESHOLD) {
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                }
+            }
+            
+            // Prevent default if dragging
+            if (document.body.classList.contains('touch-dragging')) {
+                e.preventDefault();
+            }
+        };
+        
+        // Handle touchend - clean up styles and timers
+        const handleTouchEnd = () => {
+            // Clear the long press timer
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+            
+            document.body.classList.remove('touch-dragging');
+            
+            if (element) {
+                element.style.transform = '';
+                element.style.transition = '';
+            }
+        };
+        
+        // Add listeners
+        element.addEventListener('touchstart', handleTouchStart, { passive: false });
+        element.addEventListener('touchend', handleTouchEnd);
+        element.addEventListener('touchcancel', handleTouchEnd);
+        element.addEventListener('touchmove', handleTouchMove, { passive: false });
+        
+        // Cleanup
+        return () => {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+            }
+            element.removeEventListener('touchstart', handleTouchStart);
+            element.removeEventListener('touchend', handleTouchEnd);
+            element.removeEventListener('touchcancel', handleTouchEnd);
+            element.removeEventListener('touchmove', handleTouchMove);
+        };
+    }, [isDisabled]);
+
     return (
         <div
-            ref={setNodeRef}
+            ref={combinedRef}
             style={style}
             {...(isDisabled ? {} : listeners)} 
             {...(isDisabled ? {} : attributes)}
@@ -199,6 +331,13 @@ const AvailableItem: React.FC<ItemProps & { isUsed: boolean }> = ({
                 touch-manipulation ${itemStyle} border ${isDisabled ? 'border-gray-200 dark:border-gray-700' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`}
             data-component-type={component.type}
             data-disabled={isDisabled}
+            onTouchStart={(e) => {
+                if (!isDisabled) {
+                    // This is for React's synthetic events
+                    // It complements the native event listener
+                    e.stopPropagation();
+                }
+            }}
         >
             <ItemContent component={component} />
             {isDisabled && (
@@ -746,22 +885,54 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 0,
-                tolerance: 0,
+                distance: 1, // Very small distance needed to activate
+                tolerance: 5,
                 delay: 0,
             },
         }),
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 0,
-                tolerance: 0,
-                delay: 0,
+                distance: 1, // Very small distance needed to activate
+                tolerance: 5,
+                delay: 0, // No delay for instant response
             },
+            // Enhanced activation handler for touch events
             onActivation: ({ event }) => {
+                // Prevent browser behaviors like scrolling
+                if (event.cancelable) {
+                    event.preventDefault();
+                }
+                
                 if (event instanceof TouchEvent) {
+                    // Find the target element
                     const target = event.target as HTMLElement;
                     if (target) {
+                        // Apply styles to the target
                         target.style.touchAction = 'none';
+                        target.style.webkitUserSelect = 'none';
+                        target.style.userSelect = 'none';
+                        
+                        // Find parent draggable element
+                        let current = target;
+                        while (current && !current.hasAttribute('data-component-type')) {
+                            current = current.parentElement as HTMLElement;
+                        }
+                        
+                        // Apply styles to parent draggable if found
+                        if (current) {
+                            current.style.touchAction = 'none';
+                            current.style.webkitUserSelect = 'none';
+                            current.style.userSelect = 'none';
+                        }
+                        
+                        // Find all ancestors and disable their touch actions temporarily
+                        let parent = target.parentElement;
+                        while (parent) {
+                            if (parent.style) {
+                                parent.style.touchAction = 'none';
+                            }
+                            parent = parent.parentElement;
+                        }
                     }
                 }
             },
@@ -786,12 +957,76 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         })
     };
 
-    // Define pattern container as a droppable area
+    // Define pattern container as a droppable area with enhanced touch handling
     const { setNodeRef: setPatternDropRef } = useDroppable({
         id: PATTERN_CONTAINER_ID,
         data: { type: 'pattern-container' }
     });
     
+    // Create a ref for the pattern container for direct manipulation
+    const patternContainerRef = React.useRef<HTMLDivElement>(null);
+    
+    // Combined ref for the pattern container
+    const combinedPatternContainerRef = React.useCallback(
+        (node: HTMLDivElement) => {
+            // Call the dnd-kit's setNodeRef
+            setPatternDropRef(node);
+            // Set our own ref
+            patternContainerRef.current = node;
+        },
+        [setPatternDropRef]
+    );
+    
+    // Add touch handling for the pattern container
+    useEffect(() => {
+        const container = patternContainerRef.current;
+        if (!container) return;
+        
+        // Make the container visually highlight when dragging is in progress
+        const handleDragEnter = () => {
+            if (document.body.classList.contains('dragging-in-progress') || 
+                document.body.classList.contains('touch-dragging')) {
+                container.classList.add('pattern-drop-active');
+            }
+        };
+        
+        // Remove highlight when drag leaves the container
+        const handleDragLeave = () => {
+            container.classList.remove('pattern-drop-active');
+        };
+        
+        // Ensure the container allows drops
+        const handleDragOver = (e: DragEvent) => {
+            if (document.body.classList.contains('dragging-in-progress') || 
+                document.body.classList.contains('touch-dragging')) {
+                e.preventDefault();
+                container.classList.add('pattern-drop-active');
+            }
+        };
+        
+        // Handle touch events to allow dropping
+        const handleTouchOver = (e: TouchEvent) => {
+            if (document.body.classList.contains('dragging-in-progress') || 
+                document.body.classList.contains('touch-dragging')) {
+                e.preventDefault();
+                container.classList.add('pattern-drop-active');
+            }
+        };
+        
+        // Add regular DOM event listeners for drag and touch events
+        container.addEventListener('dragenter', handleDragEnter);
+        container.addEventListener('dragleave', handleDragLeave);
+        container.addEventListener('dragover', handleDragOver);
+        container.addEventListener('touchmove', handleTouchOver, { passive: false });
+        
+        return () => {
+            container.removeEventListener('dragenter', handleDragEnter);
+            container.removeEventListener('dragleave', handleDragLeave);
+            container.removeEventListener('dragover', handleDragOver);
+            container.removeEventListener('touchmove', handleTouchOver);
+        };
+    }, []);
+
     // URL Building and validation functions
     const validateUrl = useCallback((url: string) => {
         // Check for invalid starting characters like @
@@ -945,7 +1180,7 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
             setHasUnsavedChanges(urlStructure?.length === 0);
         }
     }, [urlStructure]);
-
+    
     // Add a dedicated effect to recompute hasUnsavedChanges when urlStructure changes
     // This ensures we correctly detect when changes need to be saved after the parent component updates
     useEffect(() => {
@@ -963,6 +1198,25 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
             urlStructureLength: urlStructure?.length || 0
         });
     }, [hasUnsavedChanges, pattern, urlStructure]);
+    
+    // Global touch event handler for improving drag and drop
+    useEffect(() => {
+        // Prevent pull-to-refresh and other browser gestures during drag
+        const preventDefaultOnTouch = (e: TouchEvent) => {
+            // Check if an active drag is in progress
+            if (document.body.classList.contains('dragging-in-progress')) {
+                e.preventDefault();
+            }
+        };
+        
+        document.addEventListener('touchmove', preventDefaultOnTouch, { passive: false });
+        document.addEventListener('touchstart', preventDefaultOnTouch, { passive: false });
+        
+        return () => {
+            document.removeEventListener('touchmove', preventDefaultOnTouch);
+            document.removeEventListener('touchstart', preventDefaultOnTouch);
+        };
+    }, []);
 
     // Event handlers
     const handleDeleteComponent = useCallback((idToDelete: UniqueIdentifier) => {
@@ -1211,6 +1465,66 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         ).map(c => c.id)),
         [initialComponents]
     );
+
+    // Add global CSS for touch handling
+    useEffect(() => {
+        // Add a style tag to the head for global touch handling
+        const style = document.createElement('style');
+        style.textContent = `
+            .dragging-in-progress, 
+            .dragging-in-progress * {
+                touch-action: none !important;
+                -webkit-user-select: none !important;
+                user-select: none !important;
+            }
+            
+            .touch-dragging,
+            .touch-dragging * {
+                touch-action: none !important;
+                -webkit-user-select: none !important;
+                user-select: none !important;
+            }
+            
+            [data-component-type] {
+                -webkit-touch-callout: none !important;
+            }
+            
+            .pattern-drop-active {
+                background-color: rgba(59, 130, 246, 0.1) !important;
+                border-color: rgba(59, 130, 246, 0.5) !important;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+                transition: all 0.2s ease-in-out !important;
+                position: relative !important;
+            }
+            
+            .pattern-drop-active::after {
+                content: 'Drop Here';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #3b82f6;
+                font-size: 14px;
+                font-weight: bold;
+                opacity: 0.6;
+                pointer-events: none;
+            }
+            
+            /* Make the drag overlay more prominent on mobile */
+            .dragging-in-progress [data-dnd-overlay] {
+                opacity: 0.9 !important;
+                transform: scale(1.05) !important;
+                z-index: 9999 !important;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Cleanup
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
 
     return (
         <div className="space-y-5">
