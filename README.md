@@ -2,9 +2,21 @@
 
 <div align="center">
   <img src="assets/icon.png" alt="JIRA URL Wizard Logo" width="200"/>
+  <h3>Current Version: 1.0.5</h3>
 </div>
 
 JIRA URL Wizard is a powerful browser extension designed to streamline your JIRA workflow by making it easier to manage and access JIRA tickets across different environments. Whether you're working with development, staging, or production environments, this tool helps you quickly generate and switch between JIRA ticket URLs with just a few clicks.
+
+## Download
+
+Get the latest version (1.0.5) directly from GitHub:
+
+- [Chrome Extension](https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.5/jira-url-wizard-chrome-v1.0.5.zip)
+- [Firefox Extension](https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.5/jira-url-wizard-firefox-v1.0.5.zip)
+- [Edge Extension](https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.5/jira-url-wizard-edge-v1.0.5.zip)
+- [Safari Extension](https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/download/v1.0.5/safari-mv3-prod.zip)
+
+Or visit the [latest release page](https://github.com/khalilcharfi/JIRA-URL-Wizard/releases/tag/v1.0.5).
 
 ## Features
 
@@ -50,8 +62,8 @@ JIRA URL Wizard is a powerful browser extension designed to streamline your JIRA
 ### Manual Installation
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/jira-url-wizard.git
-   cd jira-url-wizard
+   git clone https://github.com/khalilcharfi/JIRA-URL-Wizard.git
+   cd JIRA-URL-Wizard
    ```
 2. Install dependencies:
    ```bash
@@ -77,8 +89,8 @@ JIRA URL Wizard is a powerful browser extension designed to streamline your JIRA
 ### Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/jira-url-wizard.git
-   cd jira-url-wizard
+   git clone https://github.com/khalilcharfi/JIRA-URL-Wizard.git
+   cd JIRA-URL-Wizard
    ```
 2. Install dependencies:
    ```bash
@@ -204,8 +216,9 @@ For support, please:
 ## Roadmap
 
 - [ ] Chrome Web Store release
-- [ ] Firefox extension support
-- [ ] Edge extension support
+- [x] Firefox extension support
+- [x] Edge extension support
+- [x] Safari extension support
 - [ ] Advanced ticket filtering
 - [ ] Team collaboration features
 - [ ] Analytics dashboard
@@ -219,6 +232,16 @@ This extension is designed to work on:
 - Safari (macOS and iOS)
 
 The codebase uses Plasmo's cross-browser build system and a custom browser polyfill to ensure consistent functionality across all supported browsers.
+
+### Latest Release (v1.0.5)
+
+The latest release (v1.0.5) includes:
+- Removed console logs from core files for cleaner production builds
+- Improved error handling with silent error management
+- Fixed TypeScript linting issues across the project
+- Enhanced codebase maintainability by removing debug statements
+
+Check the [CHANGELOG.md](CHANGELOG.md) for a complete version history.
 
 ## Building for Different Browsers
 
@@ -329,7 +352,7 @@ Builds are automatically triggered on:
 - Pushes to `master` or `main` branches
 - Pull requests to `master` or `main` branches
 - Manual triggers via GitHub Actions interface
-- Creating a version tag (e.g., `v1.0.2`)
+- Creating a version tag (e.g., `v1.0.5`)
 
 ### Versioned Releases
 
@@ -362,8 +385,8 @@ The release script automatically:
 3. Commit the changes
 4. Create and push a new tag:
    ```bash
-   git tag v1.0.2
-   git push origin v1.0.2
+   git tag v1.0.5
+   git push origin v1.0.5
    ```
 
 Either method will trigger a build and automatically create a GitHub release with the built extension packages.
@@ -391,7 +414,7 @@ This project uses the [Chrome Extension Upload Action](https://github.com/market
 
 You can trigger Chrome Web Store deployment through:
 
-1. **Version Tags**: Create a tag (e.g., `v1.0.2`) to trigger a full build and deployment pipeline.
+1. **Version Tags**: Create a tag (e.g., `v1.0.5`) to trigger a full build and deployment pipeline.
 
 2. **Manual Workflow Dispatch**: Go to GitHub Actions → Build and Package Extension → Run workflow, where you can choose:
    - **Publishing Target**: Default (all users) or TrustedTesters
@@ -485,3 +508,35 @@ The Chrome Web Store has a review process that can take time. Here are some stra
 2. **Upload Only**: Use `pnpm publish:chrome:upload-only` to upload your extension without publishing, then manually publish it later through the Web Store dashboard when ready.
 
 3. **Version Planning**: Plan version updates with sufficient time between them to allow for review completion.
+
+# Code Maintenance
+
+## Dead Code Elimination
+
+This project uses ts-prune to identify and remove unused exports. Dead code increases complexity and can lead to confusion and maintenance challenges. Here's how to use it:
+
+1. Run the following command to find unused exports:
+
+```bash
+npm run find-dead-code
+```
+
+2. Review the list of unused exports and determine if they can be safely removed
+3. After removing code, run TypeScript again (`npm run build` or `npm run dev`) to find any broken references
+4. Repeat until convergence
+
+### Benefits of Dead Code Elimination
+
+- Reduces bundle size
+- Simplifies maintenance by reducing code complexity
+- Makes the codebase easier to understand for new contributors
+- Helps identify obsolete features or unused database tables
+
+### Tips for Keeping Your Codebase Clean
+
+- Run `find-dead-code` periodically, especially before releases
+- Consider not exporting functions or components unless they're truly needed externally
+- Use TypeScript's `--noUnusedLocals` flag to identify unused local variables (already enabled in this project)
+- When removing code, consider using git history to understand why it was added before removing it
+
+For more information, see the [ts-prune documentation](https://github.com/nadeesha/ts-prune).
