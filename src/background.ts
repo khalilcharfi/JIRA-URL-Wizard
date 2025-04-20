@@ -1,18 +1,18 @@
-import { getSettings } from './services/storageService';
-import { extractIssueIdFromUrl } from './utils/urlUtils';
 import i18n from './i18n'; // Ensure i18next is initialized
 import { initializeLanguage } from './services/i18nService';
+import { getSettings } from './services/storageService';
+import { extractIssueIdFromUrl } from './utils/urlUtils';
 import './i18n'; // Import i18n configuration
 
 // Initialize i18n first
 initializeLanguage().then(() => {
-  console.log('Background script i18n initialized with language:', i18n.language);
+  // Background script i18n initialized - silent handling
   
   // Now setup listeners and other background tasks
   setupListeners();
   
 }).catch(error => {
-  console.error('Failed to initialize i18n in background script:', error);
+  // Failed to initialize i18n in background script - silent handling
   // Optionally initialize listeners even if i18n fails
   // setupListeners();
 });
@@ -29,9 +29,9 @@ async function getSettingsWithCache() {
     try {
       cachedSettings = await getSettings();
       lastSettingsRefresh = now;
-      console.log('Background: Settings refreshed from storage');
+      // Settings refreshed from storage - silent handling
     } catch (error) {
-      console.error("Failed to get settings:", error);
+      // Failed to get settings - silent handling
       cachedSettings = {}; // Use empty object as fallback
     }
   }
@@ -58,7 +58,7 @@ async function processUrl(url: string): Promise<string | null> {
         
         if (match && match[1]) {
           let extractedTicketId = match[1];
-          console.log(`Background: Extracted ticket ID '${extractedTicketId}' using pattern: ${pattern.regex}`);
+          // Extracted ticket ID using pattern - silent handling
           
           // Try to normalize the ticket format if needed
           if (!extractedTicketId.includes('-') && /^\d+$/.test(extractedTicketId) && prefixes.length > 0) {
@@ -68,7 +68,7 @@ async function processUrl(url: string): Promise<string | null> {
           return extractedTicketId.toUpperCase();
         }
       } catch (e) {
-        console.warn(`Background: Invalid regex in settings: ${pattern.regex}`, e);
+        // Invalid regex in settings - silent handling
       }
     }
     
@@ -83,13 +83,13 @@ async function processUrl(url: string): Promise<string | null> {
           return match[0].toUpperCase();
         }
       } catch (e) {
-        console.error('Error with prefix pattern:', e);
+        // Error with prefix pattern - silent handling
       }
     }
     
     return null;
   } catch (error) {
-    console.error('Background: Error processing URL:', error);
+    // Error processing URL - silent handling
     return null;
   }
 }
@@ -102,10 +102,10 @@ async function addToRecentTickets(ticketId: string) {
     if (!recentTickets.includes(ticketId)) {
       const updatedTickets = [ticketId, ...recentTickets.filter((t: string) => t !== ticketId)].slice(0, 5);
       await chrome.storage.sync.set({ recentTickets: updatedTickets });
-      console.log(`Background: Added ${ticketId} to recent tickets`);
+      // Added ticket to recent tickets - silent handling
     }
   } catch (error) {
-    console.error('Background: Error updating recent tickets:', error);
+    // Error updating recent tickets - silent handling
   }
 }
 
@@ -161,7 +161,7 @@ function setupListeners() {
       processUrl(url).then(ticketId => {
         sendResponse({ ticketId, error: ticketId ? null : 'No ticket ID found in URL' });
       }).catch(error => {
-        console.error('Error processing URL from popup:', error);
+        // Error processing URL from popup - silent handling
         sendResponse({ ticketId: null, error: 'Error processing URL' });
       });
       
@@ -174,7 +174,7 @@ function setupListeners() {
       getSettingsWithCache().then(() => {
         sendResponse({ success: true });
       }).catch(error => {
-        console.error('Error refreshing settings:', error);
+        // Error refreshing settings - silent handling
         sendResponse({ success: false, error: String(error) });
       });
       return true; // Required for async sendResponse
@@ -183,12 +183,12 @@ function setupListeners() {
 
   // When extension is first installed or updated
   chrome.runtime.onInstalled.addListener(async (details) => {
-    console.log('Extension event:', details.reason);
+    // Extension event - silent handling
     // Initialize settings cache on install/update
     await getSettingsWithCache();
     // Setup context menus or other initial setup tasks
     // Example: setupContextMenu(); 
   });
 
-  console.log("Background listeners set up.");
+  // Background listeners set up - silent handling
 } 

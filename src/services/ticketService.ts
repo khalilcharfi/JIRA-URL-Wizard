@@ -77,7 +77,7 @@ export function extractIssueIdFromUrl(
         }
       }
     } catch (e) {
-      console.warn(`Error applying regex:`, e);
+      // Error applying regex - silent handling
     }
   }
 
@@ -131,7 +131,7 @@ export async function detectTicketFromCurrentTab(
     const normalizedTicketId = normalizeTicketId(extractedTicketId, prefixes);
     return { ticketId: normalizedTicketId };
   } catch (error) {
-    console.error("Error detecting ticket from current tab:", error);
+    // Error detecting ticket from current tab - silent handling
     return { ticketId: null, error: "Error detecting ticket from current tab" };
   }
 } 

@@ -1,4 +1,3 @@
-import { extractIssueIdFromUrl } from '../services/ticketService';
 import type { JiraPattern } from '../shared/settings';
 
 /**
@@ -45,7 +44,7 @@ export function extractIssueIdFromUrl(
         }
       }
     } catch (e) {
-      console.warn(`Error applying regex:`, e);
+      // Error applying regex - silent handling
     }
   }
 
@@ -61,7 +60,7 @@ export async function getCurrentTabUrl(): Promise<string | null> {
     const response = await chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' });
     return response?.url || null;
   } catch (error) {
-    console.error('Error requesting URL from background:', error);
+    // Error requesting URL from background - silent handling
     return null;
   }
 } 

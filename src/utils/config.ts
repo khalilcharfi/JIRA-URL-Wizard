@@ -4,7 +4,7 @@ export const parseJsonSafe = (jsonString: string | undefined, defaultValue: any)
   try {
     return JSON.parse(jsonString);
   } catch (e) {
-    console.error("Failed to parse JSON environment variable:", e);
+    // Failed to parse JSON environment variable - silent handling
     return defaultValue;
   }
 };

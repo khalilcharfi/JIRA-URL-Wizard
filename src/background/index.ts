@@ -18,15 +18,16 @@ browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       let extractedTicketId: string | null = null;
       
       for (const jp of patterns) {
-        if (jp.enabled === false) continue;
+        // Skip if pattern is explicitly disabled (using type assertion for optional property)
+        const pattern = jp as { pattern: string; enabled?: boolean };
+        if (pattern.enabled === false) continue;
         
         try {
-          const regex = new RegExp(jp.pattern);
+          const regex = new RegExp(pattern.pattern);
           const match = changeInfo.url.match(regex);
           
           if (match && match[1]) {
             extractedTicketId = match[1];
-            console.log(`Background: Extracted ticket ID '${extractedTicketId}' using pattern: ${jp.pattern}`);
             
             // Try to normalize the ticket format if needed
             if (!extractedTicketId.includes('-') && /^\d+$/.test(extractedTicketId) && settings.prefixes.length > 0) {
@@ -36,7 +37,7 @@ browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             break;
           }
         } catch (e) {
-          console.warn(`Background: Invalid regex in settings: ${jp.pattern}`, e);
+          // Removed console.warn
         }
       }
       
@@ -52,7 +53,10 @@ browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         const recentTickets = recentTicketsData.recentTickets || [];
         
         if (!recentTickets.includes(extractedTicketId)) {
-          const updatedTickets = [extractedTicketId, ...recentTickets.filter(t => t !== extractedTicketId)].slice(0, 5);
+          const updatedTickets = [
+            extractedTicketId, 
+            ...recentTickets.filter((t: string) => t !== extractedTicketId)
+          ].slice(0, 5);
           await browser.storage.sync.set({ recentTickets: updatedTickets });
         }
         
@@ -65,7 +69,7 @@ browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         });
       }
     } catch (error) {
-      console.error('Background: Error processing tab URL:', error);
+      // Removed console.error
     }
   }
 });

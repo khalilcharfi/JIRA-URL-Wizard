@@ -1,6 +1,21 @@
 import i18n from '../i18n/config';
-import type { SettingsStorage } from "../shared/settings";
-import { saveSettings, getSettings } from './storageService';
+import { getSettings } from './storageService';
+import { Storage } from '@plasmohq/storage';
+import { initReactI18next } from 'react-i18next';
+
+// Import resources
+import de from '../i18n/assets/de';
+import en from '../i18n/assets/en';
+
+// Define resources object
+const resources = {
+  en: {
+    translation: en
+  },
+  de: {
+    translation: de
+  }
+};
 
 // Helper function to check if localStorage is available
 const isLocalStorageAvailable = (): boolean => {
@@ -9,7 +24,7 @@ const isLocalStorageAvailable = (): boolean => {
     localStorage.setItem(testKey, testKey);
     localStorage.removeItem(testKey);
     return true;
-  } catch (e) {
+  } catch (_) {
     return false;
   }
 };
@@ -24,7 +39,7 @@ export const setI18nLanguage = async (language: string): Promise<void> => {
   try {
     const actualLanguage =
       language === 'auto'
-        ? navigator.language.split('-')[0]
+        ? (navigator.language?.split('-')[0] || 'en')
         : language;
     await i18n.changeLanguage(actualLanguage);
     
@@ -32,14 +47,8 @@ export const setI18nLanguage = async (language: string): Promise<void> => {
     if (isLocalStorageAvailable()) {
       localStorage.setItem('i18nextLng', actualLanguage); // Keep localStorage cache in sync
     }
-    
-    console.log(
-      `i18n language instance set to: ${actualLanguage} (preference: ${language})`
-    );
   } catch (error) {
-    console.error('Error setting i18n language instance:', error);
-    // Decide on error handling: maybe try fallback?
-    // For now, just re-throw or log.
+    // Error handled silently
     throw error; 
   }
 };
@@ -73,7 +82,7 @@ export const changeLanguage = async (language: string): Promise<void> => {
       language
     });
     
-    console.log(`Language changed to ${language} (actual: ${actualLanguage}) and saved permanently`);
+    console.error(`Language changed to ${language} (actual: ${actualLanguage}) and saved permanently`);
   } catch (error) {
     console.error('Error changing language:', error);
     throw error;
@@ -82,24 +91,59 @@ export const changeLanguage = async (language: string): Promise<void> => {
 */
 
 /**
- * Gets the current language set in i18next
- * @returns The current language code
+ * Initialize the i18n service
  */
-export const getCurrentLanguage = (): string => {
-  return i18n.language;
+export const initI18n = async (): Promise<void> => {
+  try {
+    await i18n.use(initReactI18next).init({
+      resources,
+      fallbackLng: 'en',
+      interpolation: {
+        escapeValue: false
+      }
+    });
+
+    // Set initial language from storage or browser
+    const savedLanguage = await getLanguagePreference();
+    if (savedLanguage) {
+      await i18n.changeLanguage(savedLanguage);
+    } else {
+      // Use browser language as fallback
+      const browserLang = navigator.language.split('-')[0];
+      if (browserLang && Object.keys(resources).includes(browserLang)) {
+        await i18n.changeLanguage(browserLang);
+        await saveLanguagePreference(browserLang);
+      }
+    }
+  } catch (error) {
+    // Failed to initialize i18n - handled silently
+  }
+};
+
+/** @internal */
+const getLanguagePreference = async (): Promise<string | null> => {
+  try {
+    const storage = new Storage({ area: 'sync' });
+    const language = await storage.get('language');
+    if (typeof language === 'string') {
+      return language;
+    }
+    return null;
+  } catch (error) {
+    // Error getting language preference - handled silently
+    return null;
+  }
 };
 
 /**
- * Gets the current language preference from settings
- * @returns A Promise that resolves with the language preference ('en', 'de', 'auto')
+ * Save the user's language preference
  */
-export const getLanguagePreference = async (): Promise<string> => {
+export const saveLanguagePreference = async (language: string): Promise<void> => {
   try {
-    const settings = await getSettings();
-    return settings.language || 'auto';
+    const storage = new Storage({ area: 'sync' });
+    await storage.set('language', language);
   } catch (error) {
-    console.error('Error getting language preference:', error);
-    return 'auto'; // Default fallback
+    // Error saving language preference - handled silently
   }
 };
 
@@ -113,17 +157,14 @@ export const initializeLanguage = async (): Promise<void> => {
     const settings = await getSettings();
     const languagePref = settings.language || 'auto';
     await setI18nLanguage(languagePref); // Use the new function
-    console.log(`Language initialized based on preference: ${languagePref}`);
-
   } catch (error) {
-    console.error('Error initializing language:', error);
+    // Error initializing language - handled silently
     // Fallback to browser language if there's an error during init
     try {
       const fallbackLanguage = navigator.language.split('-')[0] || 'en';
       await setI18nLanguage(fallbackLanguage); // Use the new function for fallback
-      console.log(`Language initialization failed, using fallback: ${fallbackLanguage}`);
     } catch (fallbackError) {
-       console.error('Error setting fallback language:', fallbackError);
+      // Error setting fallback language - handled silently
     }
   }
 }; 

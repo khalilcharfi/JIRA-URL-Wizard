@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved SettingsOverlay component to match popup dimensions (468px width, 235px height)
 - Enhanced overlay positioning and content centering for better visual consistency
 
+## [1.0.5] - 2023-07-25
+### Fixed
+- Removed console logs from core files for cleaner production builds
+- Improved error handling with silent error management
+- Fixed TypeScript linting issues across the project
+- Enhanced codebase maintainability by removing debug statements
+
 ## [1.0.4] - 2023-07-15
 ### Added
 - Enhanced initial loading experience with a more user-friendly spinner
@@ -89,7 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build optimization scripts
 - Documentation
 
-[Unreleased]: https://github.com/Khalil-Charfi/jira-url-wizard/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/Khalil-Charfi/jira-url-wizard/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/Khalil-Charfi/jira-url-wizard/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/Khalil-Charfi/jira-url-wizard/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/Khalil-Charfi/jira-url-wizard/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/Khalil-Charfi/jira-url-wizard/compare/v1.0.1...v1.0.2

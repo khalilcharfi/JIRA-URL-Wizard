@@ -3,18 +3,19 @@ import { useTranslation } from 'react-i18next';
 import '../i18n'; // ensure i18n is initialized
 import '../style.css';
 import { QRCode } from 'react-qrcode-logo';
+
 import imageAssets, {
   CheckIcon, RefreshIcon, MarkdownCopyIcon, CopyIcon, ClockIcon, SettingsIcon,
   SmartphoneIcon, MonitorIcon, BuildingIcon, LayoutIcon, QRCodeIcon, AlertIcon,
   SunIcon, LanguageIcon,
 } from '../assets/imageAssets';
 import type { IconName } from '../assets/imageAssets';
-import { DEFAULT_SETTINGS, DEFAULT_SAMPLE_TICKET_ID } from '../shared/settings';
-import type { SettingsStorage, JiraPattern } from '../shared/settings';
+import SettingsOverlay from '../components/SettingsOverlay';
 import { getSettings, addSettingsListener, removeSettingsListener } from '../services/storageService';
 import { generateMarkdownLinks, generatePlainTextLinks } from '../services/templateService';
+import { DEFAULT_SETTINGS, DEFAULT_SAMPLE_TICKET_ID } from '../shared/settings';
+import type { SettingsStorage, JiraPattern } from '../shared/settings';
 import { buildUrlFromPattern } from '../utils/urlBuilder';
-import SettingsOverlay from '../components/SettingsOverlay';
 
 interface Environment {
   id: string;
@@ -74,7 +75,7 @@ const DynamicIcon: React.FC<{ iconName: IconName; className?: string; size?: num
     default: {
         // Ensure exhaustive check - if IconName type changes, this will cause a compile error
         const exhaustiveCheck: never = iconName; 
-        console.warn(`Unknown icon name: ${exhaustiveCheck}`);
+        // Silent warning: unknown icon name
         return null; // Or return a default fallback icon
     }
   }
@@ -288,12 +289,11 @@ class QrCodeErrorBoundary extends React.Component<
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // You can also log the error to an error reporting service
-    console.error("Error rendering QR Code:", error, errorInfo);
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Error rendering QR code - silent handling
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return <p className="text-red-500 text-center p-4">Could not display QR code.</p>;
@@ -500,7 +500,7 @@ const JiraUrlWizard = () => {
       const response = await chrome.runtime.sendMessage({ action: 'getCurrentTabUrl' });
       return response?.url || null;
     } catch (error) {
-      console.error('Error getting current tab URL:', error);
+      // Error getting current tab URL - silent handling
       return null;
     }
   }, []);
@@ -522,7 +522,7 @@ const JiraUrlWizard = () => {
         error: response.error 
       };
     } catch (error) {
-      console.error('Error detecting ticket from current tab:', error);
+      // Error detecting ticket from current tab - silent handling
       return { ticketId: null, error: 'Error detecting ticket' };
     }
   }, [getCurrentTabUrl]);
@@ -542,7 +542,7 @@ const JiraUrlWizard = () => {
             return match[1].toUpperCase();
           }
         } catch (e) {
-          console.error('Invalid regex pattern:', e);
+          // Invalid regex pattern - silent handling
         }
       }
     }
@@ -558,7 +558,7 @@ const JiraUrlWizard = () => {
           return match[0].toUpperCase();
         }
       } catch (e) {
-        console.error('Error with prefix pattern:', e);
+        // Error with prefix pattern - silent handling
       }
     }
     
@@ -571,12 +571,12 @@ const JiraUrlWizard = () => {
       setRecentTickets(prevTickets => {
         const updatedTickets = [ticket, ...prevTickets.filter(t => t !== ticket)].slice(0, 5);
         chrome.storage.sync.set({ recentTickets: updatedTickets }).catch(error => {
-          console.error('Error saving recent ticket:', error);
+          // Error saving recent ticket - silent handling
         });
         return updatedTickets;
       });
     } catch (error) {
-      console.error('Error initiating recent ticket update:', error);
+      // Error initiating recent ticket update - silent handling
     }
   }, []);
 
@@ -613,7 +613,7 @@ const JiraUrlWizard = () => {
         setToastMessage("No ticket ID found in current tab");
       }
     } catch (error) {
-      console.error("Error refreshing ticket ID:", error);
+      // Error refreshing ticket ID - silent handling
       setToastMessage("Error refreshing ticket ID");
     }
   }, [settings.jiraPatterns, settings.prefixes, addToRecentTickets, extractTicketFromUrl]);
@@ -657,7 +657,7 @@ const JiraUrlWizard = () => {
         // 3. Initialize ticket ID display with cached value
         if (lastTicketId) {
           setTicketId(lastTicketId);
-          console.log(`Popup: Loaded cached ticket ID: ${lastTicketId}`);
+          // Removed console.log: loaded cached ticket ID
         } else {
           setTicketId(DEFAULT_SAMPLE_TICKET_ID);
         }
@@ -675,7 +675,7 @@ const JiraUrlWizard = () => {
           const currentUrl = await getCurrentTabUrl();
           
           if (!currentUrl) {
-            console.log('No valid URL in current tab');
+            // No valid URL in current tab - silent handling
             return;
           }
           
@@ -687,7 +687,7 @@ const JiraUrlWizard = () => {
           );
           
           if (extractedTicketId && isMounted) {
-            console.log(`Popup: Detected ticket ID from current tab: ${extractedTicketId}`);
+            // Detected ticket ID from current tab - silent handling
             
             // Only update if different from what we already have
             if (extractedTicketId !== lastTicketId) {
@@ -703,7 +703,7 @@ const JiraUrlWizard = () => {
           }
         }
       } catch (error) {
-        console.error('Error loading popup initial data:', error);
+        // Error loading popup initial data - silent handling
         if (isMounted) {
           setIsLoading(false);
         }
@@ -715,7 +715,7 @@ const JiraUrlWizard = () => {
     // Listen for messages from the background script
     const handleBackgroundMessages = (message: any) => {
       if (message.action === 'ticketDetected' && message.ticketId) {
-        console.log(`Popup received ticketDetected message: ${message.ticketId}`);
+        // Popup received ticketDetected message - silent handling
         setTicketId(message.ticketId);
         addToRecentTickets(message.ticketId);
       }
@@ -731,7 +731,7 @@ const JiraUrlWizard = () => {
 
   useEffect(() => {
     const handleSettingsChange = (newSettings: SettingsStorage) => {
-      console.log("Popup received settings update.");
+      // Popup received settings update - silent handling
       setSettings(newSettings);
     };
     addSettingsListener(handleSettingsChange as any);
@@ -832,7 +832,7 @@ const JiraUrlWizard = () => {
   const copyToClipboard = useCallback((text: string, message: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => { setToastMessage(message); })
-      .catch(err => { console.error("Copy failed: ", err); setToastMessage("Copy failed!"); });
+      .catch(err => { /* Copy failed - silent handling */ setToastMessage("Copy failed!"); });
   }, [setToastMessage]);
 
   const handleCopyEnvironmentLinks = useCallback(() => {
@@ -870,13 +870,23 @@ const JiraUrlWizard = () => {
       canvas.toBlob(async (blob) => {
         if (!blob) { setToastMessage("QR Code copy failed: Could not generate blob!"); return; }
         try {
-          await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-          setToastMessage("QR Code Image Copied!");
-          setIsQrCodeAnimating(true);
-          setTimeout(() => setIsQrCodeAnimating(false), 300);
-        } catch (err) { console.error("QR Code copy failed: ", err); setToastMessage("QR Code copy failed!"); }
+          // Create a map with the MIME type as key
+          const clipboardData: Record<string, Blob> = {};
+          // Ensure blob.type exists and is a string before using it as a key
+          if (blob.type && typeof blob.type === 'string') {
+            clipboardData[blob.type] = blob;
+            const clipboardItem = new ClipboardItem(clipboardData);
+            await navigator.clipboard.write([clipboardItem]);
+            setToastMessage("QR Code Image Copied!");
+            setIsQrCodeAnimating(true);
+            setTimeout(() => setIsQrCodeAnimating(false), 300);
+          } else {
+            // Fallback if type is missing
+            setToastMessage("QR Code copy failed: Invalid blob type!");
+          }
+        } catch (err) { /* QR Code copy failed - silent handling */ setToastMessage("QR Code copy failed!"); }
       }, 'image/png');
-    } catch (error) { console.error("Error generating QR code blob: ", error); setToastMessage("QR Code copy failed!"); }
+    } catch (error) { /* Error generating QR code blob - silent handling */ setToastMessage("QR Code copy failed!"); }
   }, [setToastMessage, setIsQrCodeAnimating]);
 
   // --- Render Logic ---

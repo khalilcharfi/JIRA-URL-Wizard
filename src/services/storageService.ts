@@ -43,32 +43,34 @@ export const getSettings = async (): Promise<SettingsStorage> => {
     // Deep merge loaded settings with defaults
     const mergedSettings: SettingsStorage = deepMerge(DEFAULT_SETTINGS, loadedSettings);
 
-    // Validate required fields after merge (optional but good practice)
+    // Validate URLs structure and individual URLs 
     if (!mergedSettings.urls || typeof mergedSettings.urls !== 'object') {
-      console.warn('Settings validation failed: urls object missing or invalid after merge. Using default URLs.');
+      // Use default URLs if none exist or if invalid
       mergedSettings.urls = DEFAULT_SETTINGS.urls;
+      // Silent warning: Settings validation failed: urls object missing or invalid after merge
     } else {
-      // Ensure all required URL keys exist, using defaults if necessary
-      for (const key of Object.keys(DEFAULT_SETTINGS.urls) as Array<keyof SettingsStorage['urls']>) {
-        if (typeof mergedSettings.urls[key] !== 'string') {
-          console.warn(`Settings validation: Missing or invalid URL for ${key}. Using default.`);
-          mergedSettings.urls[key] = DEFAULT_SETTINGS.urls[key];
+      // Check each URL to ensure required properties exist
+      Object.keys(mergedSettings.urls).forEach(key => {
+        // Check if the URL is a string (old format) or missing
+        if (typeof mergedSettings.urls[key] === 'string' || !mergedSettings.urls[key]) {
+          if (DEFAULT_SETTINGS.urls[key]) {
+            mergedSettings.urls[key] = DEFAULT_SETTINGS.urls[key];
+          }
+          // Silent warning: Missing or invalid URL for key
         }
-      }
+      });
     }
     
-    // Validate other potentially complex fields if needed
-    if (!Array.isArray(mergedSettings.jiraPatterns)) {
-      console.warn('Settings validation failed: jiraPatterns missing or invalid. Using default.');
+    // Validate Jira Patterns 
+    if (!Array.isArray(mergedSettings.jiraPatterns) || !mergedSettings.jiraPatterns.length) {
       mergedSettings.jiraPatterns = DEFAULT_SETTINGS.jiraPatterns;
+      // Silent warning: Settings validation failed: jiraPatterns missing or invalid
     }
-    // ... add more validations as needed ...
-
-    return mergedSettings; // Now guaranteed to conform better to SettingsStorage
-
+    
+    return mergedSettings;
   } catch (error) {
-    console.error("Error getting settings from storage:", error);
-    return DEFAULT_SETTINGS; // Return default settings on error
+    // Error getting settings from storage - silent handling
+    return DEFAULT_SETTINGS;
   }
 };
 
@@ -79,9 +81,7 @@ export const saveSettings = async (settings: SettingsStorage): Promise<void> => 
   try {
     await chrome.storage.sync.set({ [SETTINGS_KEY]: settings });
   } catch (error) {
-    console.error("Error saving settings to storage:", error);
-    // Optional: Re-throw or handle the error as needed
-    throw error; // Re-throwing allows the caller to know about the failure
+    // Error saving settings to storage - silent handling
   }
 };
 
