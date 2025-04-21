@@ -237,29 +237,30 @@
         /* Common card styling */
         .card {
             background-color: var(--white);
-            padding: 25px;
+            padding: 30px; /* Increased padding for better spacing */
             border-radius: var(--border-radius);
-            margin-bottom: var(--section-spacing);
+            margin-bottom: var(--section-spacing, 30px); /* Use variable with fallback */
             box-shadow: var(--box-shadow);
-            transition: transform var(--transition-speed);
+            transition: all var(--transition-speed);
+            border: 1px solid var(--border-color); /* Subtle border */
         }
 
         .card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: var(--hover-shadow);
+            border-color: var(--primary-light);
         }
 
         /* Content boxes */
         .intro-box {
-            composes: card;
+            /* Keep specific styles */
             border-left: 4px solid var(--success);
+            /* Remove composes: card; */
         }
 
-        .toc {
-            composes: card;
-        }
-
-        .toc h2 {
+        /* Remove specific .toc styles if they are now handled by .card */
+        /* Keep TOC-specific content styles */
+        #toc h2 {
             margin-top: 0;
             margin-bottom: 20px;
             font-size: var(--font-size-lg);
@@ -270,19 +271,20 @@
             gap: 10px;
         }
 
-        .toc ul {
+        #toc ul {
             list-style-type: none;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
+            padding-left: 0; /* Remove default padding */
         }
 
-        .toc li {
+        #toc li {
             margin-bottom: 0;
         }
 
-        .toc a {
-            color: var(--toc-link-color);
+        #toc a {
+            color: var(--secondary-color);
             display: flex;
             align-items: center;
             transition: all var(--transition-speed);
@@ -293,8 +295,8 @@
             font-weight: normal;
         }
 
-        .toc a:hover {
-            color: var(--toc-link-hover);
+        #toc a:hover {
+            color: var(--primary-color);
             background-color: var(--primary-light);
             transform: translateX(5px);
             border-bottom: none;
@@ -307,7 +309,8 @@
         }
 
         section {
-            composes: card;
+            /* Remove any styles here that are now handled by .card */
+            /* Keep only section-specific styles if absolutely necessary */
         }
 
         /* Content elements */
@@ -1415,11 +1418,11 @@
             </div>
         </div>
 
-        <div class="intro-box">
+        <div class="card intro-box">
             <p data-i18n="introText"></p>
         </div>
 
-        <div class="toc" id="toc">
+        <section class="card" id="toc">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -1484,9 +1487,9 @@
                     </a>
                 </li>
             </ul>
-        </div>
+        </section>
 
-        <section id="introduction">
+        <section id="introduction" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -1497,75 +1500,48 @@
             </h2>
             <p data-i18n="introduction.p1"></p>
             <p data-i18n="introduction.p2"></p>
-
             <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
-        <section id="features">
+        <section id="features" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
                 <span data-i18n="features.title"></span>
             </h2>
-
             <div class="feature-box">
-                <div class="feature-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                    </svg>
-                </div>
+                <div class="feature-icon">/* SVG */</div>
                 <div class="feature-text">
                     <h4 data-i18n="features.switching.title"></h4>
                     <p data-i18n="features.switching.desc"></p>
                 </div>
             </div>
-
             <div class="feature-box">
-                <div class="feature-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                    </svg>
-                </div>
+                <div class="feature-icon">/* SVG */</div>
                 <div class="feature-text">
                     <h4 data-i18n="features.config.title"></h4>
                     <p data-i18n="features.config.desc"></p>
                 </div>
             </div>
-
             <div class="feature-box">
-                <div class="feature-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="3" y1="9" x2="21" y2="9"></line>
-                        <line x1="9" y1="21" x2="9" y2="9"></line>
-                    </svg>
-                </div>
+                <div class="feature-icon">/* SVG */</div>
                 <div class="feature-text">
                     <h4 data-i18n="features.organization.title"></h4>
                     <p data-i18n="features.organization.desc"></p>
                 </div>
             </div>
-
             <div class="feature-box">
-                <div class="feature-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                </div>
+                <div class="feature-icon">/* SVG */</div>
                 <div class="feature-text">
                     <h4 data-i18n="features.detection.title"></h4>
                     <p data-i18n="features.detection.desc"></p>
                 </div>
             </div>
-
             <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
-        <section id="information">
+        <section id="information" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -1575,22 +1551,18 @@
                 <span data-i18n="information.title"></span>
             </h2>
             <p data-i18n="information.intro"></p>
-
             <div class="data-type">
                 <h3 data-i18n="information.config.title"></h3>
                 <ul data-i18n-list="information.config.items"></ul>
             </div>
-
             <div class="data-type">
                 <h3 data-i18n="information.ticket.title"></h3>
                 <ul data-i18n-list="information.ticket.items"></ul>
             </div>
-
             <div class="data-type">
                 <h3 data-i18n="information.usage.title"></h3>
                 <ul data-i18n-list="information.usage.items"></ul>
             </div>
-
             <div class="privacy-highlight">
                 <strong data-i18n="information.privacy.title"></strong>
                 <span data-i18n="information.privacy.desc"></span>
@@ -1598,15 +1570,15 @@
             <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
-        <section id="permissions">
+        <section id="permissions" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <span data-i18n="permissions.title">Permissions Usage</span>
+                <span data-i18n="permissions.title"></span>
             </h2>
-            <p data-i18n="permissions.intro">JIRA URL Wizard requires the following permissions to provide its functionality. Here's why each permission is needed:</p>
+            <p data-i18n="permissions.intro"></p>
 
             <div class="collapsible-section">
                 <div class="collapsible-header">
@@ -1616,15 +1588,15 @@
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                             <line x1="12" y1="22.08" x2="12" y2="12"></line>
                         </svg>
-                        <span data-i18n="permissions.storage.name">storage</span>
+                        <span data-i18n="permissions.storage.name"></span>
                     </h4>
                     <span>+</span>
                 </div>
                 <div class="collapsible-content">
-                    <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.storage.purpose">To save your environments and preferences</span></p>
-                    <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.storage.usage">This permission allows the extension to:</span></p>
+                    <p class="purpose"><strong data-i18n="permissions.purpose"></strong> <span data-i18n="permissions.storage.purpose"></span></p>
+                    <p><strong data-i18n="permissions.usage"></strong> <span data-i18n="permissions.storage.usage"></span></p>
                     <ul data-i18n-list="permissions.storage.items"></ul>
-                    <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.storage.dataHandling">All data is stored locally using Chrome's storage API. No data is sent to external servers.</span></p>
+                    <p><strong data-i18n="permissions.dataHandling"></strong> <span data-i18n="permissions.storage.dataHandling"></span></p>
                 </div>
             </div>
 
@@ -1636,15 +1608,15 @@
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <line x1="3" y1="18" x2="21" y2="18"></line>
                         </svg>
-                        <span data-i18n="permissions.tabs.name">tabs</span>
+                        <span data-i18n="permissions.tabs.name"></span>
                     </h4>
                     <span>+</span>
                 </div>
                 <div class="collapsible-content">
-                    <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.tabs.purpose">To detect JIRA tabs and enable quick switching</span></p>
-                    <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.tabs.usage">This permission enables the extension to:</span></p>
+                    <p class="purpose"><strong data-i18n="permissions.purpose"></strong> <span data-i18n="permissions.tabs.purpose"></span></p>
+                    <p><strong data-i18n="permissions.usage"></strong> <span data-i18n="permissions.tabs.usage"></span></p>
                     <ul data-i18n-list="permissions.tabs.items"></ul>
-                    <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.tabs.dataHandling">The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored.</span></p>
+                    <p><strong data-i18n="permissions.dataHandling"></strong> <span data-i18n="permissions.tabs.dataHandling"></span></p>
                 </div>
             </div>
 
@@ -1655,65 +1627,64 @@
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
-                        <span data-i18n="permissions.activeTab.name">activeTab</span>
+                        <span data-i18n="permissions.activeTab.name"></span>
                     </h4>
                     <span>+</span>
                 </div>
                 <div class="collapsible-content">
-                    <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.activeTab.purpose">To read current tab information when needed</span></p>
-                    <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.activeTab.usage">This permission allows the extension to:</span></p>
+                    <p class="purpose"><strong data-i18n="permissions.purpose"></strong> <span data-i18n="permissions.activeTab.purpose"></span></p>
+                    <p><strong data-i18n="permissions.usage"></strong> <span data-i18n="permissions.activeTab.usage"></span></p>
                     <ul data-i18n-list="permissions.activeTab.items"></ul>
-                    <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.activeTab.dataHandling">The extension only accesses the active tab when you explicitly interact with it. No background monitoring occurs.</span></p>
+                    <p><strong data-i18n="permissions.dataHandling"></strong> <span data-i18n="permissions.activeTab.dataHandling"></span></p>
                 </div>
             </div>
-            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
-        <section id="storage">
+        <section id="storage" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                 </svg>
-                <span data-i18n="storage.title">Data Storage and Security</span>
+                <span data-i18n="storage.title"></span>
             </h2>
-            <p data-i18n="storage.intro">All data collected by JIRA URL Wizard is stored locally on your device using Chrome's storage API. We prioritize your security with these measures:</p>
+            <p data-i18n="storage.intro"></p>
             <ul data-i18n-list="storage.measures"></ul>
-
             <div class="privacy-highlight">
-                <strong data-i18n="storage.highlight.title">Enterprise-Ready:</strong>
-                <span data-i18n="storage.highlight.desc">Our local-only approach to data storage makes JIRA URL Wizard suitable for enterprise environments with strict security requirements.</span>
+                <strong data-i18n="storage.highlight.title"></strong>
+                <span data-i18n="storage.highlight.desc"></span>
             </div>
-            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
-        <section id="rights">
+        <section id="rights" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span data-i18n="rights.title">Your Rights and Controls</span>
+                <span data-i18n="rights.title"></span>
             </h2>
-            <p data-i18n="rights.intro">You have complete control over your data in JIRA URL Wizard:</p>
+            <p data-i18n="rights.intro"></p>
             <ul data-i18n-list="rights.controls"></ul>
-            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
-        <section id="retention">
+        <section id="retention" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                <span data-i18n="retention.title">Data Retention</span>
+                <span data-i18n="retention.title"></span>
             </h2>
-            <p data-i18n="retention.intro">Since all data is stored locally on your device, it remains available until you:</p>
+            <p data-i18n="retention.intro"></p>
             <ul data-i18n-list="retention.conditions"></ul>
-            <p data-i18n="retention.conclusion">We have no access to your data and therefore no</p>
-
+            <p data-i18n="retention.conclusion"></p>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
-        <section id="changes">
+        <section id="changes" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -1726,7 +1697,7 @@
             <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
-        <section id="compliance">
+        <section id="compliance" class="card">
             <h2>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
