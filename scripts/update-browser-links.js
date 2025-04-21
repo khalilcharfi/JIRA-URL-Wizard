@@ -1,12 +1,15 @@
 const fs = require('fs').promises;
 const path = require('path');
 const axios = require('axios');
+const { DOMParser } = require('xmldom');
 
 // Configuration constants
 const CONFIG = {
   HTML_FILE: path.join(__dirname, '../index.html'),
   GITHUB_API_URL: 'https://api.github.com/repos/khalilcharfi/JIRA-URL-Wizard/releases/latest',
   CHROME_STORE_URL: 'https://chromewebstore.google.com/detail/jira-url-wizard/opfnbeleknbmdnemmnlhigmmmkghncak',
+  CHROME_API_URL: 'https://clients2.google.com/service/update2/crx?response=manifest&x=id%3Dopfnbeleknbmdnemmnlhigmmmkghncak%26uc',
+  FIREFOX_ADDON_URL: 'https://addons.mozilla.org/en-US/firefox/addon/jira-url-wizard/',
   DATE_FORMAT: {
     api: { year: 'numeric', month: '2-digit', day: '2-digit' },
     display: { year: 'numeric', month: 'long', day: 'numeric' }
@@ -83,14 +86,15 @@ function createButtonHTML(browser, info, releaseDate) {
  */
 async function getLatestReleaseInfo() {
   try {
-    const response = await axios.get(CONFIG.GITHUB_API_URL);
-    const data = response.data;
+    // First fetch GitHub release info
+    const githubResponse = await axios.get(CONFIG.GITHUB_API_URL);
+    const githubData = githubResponse.data;
     
     // Format the release date as YYYY-MM-DD
-    const releaseDate = data.published_at.split('T')[0];
+    const releaseDate = githubData.published_at.split('T')[0];
 
     // Format date for display
-    const date = new Date(data.published_at);
+    const date = new Date(githubData.published_at);
     const formattedDate = {
       en: date.toLocaleDateString('en-US', { 
         day: 'numeric',
@@ -104,7 +108,7 @@ async function getLatestReleaseInfo() {
       })
     };
 
-    const assets = data.assets || [];
+    const assets = githubData.assets || [];
     const browserAssets = {
       chrome: assets.find(asset => asset.name.includes('chrome-mv3')),
       firefox: assets.find(asset => asset.name.includes('firefox-mv3')),
@@ -113,30 +117,90 @@ async function getLatestReleaseInfo() {
     };
 
     // Remove 'v' prefix from version if present
-    const version = data.tag_name.replace(/^v/, '');
+    const githubVersion = githubData.tag_name.replace(/^v/, '');
+    
+    // Try to fetch Chrome Web Store version (more accurate for Chrome)
+    let chromeVersion = githubVersion;
+    try {
+      const chromeResponse = await axios.get(CONFIG.CHROME_API_URL);
+      if (chromeResponse.data) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(chromeResponse.data, "text/xml");
+        const updateCheckNodes = xmlDoc.getElementsByTagName("updatecheck");
+        if (updateCheckNodes.length > 0) {
+          const versionAttr = updateCheckNodes[0].getAttribute("version");
+          if (versionAttr) {
+            chromeVersion = versionAttr;
+            console.log("Chrome Web Store Version:", chromeVersion);
+          }
+        }
+      }
+    } catch (chromeError) {
+      console.warn("Couldn't fetch Chrome Web Store version:", chromeError.message);
+      // Fall back to GitHub version
+    }
+    
+    // Try to fetch Firefox Add-on version
+    let firefoxVersion = githubVersion;
+    let firefoxEnabled = false;
+    let firefoxReleaseDate = releaseDate;
+    
+    try {
+      const firefoxResponse = await axios.get(CONFIG.FIREFOX_ADDON_URL);
+      if (firefoxResponse.data) {
+        // Use regular expressions to extract the version since we're in Node.js 
+        // without a full DOM parser for HTML
+        const versionMatch = firefoxResponse.data.match(/data-test-id="addon-version"[^>]*>([^<]+)<\/dd>/);
+        const dateMatch = firefoxResponse.data.match(/data-test-id="last-updated"[^>]*>([^<]+)<\/dd>/);
+        
+        if (versionMatch && versionMatch[1]) {
+          firefoxVersion = versionMatch[1].trim();
+          firefoxEnabled = true;
+          console.log("Firefox Add-on Version:", firefoxVersion);
+        }
+        
+        if (dateMatch && dateMatch[1]) {
+          const dateText = dateMatch[1].trim();
+          console.log("Firefox Last Updated:", dateText);
+          
+          // Try to parse the date if it's in a format we can handle
+          const specificDateMatch = dateText.match(/(\w+)\s+(\d+),\s+(\d+)/);
+          if (specificDateMatch) {
+            const [_, month, day, year] = specificDateMatch;
+            const parsedDate = new Date(`${month} ${day}, ${year}`);
+            if (!isNaN(parsedDate.getTime())) {
+              firefoxReleaseDate = parsedDate.toISOString().split('T')[0];
+            }
+          }
+        }
+      }
+    } catch (firefoxError) {
+      console.warn("Couldn't fetch Firefox Add-on data:", firefoxError.message);
+      // Fall back to GitHub version and status
+    }
 
     return {
-      version,
+      version: githubVersion,
       releaseDate,
       formattedDate,
       browsers: {
         chrome: {
-          version,
+          version: chromeVersion,
           url: CONFIG.CHROME_STORE_URL,
           enabled: true
         },
         firefox: {
-          version,
-          url: browserAssets.firefox?.browser_download_url || null,
-          enabled: !!browserAssets.firefox?.browser_download_url
+          version: firefoxVersion,
+          url: CONFIG.FIREFOX_ADDON_URL,
+          enabled: firefoxEnabled
         },
         edge: {
-          version,
+          version: githubVersion,
           url: browserAssets.edge?.browser_download_url || null,
           enabled: !!browserAssets.edge?.browser_download_url
         },
         safari: {
-          version,
+          version: githubVersion,
           url: browserAssets.safari?.browser_download_url || null,
           enabled: !!browserAssets.safari?.browser_download_url
         }

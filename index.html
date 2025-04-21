@@ -1501,11 +1501,11 @@
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
-                <span data-i18n="changes.title">Policy Changes</span>
+                <span data-i18n="changes.title"></span>
             </h2>
-            <p data-i18n="changes.p1">We may update our Privacy Policy from time to time. When we do, we will post the new Privacy Policy on this page and update the "Last Updated" date.</p>
-            <p data-i18n="changes.p2">Significant changes will be notified to users through a notification in the extension. We encourage you to review this Privacy Policy periodically for any changes.</p>
-            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
+            <p data-i18n="changes.p1"></p>
+            <p data-i18n="changes.p2"></p>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
 
         <section id="compliance">
@@ -1513,11 +1513,11 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
-                <span data-i18n="compliance.title">Legal Compliance</span>
+                <span data-i18n="compliance.title"></span>
             </h2>
-            <p data-i18n="compliance.p1">JIRA URL Wizard is designed to comply with applicable data protection regulations, including the General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA).</p>
-            <p data-i18n="compliance.p2">Our local-only approach to data handling ensures that we respect your privacy rights by default. Since we never collect or process your data on our servers, many traditional privacy concerns are inherently addressed.</p>
-            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
+            <p data-i18n="compliance.p1"></p>
+            <p data-i18n="compliance.p2"></p>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
         </section>
     </div>
     
@@ -1745,23 +1745,8 @@
                     safariAlert: "Safari extension coming soon!"
                 },
                 settings: {
-                    button: "Erweiterungseinstellungen verwalten",
-                    info: "Zugriff auf den Speicher und die Konfiguration Ihrer Erweiterung"
-                },
-                changes: {
-                    title: "Änderungen dieser Datenschutzrichtlinie",
-                    p1: "Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wenn wir dies tun, werden wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen und das Datum der \"Letzten Aktualisierung\" ändern.",
-                    p2: "Wesentliche Änderungen werden den Nutzern durch eine Benachrichtigung innerhalb der Erweiterung mitgeteilt. Wir empfehlen Ihnen, diese Datenschutzrichtlinie regelmäßig auf Änderungen zu überprüfen."
-                },
-                contact: {
-                    title: "Kontakt",
-                    p1: "Wenn Sie Fragen zu dieser Datenschutzrichtlinie oder unseren Datenpraktiken haben, kontaktieren Sie uns bitte:",
-                    github: "Über unsere <a href=\"https://github.com/khalilcharfi/JIRA-URL-Wizard/issues\" target=\"_blank\">GitHub-Repository-Issues-Seite</a>"
-                },
-                compliance: {
-                    title: "Rechtliche Einhaltung",
-                    p1: "JIRA URL Wizard wurde entwickelt, um die geltenden Datenschutzbestimmungen einzuhalten, einschließlich der Datenschutz-Grundverordnung (DSGVO) und des California Consumer Privacy Act (CCPA).",
-                    p2: "Unser rein lokaler Ansatz bei der Datenverarbeitung stellt sicher, dass wir Ihre Datenschutzrechte standardmäßig respektieren. Da wir Ihre Daten niemals auf unseren Servern sammeln oder verarbeiten, werden viele herkömmliche Datenschutzbedenken von vornherein berücksichtigt."
+                    button: "Manage Extension Settings",
+                    info: "Access your extension storage and configuration"
                 },
                 download: {
                     title: "Download for Your Browser",
@@ -1821,12 +1806,12 @@
                 nav: {
                     introduction: "Einführung",
                     features: "Hauptfunktionen",
-                    information: "Erfasste Informationen",
+                    information: "Gesammelte Informationen",
                     permissions: "Berechtigungen",
                     storage: "Datenspeicherung & Sicherheit",
-                    rights: "Ihre Rechte",
-                    retention: "Datenaufbewahrung",
-                    changes: "Änderungen",
+                    rights: "Ihre Rechte & Kontrollen",
+                    retention: "Datenspeicherung",
+                    changes: "Änderungen der Richtlinie",
                     compliance: "Rechtliche Konformität"
                 },
                 introduction: {
@@ -1964,7 +1949,7 @@
                     conclusion: "Wir haben keinen Zugriff auf Ihre Daten und daher keine Möglichkeit, diese auf unseren Servern zu löschen oder zu behalten."
                 },
                 changes: {
-                    title: "Änderungen",
+                    title: "Änderungen der Richtlinie",
                     p1: "Wir können unsere Datenschutzerklärung von Zeit zu Zeit aktualisieren. Wenn wir dies tun, werden wir die neue Datenschutzerklärung auf dieser Seite veröffentlichen und das Datum der \"Letzten Aktualisierung\" ändern.",
                     p2: "Wesentliche Änderungen werden den Nutzern durch eine Benachrichtigung in der Erweiterung mitgeteilt. Wir empfehlen Ihnen, diese Datenschutzerklärung regelmäßig auf Änderungen zu überprüfen."
                 },
@@ -2138,10 +2123,15 @@
             // Set current year in the copyright
             document.getElementById('copyright-year').textContent = new Date().getFullYear();
             
-            // Apply initial translations
-            applyTranslations('en');
+            // Apply initial translations based on default language
+            applyTranslations(currentLang);
             
             languageBtns.forEach(btn => {
+                // Set active button based on currentLang
+                if (btn.getAttribute('data-lang') === currentLang) {
+                    btn.classList.add('active');
+                }
+                
                 btn.addEventListener('click', function() {
                     const lang = this.getAttribute('data-lang');
                     currentLang = lang;
