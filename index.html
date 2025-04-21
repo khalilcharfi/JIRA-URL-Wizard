@@ -10,6 +10,7 @@
     <link rel="shortcut icon" href="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png">
     <style>
         :root {
+            /* Color palette */
             --primary-color: #0052CC;
             --primary-light: #E9F2FF;
             --secondary-color: #42526E;
@@ -21,12 +22,32 @@
             --white: #FFFFFF;
             --success: #36B37E;
             --warning: #FFAB00;
-            --transition-speed: 0.3s;
+            --heart-color: #ff5e5e;
+            
+            /* Link colors */
+            --link-color: #0052CC;
+            --link-hover: #0747A6;
+            --link-active: #FF5630;
+            --link-visited: #6554C0;
+            --link-focus-ring: rgba(0, 82, 204, 0.4);
+            
+            /* Special links */
+            --footer-link-color: rgba(255, 255, 255, 0.9);
+            --footer-link-hover: #FFFFFF;
+            --toc-link-color: var(--secondary-color);
+            --toc-link-hover: var(--primary-color);
+            
+            /* Layout */
             --border-radius: 8px;
+            --border-radius-sm: 4px;
             --box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             --hover-shadow: 0 4px 8px rgba(0,0,0,0.15);
-
-            /* Base font sizes */
+            --transition-speed: 0.3s;
+            --container-width: 900px;
+            --section-spacing: 25px;
+            --item-spacing: 15px;
+            
+            /* Typography */
             --font-size-xs: 0.75rem;  /* 12px */
             --font-size-sm: 0.875rem; /* 14px */
             --font-size-base: 1rem;   /* 16px */
@@ -35,8 +56,10 @@
             --font-size-xl: 1.5rem;   /* 24px */
             --font-size-2xl: 1.75rem; /* 28px */
             --font-size-3xl: 2rem;    /* 32px */
-
-            /* Fluid typography formula */
+            --line-height: 1.6;
+            --heading-line-height: 1.3;
+            
+            /* Fluid typography */
             --fluid-typography: var(--font-size-base);
             --header-fluid: clamp(1.5rem, 3vw, 2rem);
         }
@@ -54,7 +77,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            line-height: 1.6;
+            line-height: var(--line-height);
             color: var(--text-color);
             background-color: #FAFBFC;
             -webkit-font-smoothing: antialiased;
@@ -63,11 +86,114 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: var(--container-width);
             margin: 0 auto;
             padding: 20px;
         }
 
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--primary-color);
+            line-height: var(--heading-line-height);
+            margin-bottom: var(--item-spacing);
+        }
+
+        h1 {
+            font-size: var(--header-fluid);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: var(--font-size-xl);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            font-size: var(--font-size-lg);
+            margin: 25px 0 15px;
+        }
+
+        h4 {
+            font-size: var(--font-size-md);
+            margin-bottom: 8px;
+        }
+
+        p, ul, ol {
+            margin-bottom: var(--item-spacing);
+            color: var(--text-color);
+            font-size: var(--fluid-typography);
+        }
+
+        ul, ol {
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+            transition: all var(--transition-speed);
+            border-bottom: 1px solid transparent;
+            font-weight: 500;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        a:hover {
+            color: var(--link-hover);
+            border-bottom-color: var(--link-hover);
+        }
+        
+        a:active {
+            color: var(--link-active);
+            border-bottom-color: var(--link-active);
+        }
+        
+        a:visited {
+            color: var(--link-visited);
+        }
+        
+        a:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--link-focus-ring);
+        }
+        
+        a:focus:not(:focus-visible) {
+            box-shadow: none;
+        }
+        
+        a[target="_blank"] {
+            padding-right: 1.2em;
+            position: relative;
+        }
+        
+        a[target="_blank"]::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0.9em;
+            height: 0.9em;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230052CC' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'%3E%3C/path%3E%3Cpolyline points='15 3 21 3 21 9'%3E%3C/polyline%3E%3Cline x1='10' y1='14' x2='21' y2='3'%3E%3C/line%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.7;
+        }
+        
+        a[target="_blank"]:hover::after {
+            opacity: 1;
+        }
+
+        /* Layout components */
         header {
             text-align: center;
             padding: 40px 0;
@@ -101,13 +227,6 @@
             transform: scale(1.1);
         }
 
-        h1 {
-            font-size: var(--header-fluid);
-            color: var(--primary-color);
-            margin: 0;
-            font-weight: 600;
-        }
-
         .last-updated {
             color: var(--text-light);
             font-style: italic;
@@ -115,40 +234,35 @@
             font-size: var(--font-size-sm);
         }
 
-        .intro-box {
+        /* Common card styling */
+        .card {
             background-color: var(--white);
             padding: 25px;
             border-radius: var(--border-radius);
-            margin-bottom: 30px;
+            margin-bottom: var(--section-spacing);
             box-shadow: var(--box-shadow);
-            border-left: 4px solid var(--success);
             transition: transform var(--transition-speed);
         }
 
-        .intro-box:hover {
+        .card:hover {
             transform: translateY(-2px);
             box-shadow: var(--hover-shadow);
+        }
+
+        /* Content boxes */
+        .intro-box {
+            composes: card;
+            border-left: 4px solid var(--success);
         }
 
         .toc {
-            background-color: var(--white);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            margin-bottom: 30px;
-            box-shadow: var(--box-shadow);
-            transition: transform var(--transition-speed);
-        }
-
-        .toc:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--hover-shadow);
+            composes: card;
         }
 
         .toc h2 {
             margin-top: 0;
             margin-bottom: 20px;
             font-size: var(--font-size-lg);
-            color: var(--primary-color);
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
             display: flex;
@@ -168,20 +282,22 @@
         }
 
         .toc a {
-            color: var(--secondary-color);
-            text-decoration: none;
+            color: var(--toc-link-color);
             display: flex;
             align-items: center;
             transition: all var(--transition-speed);
             padding: 12px;
-            border-radius: 6px;
+            border-radius: var(--border-radius-sm);
             background-color: var(--bg-light);
+            border-bottom: none;
+            font-weight: normal;
         }
 
         .toc a:hover {
-            color: var(--primary-color);
+            color: var(--toc-link-hover);
             background-color: var(--primary-light);
             transform: translateX(5px);
+            border-bottom: none;
         }
 
         .toc-icon {
@@ -191,54 +307,10 @@
         }
 
         section {
-            background-color: var(--white);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            margin-bottom: 25px;
-            box-shadow: var(--box-shadow);
-            transition: transform var(--transition-speed);
+            composes: card;
         }
 
-        section:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--hover-shadow);
-        }
-
-        h2 {
-            color: var(--primary-color);
-            font-size: var(--font-size-xl);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        h2 svg {
-            color: var(--primary-color);
-        }
-
-        h3 {
-            color: var(--secondary-color);
-            font-size: var(--font-size-lg);
-            margin: 25px 0 15px;
-        }
-
-        p, ul, ol {
-            margin-bottom: 20px;
-            color: var(--text-color);
-            font-size: var(--fluid-typography);
-        }
-
-        ul, ol {
-            padding-left: 25px;
-        }
-
-        li {
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-
+        /* Content elements */
         .data-type {
             background-color: var(--primary-light);
             padding: 20px;
@@ -310,7 +382,7 @@
         .purpose {
             background-color: var(--primary-light);
             padding: 10px 15px;
-            border-radius: 6px;
+            border-radius: var(--border-radius-sm);
             display: inline-block;
             margin-bottom: 15px;
             font-weight: 500;
@@ -355,7 +427,6 @@
             color: var(--secondary-color);
             padding: 8px 15px;
             border-radius: var(--border-radius);
-            text-decoration: none;
             font-size: var(--font-size-sm);
             margin-top: 20px;
             transition: all var(--transition-speed);
@@ -368,7 +439,9 @@
         }
 
         /* Browser Download Buttons */
-        .browser-buttons {
+        .download-section {
+            max-width: var(--container-width);
+            margin: 30px auto;
             background-color: var(--white);
             padding: 30px;
             border-radius: var(--border-radius);
@@ -1161,6 +1234,151 @@
             line-height: 1.5;
         }
         /* === END NEW BUTTON STYLES === */
+
+        /* Footer styling */
+        footer {
+            background-color: var(--primary-color);
+            color: var(--footer-link-color);
+            padding: 8px 15px; /* Minimum padding */
+            text-align: center;
+            margin-top: 25px; /* Reduced top margin */
+            box-shadow: 0 -1px 6px rgba(0,0,0,0.1); /* Minimal shadow */
+            font-size: var(--font-size-xs);
+            line-height: 1.3; /* Reduced line height */
+        }
+
+        .footer-content {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px; /* Minimum gap */
+            flex-wrap: wrap;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 6px; /* Minimum gap */
+            flex-wrap: wrap;
+            justify-content: center; /* Center on wrap */
+        }
+
+        .footer-logo img {
+            width: 16px; /* Minimal logo size */
+            height: 16px;
+            border-radius: 3px; /* Smaller radius */
+            transition: transform var(--transition-speed);
+            display: block;
+            vertical-align: middle;
+        }
+        
+        .footer-logo img:hover {
+            transform: scale(1.2);
+        }
+
+        .footer-info,
+        .made-with,
+        .github-link {
+            display: flex;
+            align-items: center;
+            gap: 3px; /* Minimum gap */
+        }
+        
+        .footer-info { margin-right: 4px; } 
+        .made-with { margin-right: 4px; }
+
+        .made-with a {
+            color: var(--footer-link-color);
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0 1px;
+            transition: all var(--transition-speed);
+        }
+        
+        .made-with a:hover {
+            color: var(--footer-link-hover);
+            border-bottom-color: var(--footer-link-hover);
+        }
+
+        .github-link {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 2px 5px; /* Minimal padding */
+            border-radius: 3px;
+            transition: all var(--transition-speed);
+            gap: 4px; 
+        }
+        
+        .github-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .github-link svg {
+            width: 11px; /* Minimal icon size */
+            height: 11px;
+        }
+        
+        .github-link span {
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 5px; /* Minimum gap */
+            align-items: center;
+        }
+
+        .footer-links a {
+            color: var(--footer-link-color);
+            padding: 2px 5px; /* Minimal padding */
+            border-radius: 3px;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            gap: 3px; /* Minimal gap */
+            border-bottom: none;
+            background-color: rgba(255,255,255,0.05); 
+        }
+
+        .footer-links a:hover {
+            color: var(--footer-link-hover);
+            background-color: rgba(255,255,255,0.15);
+            transform: translateY(-1px);
+        }
+        
+        .footer-links a svg {
+            width: 11px; /* Minimal icon size */
+            height: 11px;
+        }
+
+        .heart {
+            color: var(--heart-color);
+            font-size: 0.85em;
+            position: relative;
+            top: -1px;
+        }
+
+        /* Responsive adjustments for compact footer */
+        @media (max-width: 768px) { 
+            .footer-content {
+                flex-direction: column;
+                gap: 6px; /* Minimum gap */
+            }
+            
+            .footer-left {
+                justify-content: center;
+                gap: 4px; /* Minimum gap */
+            }
+
+            .footer-links {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 4px; /* Minimum gap */
+            }
+        }
     </style>
 </head>
 <body>
@@ -1522,7 +1740,36 @@
     </div>
     
     <footer>
-        <span data-i18n="footer.copyright">&copy; <span id="copyright-year"></span> JIRA URL Wizard</span> | <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard" target="_blank" data-i18n="footer.github">View on GitHub</a> | Made with ❤️ by <a href="https://github.com/khalilcharfi" target="_blank">Khalil Charfi</a>
+        <div class="footer-content">
+            <div class="footer-left">
+                <div class="footer-logo">
+                    <img src="https://raw.githubusercontent.com/khalilcharfi/JIRA-URL-Wizard/master/assets/icon.png" alt="JIRA URL Wizard Logo">
+                </div>
+                <div class="footer-info">
+                    <span data-i18n="footer.copyright"><span id="copyright-year"></span> JIRA URL Wizard</span>
+                </div>
+                <div class="made-with">
+                     Made with <span class="heart">❤️</span> by <a href="https://github.com/khalilcharfi" target="_blank">Khalil Charfi</a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard" target="_blank" data-i18n="footer.github">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://github.com/khalilcharfi/JIRA-URL-Wizard/issues" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>Support</span>
+                </a>
+            </div>
+        </div>
     </footer>
     
     <!-- Settings Instructions Modal -->
