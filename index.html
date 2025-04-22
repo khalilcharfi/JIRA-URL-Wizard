@@ -894,8 +894,30 @@
             to {opacity: 1; transform: translateY(0);}
         }
 
+        /* Add heart beat animation */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1.2); } 
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
         .collapsible-header.active + .collapsible-content {
             display: block;
+            position: relative;
+            top: -1px;
+            display: inline-block; /* Needed for transform */
+            animation: heartbeat 2s ease infinite; /* Apply smoother animation */
+        }
+
+        .heart {
+            color: var(--heart-color);
+            font-size: 0.85em;
+            position: relative;
+            top: -1px;
+            display: inline-block; /* Needed for transform */
+            animation: heartbeat 1.5s ease-in-out infinite; /* Apply animation */
         }
 
         /* Responsive design with improved font sizes */
@@ -917,7 +939,7 @@
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 768px) { 
             :root {
                 --fluid-typography: var(--font-size-sm);
             }
@@ -1362,6 +1384,8 @@
             font-size: 0.85em;
             position: relative;
             top: -1px;
+            display: inline-block; /* Needed for transform */
+            animation: heartbeat 1.5s ease-in-out infinite; /* Apply animation */
         }
 
         /* Responsive adjustments for compact footer */
@@ -1747,7 +1771,7 @@
                     <span data-i18n="footer.copyright"><span id="copyright-year"></span> JIRA URL Wizard</span>
                 </div>
                 <div class="made-with">
-                     Made with <span class="heart">❤️</span> by <a href="https://github.com/khalilcharfi" target="_blank">Khalil Charfi</a>
+                     Made with <span class="heart">❤️</span> by <a href="https://khalilcharfi.github.io/" target="_blank">Khalil Charfi</a>
                 </div>
             </div>
             
@@ -1976,7 +2000,7 @@
                     p2: "Our local-only approach to data handling ensures that we respect your privacy rights by default. Since we never collect or process your data on our servers, many traditional privacy concerns are inherently addressed."
                 },
                 footer: {
-                    copyright: "&copy; <span id=\"copyright-year\"></span> JIRA URL Wizard",
+                    copyright: "<span id=\"copyright-year\"></span> JIRA URL Wizard",
                     github: "View on GitHub"
                 },
                 browserButtons: {
@@ -2204,7 +2228,7 @@
                     p2: "Unser rein lokaler Ansatz bei der Datenverarbeitung stellt sicher, dass wir Ihre Datenschutzrechte standardmäßig respektieren. Da wir Ihre Daten niemals auf unseren Servern sammeln oder verarbeiten, werden viele herkömmliche Datenschutzbedenken von Natur aus berücksichtigt."
                 },
                 footer: {
-                    copyright: "&copy; <span id=\"copyright-year\"></span> JIRA URL Wizard",
+                    copyright: "<span id=\"copyright-year\"></span> JIRA URL Wizard",
                     github: "Auf GitHub anzeigen"
                 },
                 browserButtons: {
