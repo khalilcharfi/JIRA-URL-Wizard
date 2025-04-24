@@ -60,8 +60,8 @@
             --heading-line-height: 1.3;
             
             /* Fluid typography */
-            --fluid-typography: var(--font-size-base);
-            --header-fluid: clamp(1.5rem, 3vw, 2rem);
+            --fluid-typography: clamp(var(--font-size-sm), 1.5vw + 0.5rem, var(--font-size-base)); /* Responsive base: ~14px to 16px */
+            --header-fluid: clamp(1.75rem, 3vw + 1rem, 2.5rem); /* Responsive H1 */
         }
 
         * {
@@ -82,7 +82,7 @@
             background-color: #FAFBFC;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            font-size: var(--font-size-base);
+            font-size: var(--fluid-typography); /* Use responsive base font size */
         }
 
         .container {
@@ -99,13 +99,13 @@
         }
 
         h1 {
-            font-size: var(--header-fluid);
+            font-size: var(--header-fluid); /* Use responsive H1 size */
             font-weight: 600;
             margin: 0;
         }
 
         h2 {
-            font-size: var(--font-size-xl);
+            font-size: clamp(var(--font-size-lg), 2.5vw + 0.8rem, var(--font-size-xl)); /* Responsive H2: ~20px to 24px */
             display: flex;
             align-items: center;
             gap: 10px;
@@ -113,12 +113,12 @@
 
         h3 {
             color: var(--secondary-color);
-            font-size: var(--font-size-lg);
+            font-size: clamp(var(--font-size-md), 2vw + 0.7rem, var(--font-size-lg)); /* Responsive H3: ~18px to 20px */
             margin: 25px 0 15px;
         }
 
         h4 {
-            font-size: var(--font-size-md);
+            font-size: clamp(var(--font-size-base), 1.8vw + 0.6rem, var(--font-size-md)); /* Responsive H4: ~16px to 18px */
             margin-bottom: 8px;
         }
 
@@ -394,6 +394,123 @@
 
         .purpose:hover {
             transform: translateY(-2px);
+        }
+
+        /* Styles for the static permission section */
+        .permission-section {
+            background-color: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1.5rem 0;
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-speed);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .permission-section:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--hover-shadow);
+            border-color: var(--primary-light);
+        }
+
+        .permission-section h4 {
+            color: var(--secondary-color);
+            font-size: clamp(var(--font-size-base), 1.8vw + 0.6rem, var(--font-size-md));
+            margin: 0 0 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+        }
+
+        .permission-section h4 svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            flex-shrink: 0;
+            color: var(--primary-color);
+        }
+
+        .permission-section .purpose {
+            background-color: var(--primary-light);
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius-sm);
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            border-left: 3px solid var(--primary-color);
+            font-size: clamp(var(--font-size-sm), 1.2vw + 0.5rem, var(--font-size-base));
+        }
+
+        .permission-section .purpose:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .permission-section p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            font-size: clamp(var(--font-size-sm), 1.2vw + 0.5rem, var(--font-size-base));
+        }
+
+        .permission-section p strong {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .permission-section ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .permission-section li {
+            margin-bottom: 0.75rem;
+            position: relative;
+            line-height: 1.5;
+            font-size: clamp(var(--font-size-sm), 1.2vw + 0.5rem, var(--font-size-base));
+        }
+
+        .permission-section li::before {
+            content: "•";
+            color: var(--primary-color);
+            font-weight: bold;
+            position: absolute;
+            left: -1rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .permission-section {
+                padding: 1.25rem;
+                margin: 1.25rem 0;
+            }
+
+            .permission-section h4 {
+                font-size: var(--font-size-base);
+            }
+
+            .permission-section .purpose,
+            .permission-section p,
+            .permission-section li {
+                font-size: var(--font-size-sm);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .permission-section {
+                padding: 1rem;
+                margin: 1rem 0;
+            }
+
+            .permission-section h4 {
+                font-size: var(--font-size-sm);
+            }
+
+            .permission-section h4 svg {
+                width: 1rem;
+                height: 1rem;
+            }
         }
 
         .important-note {
@@ -922,28 +1039,11 @@
 
         /* Responsive design with improved font sizes */
         @media (max-width: 1200px) {
-            :root {
-                --fluid-typography: var(--font-size-base);
-            }
-
-            h1 {
-                font-size: clamp(1.5rem, 3vw, 1.75rem);
-            }
-
-            h2 {
-                font-size: var(--font-size-lg);
-            }
-
-            h3 {
-                font-size: var(--font-size-md);
-            }
+            /* Removed fixed font overrides, clamp() handles scaling */
         }
 
         @media (max-width: 768px) { 
-            :root {
-                --fluid-typography: var(--font-size-sm);
-            }
-
+            /* Removed fixed font overrides, clamp() handles scaling */
             .container {
                 padding: 15px;
             }
@@ -999,10 +1099,7 @@
         }
 
         @media (max-width: 480px) {
-            :root {
-                --fluid-typography: var(--font-size-xs);
-            }
-
+            /* Removed fixed font overrides, clamp() handles scaling */
             .container {
                 padding: 10px;
             }
@@ -1264,12 +1361,12 @@
         footer {
             background-color: var(--primary-color);
             color: var(--footer-link-color);
-            padding: 8px 15px; /* Minimum padding */
+            padding: 1.25rem 1.5rem;
             text-align: center;
-            margin-top: 25px; /* Reduced top margin */
-            box-shadow: 0 -1px 6px rgba(0,0,0,0.1); /* Minimal shadow */
-            font-size: var(--font-size-xs);
-            line-height: 1.3; /* Reduced line height */
+            margin-top: 2rem;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+            font-size: var(--font-size-sm);
+            line-height: 1.5;
         }
 
         .footer-content {
@@ -1278,22 +1375,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 8px; /* Minimum gap */
+            gap: 1rem;
             flex-wrap: wrap;
         }
 
         .footer-left {
             display: flex;
             align-items: center;
-            gap: 6px; /* Minimum gap */
+            gap: 0.75rem;
             flex-wrap: wrap;
-            justify-content: center; /* Center on wrap */
+            justify-content: center;
         }
 
         .footer-logo img {
-            width: 16px; /* Minimal logo size */
-            height: 16px;
-            border-radius: 3px; /* Smaller radius */
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
             transition: transform var(--transition-speed);
             display: block;
             vertical-align: middle;
@@ -1308,17 +1405,17 @@
         .github-link {
             display: flex;
             align-items: center;
-            gap: 3px; /* Minimum gap */
+            gap: 0.5rem;
         }
         
-        .footer-info { margin-right: 4px; } 
-        .made-with { margin-right: 4px; }
+        .footer-info { margin-right: 0.5rem; } 
+        .made-with { margin-right: 0.5rem; }
 
         .made-with a {
             color: var(--footer-link-color);
             font-weight: 600;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 0 1px;
+            padding: 0 2px;
             transition: all var(--transition-speed);
         }
         
@@ -1329,10 +1426,10 @@
 
         .github-link {
             background-color: rgba(255, 255, 255, 0.05);
-            padding: 2px 5px; /* Minimal padding */
-            border-radius: 3px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
             transition: all var(--transition-speed);
-            gap: 4px; 
+            gap: 0.5rem; 
         }
         
         .github-link:hover {
@@ -1341,18 +1438,18 @@
         }
         
         .github-link svg {
-            width: 11px; /* Minimal icon size */
-            height: 11px;
+            width: 14px;
+            height: 14px;
         }
         
         .github-link span {
             font-weight: 500;
-            font-size: 0.9em;
+            font-size: var(--font-size-sm);
         }
         
         .footer-links {
             display: flex;
-            gap: 5px; /* Minimum gap */
+            gap: 0.75rem;
             align-items: center;
         }
 
@@ -1627,69 +1724,68 @@
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <span data-i18n="permissions.title"></span>
+                <span data-i18n="permissions.title">Permissions Usage</span>
             </h2>
-            <p data-i18n="permissions.intro"></p>
+            <p data-i18n="permissions.intro">JIRA URL Wizard requires the following permissions to provide its functionality. Here's why each permission is needed:</p>
 
-            <div class="collapsible-section">
-                <div class="collapsible-header">
-                    <h4>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                        </svg>
-                        <span data-i18n="permissions.storage.name"></span>
-                    </h4>
-                    <span>+</span>
-                </div>
-                <div class="collapsible-content">
-                    <p class="purpose"><strong data-i18n="permissions.purpose"></strong> <span data-i18n="permissions.storage.purpose"></span></p>
-                    <p><strong data-i18n="permissions.usage"></strong> <span data-i18n="permissions.storage.usage"></span></p>
-                    <ul data-i18n-list="permissions.storage.items"></ul>
-                    <p><strong data-i18n="permissions.dataHandling"></strong> <span data-i18n="permissions.storage.dataHandling"></span></p>
-                </div>
+            <div class="permission-section">
+                <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span data-i18n="permissions.storage.name">storage</span>
+                </h4>
+                <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.storage.purpose">To save your environments and preferences</span></p>
+                <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.storage.usage">This permission allows the extension to:</span></p>
+                <ul data-i18n-list="permissions.storage.items">
+                    <li>Save your JIRA environment configurations for quick switching</li>
+                    <li>Store your favorite tickets for easy access</li>
+                    <li>Remember your preferences and settings</li>
+                    <li>Maintain your quick access lists</li>
+                </ul>
+                <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.storage.dataHandling">All data is stored locally using Chrome's storage API. No data is sent to external servers.</span></p>
             </div>
 
-            <div class="collapsible-section">
-                <div class="collapsible-header">
-                    <h4>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                        <span data-i18n="permissions.tabs.name"></span>
-                    </h4>
-                    <span>+</span>
-                </div>
-                <div class="collapsible-content">
-                    <p class="purpose"><strong data-i18n="permissions.purpose"></strong> <span data-i18n="permissions.tabs.purpose"></span></p>
-                    <p><strong data-i18n="permissions.usage"></strong> <span data-i18n="permissions.tabs.usage"></span></p>
-                    <ul data-i18n-list="permissions.tabs.items"></ul>
-                    <p><strong data-i18n="permissions.dataHandling"></strong> <span data-i18n="permissions.tabs.dataHandling"></span></p>
-                </div>
+            <div class="permission-section">
+                <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                    <span data-i18n="permissions.tabs.name">tabs</span>
+                </h4>
+                <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.tabs.purpose">To detect JIRA tabs and enable quick switching</span></p>
+                <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.tabs.usage">This permission enables the extension to:</span></p>
+                <ul data-i18n-list="permissions.tabs.items">
+                    <li>Detect when you're viewing a JIRA ticket</li>
+                    <li>Extract the current ticket ID for quick environment switching</li>
+                    <li>Generate the appropriate URLs for different environments</li>
+                    <li>Switch between development, staging, and production views</li>
+                </ul>
+                <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.tabs.dataHandling">The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored.</span></p>
             </div>
 
-            <div class="collapsible-section">
-                <div class="collapsible-header">
-                    <h4>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                        <span data-i18n="permissions.activeTab.name"></span>
-                    </h4>
-                    <span>+</span>
-                </div>
-                <div class="collapsible-content">
-                    <p class="purpose"><strong data-i18n="permissions.purpose"></strong> <span data-i18n="permissions.activeTab.purpose"></span></p>
-                    <p><strong data-i18n="permissions.usage"></strong> <span data-i18n="permissions.activeTab.usage"></span></p>
-                    <ul data-i18n-list="permissions.activeTab.items"></ul>
-                    <p><strong data-i18n="permissions.dataHandling"></strong> <span data-i18n="permissions.activeTab.dataHandling"></span></p>
-                </div>
+            <div class="permission-section">
+                <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span data-i18n="permissions.activeTab.name">activeTab</span>
+                </h4>
+                <p class="purpose"><strong data-i18n="permissions.purpose">Purpose:</strong> <span data-i18n="permissions.activeTab.purpose">To read current tab information when needed</span></p>
+                <p><strong data-i18n="permissions.usage">Usage:</strong> <span data-i18n="permissions.activeTab.usage">This permission allows the extension to:</span></p>
+                <ul data-i18n-list="permissions.activeTab.items">
+                    <li>Read the current tab's URL when you click the extension icon</li>
+                    <li>Generate environment-specific links based on your current ticket</li>
+                    <li>Enable quick environment switching for your current view</li>
+                </ul>
+                <p><strong data-i18n="permissions.dataHandling">Data Handling:</strong> <span data-i18n="permissions.activeTab.dataHandling">The extension only accesses the active tab when you explicitly interact with it. No background monitoring occurs.</span></p>
             </div>
-            <a href="#toc" class="back-to-top" data-i18n="backToTop"></a>
+            <a href="#toc" class="back-to-top" data-i18n="backToTop">↑ Back to Top</a>
         </section>
 
         <section id="storage" class="card">
@@ -1922,10 +2018,10 @@
                         purpose: "To save your environments and preferences",
                         usage: "This permission allows the extension to:",
                         items: [
-                            "Save your JIRA environment configurations for quick switching",
-                            "Store your favorite tickets for easy access",
-                            "Remember your preferences and settings",
-                            "Maintain your quick access lists"
+                            "Save JIRA environment configurations",
+                            "Store favorite tickets",
+                            "Remember preferences and settings",
+                            "Maintain quick access lists"
                         ],
                         dataHandling: "All data is stored locally using Chrome's storage API. No data is sent to external servers."
                     },
@@ -1934,23 +2030,23 @@
                         purpose: "To detect JIRA tabs and enable quick switching",
                         usage: "This permission enables the extension to:",
                         items: [
-                            "Detect when you're viewing a JIRA ticket",
-                            "Extract the current ticket ID for quick environment switching",
-                            "Generate the appropriate URLs for different environments",
-                            "Switch between development, staging, and production views"
+                            "Detect JIRA ticket views",
+                            "Extract ticket IDs for environment switching",
+                            "Generate environment-specific URLs",
+                            "Switch between environments"
                         ],
-                        dataHandling: "The extension only reads the URL and title of tabs that are JIRA-related. No other tab information is accessed or stored."
+                        dataHandling: "Only reads URL and title of JIRA-related tabs. No other tab information is accessed or stored."
                     },
                     activeTab: {
                         name: "activeTab",
                         purpose: "To read current tab information when needed",
                         usage: "This permission allows the extension to:",
                         items: [
-                            "Read the current tab's URL when you click the extension icon",
-                            "Generate environment-specific links based on your current ticket",
-                            "Enable quick environment switching for your current view"
+                            "Read current tab's URL on extension click",
+                            "Generate environment-specific links",
+                            "Enable quick environment switching"
                         ],
-                        dataHandling: "The extension only accesses the active tab when you explicitly interact with it. No background monitoring occurs."
+                        dataHandling: "Only accesses active tab on explicit interaction. No background monitoring."
                     }
                 },
                 storage: {
@@ -2146,7 +2242,7 @@
                     usage: "Verwendung:",
                     dataHandling: "Datenverarbeitung:",
                     storage: {
-                        name: "storage",
+                        name: "Speicher",
                         purpose: "Zum Speichern Ihrer Umgebungen und Einstellungen",
                         usage: "Diese Berechtigung ermöglicht der Erweiterung:",
                         items: [
@@ -2158,7 +2254,7 @@
                         dataHandling: "Alle Daten werden lokal mit der Chrome-Speicher-API gespeichert. Keine Daten werden an externe Server übertragen."
                     },
                     tabs: {
-                        name: "tabs",
+                        name: "Tabs",
                         purpose: "Zum Erkennen von JIRA-Tabs und schnellem Wechseln",
                         usage: "Diese Berechtigung ermöglicht der Erweiterung:",
                         items: [
@@ -2170,7 +2266,7 @@
                         dataHandling: "Die Erweiterung liest nur die URL und den Titel von JIRA-bezogenen Tabs. Keine anderen Tab-Informationen werden abgerufen oder gespeichert."
                     },
                     activeTab: {
-                        name: "activeTab",
+                        name: "Aktiver Tab",
                         purpose: "Zum Lesen aktueller Tab-Informationen bei Bedarf",
                         usage: "Diese Berechtigung ermöglicht der Erweiterung:",
                         items: [
