@@ -8,6 +8,9 @@ A powerful browser extension that simplifies working with multiple JIRA environm
 - **Custom Environment Configuration**: Create and manage multiple JIRA instances
 - **Ticket Organization**: Save and organize tickets for quick access
 - **Automatic Ticket Detection**: Extract ticket information from any JIRA page
+- **QR Code Generation**: Generate QR codes for mobile testing
+- **Context Menu Integration**: Access features directly from the right-click menu
+- **Clipboard Support**: Easily copy generated URLs for sharing
 - **Privacy-Focused**: All data stored locally on your device
 - **Enterprise-Ready**: Suitable for environments with strict security requirements
 - **Multi-language Support**: Available in English and German
@@ -19,14 +22,19 @@ A powerful browser extension that simplifies working with multiple JIRA environm
 2. Click "Add to Chrome"
 3. Confirm the installation
 
-### Firefox (Coming Soon - Release Date: 2025-04-16)
-- Extension will be available in the Firefox Add-ons store
+### Firefox
+1. Visit the [Firefox Add-ons page](https://addons.mozilla.org/en-US/firefox/addon/jira-url-wizard/)
+2. Click "Add to Firefox"
+3. Confirm the installation
 
-### Edge (Coming Soon - Release Date: 2025-04-16)
-- Extension will be available in the Microsoft Edge Add-ons store
+### Edge
+1. Visit the [Microsoft Edge Add-ons page](https://microsoftedge.microsoft.com/addons/detail/jira-url-wizard/ejfhimblndldahicahoojgfnfbiifgic)
+2. Click "Get"
+3. Confirm the installation
 
-### Safari (Coming Soon - Release Date: 2025-04-16)
-- Extension will be available in the Safari Extensions Gallery
+### Safari
+1. Download the latest release from the [GitHub Releases page](https://github.com/khalilcharfi/JIRA-URL-Wizard/releases)
+2. Follow the instructions in the release notes to install the extension in Safari
 
 ## 💡 Usage
 
@@ -47,6 +55,11 @@ A powerful browser extension that simplifies working with multiple JIRA environm
    - Select "Save to Favorites"
    - Access your saved tickets anytime
 
+4. **Generate QR Codes & Use Context Menu**
+   - Right-click on a JIRA link or use the popup to generate a QR code for mobile testing
+   - Use the context menu for quick actions
+   - Copy URLs to clipboard for easy sharing
+
 ## 🔒 Privacy & Security
 
 - All data is stored locally on your device
@@ -55,6 +68,7 @@ A powerful browser extension that simplifies working with multiple JIRA environm
 - Regular security audits
 - GDPR and CCPA compliant
 - Full control over your data
+- Transparent permissions model: only accesses browser tabs and your data for JIRA-related sites as needed for functionality
 
 ## 🛠️ Development
 
