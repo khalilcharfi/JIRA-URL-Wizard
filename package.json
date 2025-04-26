@@ -1,7 +1,7 @@
 {
   "name": "jira-url-wizard",
   "displayName": "JIRA URL Wizard",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "A browser extension for managing JIRA environment URLs",
   "author": "Khalil Charfi",
   "scripts": {
