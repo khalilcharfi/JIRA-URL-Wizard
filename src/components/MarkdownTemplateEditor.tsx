@@ -29,7 +29,10 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
     drupal9: 'https://drupal9.example.com'
   });
 
-  // Load actual URLs from storage
+  // Add a state to track currently active formats
+  const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
+
+  // Update the useEffect for URL loading to ensure we correctly handle URL placeholders
   useEffect(() => {
     const fetchUrls = async () => {
       try {
@@ -37,6 +40,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         const settings = await storage.get<SettingsStorage>("settings");
         
         if (settings?.urls) {
+          // Store the raw URLs from settings
           setUrls(settings.urls);
         }
       } catch (error) {
@@ -46,6 +50,35 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
     
     fetchUrls();
   }, []);
+
+  // Update the placeholders definition to use the freshly loaded URLs and include device parameters
+  useEffect(() => {
+    // Update placeholders whenever the URLs change
+    setPlaceholders([
+      { name: '{URL_DESKTOP}', value: urls.desktop || 'https://desktop.example.com' },
+      { name: '{URL_MOBILE}', value: urls.mobile || 'https://mobile.example.com' },
+      { name: '{URL_BO}', value: urls.bo || 'https://bo.example.com' },
+      { name: '{URL_DRUPAL7}', value: urls.drupal7 || 'https://drupal7.example.com' },
+      { name: '{URL_DRUPAL9}', value: urls.drupal9 || 'https://drupal9.example.com' },
+      { name: '{URL_DRUPAL7_DESKTOP}', value: `${urls.drupal7 || 'https://drupal7.example.com'}?deviceoutput=desktop` },
+      { name: '{URL_DRUPAL7_MOBILE}', value: `${urls.drupal7 || 'https://drupal7.example.com'}?deviceoutput=mobile` },
+      { name: '{URL_DRUPAL9_DESKTOP}', value: `${urls.drupal9 || 'https://drupal9.example.com'}?deviceoutput=desktop` },
+      { name: '{URL_DRUPAL9_MOBILE}', value: `${urls.drupal9 || 'https://drupal9.example.com'}?deviceoutput=mobile` }
+    ]);
+  }, [urls]);
+
+  // Add placeholder state
+  const [placeholders, setPlaceholders] = useState<Array<{name: string, value: string}>>([
+    { name: '{URL_DESKTOP}', value: 'https://desktop.example.com' },
+    { name: '{URL_MOBILE}', value: 'https://mobile.example.com' },
+    { name: '{URL_BO}', value: 'https://bo.example.com' },
+    { name: '{URL_DRUPAL7}', value: 'https://drupal7.example.com' },
+    { name: '{URL_DRUPAL9}', value: 'https://drupal9.example.com' },
+    { name: '{URL_DRUPAL7_DESKTOP}', value: 'https://drupal7.example.com?deviceoutput=desktop' },
+    { name: '{URL_DRUPAL7_MOBILE}', value: 'https://drupal7.example.com?deviceoutput=mobile' },
+    { name: '{URL_DRUPAL9_DESKTOP}', value: 'https://drupal9.example.com?deviceoutput=desktop' },
+    { name: '{URL_DRUPAL9_MOBILE}', value: 'https://drupal9.example.com?deviceoutput=mobile' }
+  ]);
 
   // Initialize editor content
   useEffect(() => {
@@ -63,19 +96,6 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
     '😀', '👍', '🎉', '⭐', '🚀'  // Reactions
   ];
   
-  // Available placeholders with actual values from settings
-  const placeholders = [
-    { name: '{URL_DESKTOP}', value: urls.desktop || 'https://desktop.example.com' },
-    { name: '{URL_MOBILE}', value: urls.mobile || 'https://mobile.example.com' },
-    { name: '{URL_BO}', value: urls.bo || 'https://bo.example.com' },
-    { name: '{URL_DRUPAL7}', value: urls.drupal7 || 'https://drupal7.example.com' },
-    { name: '{URL_DRUPAL9}', value: urls.drupal9 || 'https://drupal9.example.com' },
-    { name: '{URL_DRUPAL7_DESKTOP}', value: `${urls.drupal7 || 'https://drupal7.example.com'}?deviceoutput=desktop` },
-    { name: '{URL_DRUPAL7_MOBILE}', value: `${urls.drupal7 || 'https://drupal7.example.com'}?deviceoutput=mobile` },
-    { name: '{URL_DRUPAL9_DESKTOP}', value: `${urls.drupal9 || 'https://drupal9.example.com'}?deviceoutput=desktop` },
-    { name: '{URL_DRUPAL9_MOBILE}', value: `${urls.drupal9 || 'https://drupal9.example.com'}?deviceoutput=mobile` }
-  ];
-
   const applyFormat = async (format: string) => {
     if (!editorRef.current) return;
     
@@ -275,6 +295,9 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
     const text = editorRef.current.innerText;
     setContent(text);
     
+    // Re-check formatting on content change
+    checkFormatting();
+    
     if (onChange) {
       onChange(renderPreview(text), text);
     }
@@ -288,9 +311,16 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
     
     // Replace placeholders with actual values for preview
     placeholders.forEach(placeholder => {
+      // Create a regex that handles the placeholder in various contexts
+      const placeholderRegex = new RegExp(
+        placeholder.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 
+        'g'
+      );
+      
+      // Replace with a styled code element containing the actual URL
       parsedText = parsedText.replace(
-        new RegExp(placeholder.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
-        `<code class="example-placeholder">${placeholder.value}</code>`
+        placeholderRegex,
+        `<code class="example-placeholder" title="Placeholder: ${placeholder.name}">${placeholder.value}</code>`
       );
     });
     
@@ -354,144 +384,351 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
     alert(t('common.markdownCopied'));
   };
 
+  // Add useRef for the dropdown element
+  const placeholderDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Add useEffect for handling clicks outside the dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        placeholderDropdownRef.current && 
+        !placeholderDropdownRef.current.contains(event.target as Node) &&
+        showPlaceholderPicker
+      ) {
+        setShowPlaceholderPicker(false);
+      }
+    }
+    
+    // Add event listener when dropdown is open
+    if (showPlaceholderPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPlaceholderPicker]);
+
+  // Do the same for the emoji picker
+  const emojiDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        emojiDropdownRef.current && 
+        !emojiDropdownRef.current.contains(event.target as Node) &&
+        showEmojiPicker
+      ) {
+        setShowEmojiPicker(false);
+      }
+    }
+    
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
+  // Function to check text formatting in the current selection
+  const checkFormatting = () => {
+    if (!editorRef.current) return;
+    
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      setActiveFormats(new Set());
+      return;
+    }
+    
+    const selectedText = selection.toString();
+    const activeFormatSet = new Set<string>();
+    
+    // Check for bold formatting (**text**)
+    if (/^\*\*.*\*\*$/.test(selectedText.trim())) {
+      activeFormatSet.add('bold');
+    }
+    
+    // Check for italic formatting (*text*)
+    // Make sure it's not part of bold text
+    if (/^\*[^*].*[^*]\*$/.test(selectedText.trim()) && !activeFormatSet.has('bold')) {
+      activeFormatSet.add('italic');
+    }
+    
+    // Check for underline formatting (_text_)
+    if (/^_.*?_$/.test(selectedText.trim())) {
+      activeFormatSet.add('underline');
+    }
+    
+    // Check for heading 1 (# text)
+    if (/^#\s+/.test(selectedText.trim())) {
+      activeFormatSet.add('h1');
+    }
+    
+    // Check for heading 2 (## text)
+    if (/^##\s+/.test(selectedText.trim())) {
+      activeFormatSet.add('h2');
+    }
+    
+    // Check for emoji + heading 2 combinations
+    const emojiHeadingMatch = selectedText.match(/([\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier}\p{Emoji_Component}]+\s*)(##\s+)/u);
+    if (emojiHeadingMatch) {
+      activeFormatSet.add('h2');
+    }
+    
+    // Check for link formatting ([text](url))
+    if (/^\[.*?\]\(.*?\)$/.test(selectedText.trim())) {
+      activeFormatSet.add('link');
+    }
+    
+    // Check for special arrow links (text → [text](url))
+    if (/^.+→\s*\[.*?\]\(.*?\)$/.test(selectedText.trim())) {
+      activeFormatSet.add('link');
+    }
+    
+    setActiveFormats(activeFormatSet);
+  };
+
+  // Update the checkFormatting function to be called on selection change
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      checkFormatting();
+    };
+    
+    document.addEventListener('selectionchange', handleSelectionChange);
+    
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, []);
+
+  // Update the editor's onMouseUp event to also check formatting
+  const handleEditorMouseUp = () => {
+    checkFormatting();
+  };
+
   return (
-    <div className={`markdown-editor ${className}`}>
+    <div className={`markdown-editor ${className}`}>     
       {/* Toolbar */}
-      <div className="toolbar p-2 flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-md">
-        <button
-          type="button"
-          onClick={() => applyFormat('bold').catch(err => console.error('Error applying format:', err))}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          title={t('editor.bold')}
-        >
-          <span className="font-bold">B</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('italic').catch(err => console.error('Error applying format:', err))}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          title={t('editor.italic')}
-        >
-          <span className="italic">I</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('underline').catch(err => console.error('Error applying format:', err))}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          title={t('editor.underline')}
-        >
-          <span className="underline">U</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('normal').catch(err => console.error('Error applying format:', err))}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          title={t('editor.normal')}
-        >
-          <span className="text-gray-500">Aa</span>
-        </button>
-        <span className="w-px bg-gray-300 dark:bg-gray-600 mx-1"></span>
-        <button
-          type="button"
-          onClick={() => applyFormat('h1').catch(err => console.error('Error applying format:', err))}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          title={t('editor.heading1')}
-        >
-          <span className="font-bold text-lg">H1</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('h2').catch(err => console.error('Error applying format:', err))}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          title={t('editor.heading2')}
-        >
-          <span className="font-bold">H2</span>
-        </button>
-        <span className="w-px bg-gray-300 dark:bg-gray-600 mx-1"></span>
-        <button
-          type="button"
-          onClick={() => applyFormat('link').catch(err => console.error('Error applying format:', err))}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          title={t('editor.link')}
-        >
-          <span className="underline text-blue-600 dark:text-blue-400">🔗</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('separator').catch(err => console.error('Error applying format:', err))}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-          title={t('editor.separator')}
-        >
-          <span className="text-gray-600 dark:text-gray-300">---</span>
-        </button>
-        
-        {/* Emoji Picker */}
-        <div className="relative">
-          <button 
+      <div className="toolbar p-2 flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-md">
+        {/* Text formatting group */}
+        <div className="flex items-center rounded bg-white dark:bg-gray-700 shadow-sm">
+          <button
             type="button"
-            onClick={() => {
-              setShowEmojiPicker(!showEmojiPicker);
-              setShowPlaceholderPicker(false);
-            }}
-            className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-            title={t('editor.addEmoji')}
+            onClick={() => applyFormat('bold').catch(err => console.error('Error applying format:', err))}
+            className={`p-2 w-10 h-10 flex items-center justify-center ${
+              activeFormats.has('bold') 
+                ? 'bg-gray-200 dark:bg-gray-600 text-blue-600 dark:text-blue-400' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+            } rounded-l border-r border-gray-200 dark:border-gray-600`}
+            title={t('editor.bold', 'Bold')}
+            aria-label={t('editor.bold', 'Bold')}
           >
-            😀
+            <span className="font-bold">B</span>
           </button>
-          {showEmojiPicker && (
-            <div className="absolute z-10 top-8 left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-lg grid grid-cols-5 gap-2 min-w-[150px]">
-              {emojis.map((emoji, index) => (
-                <button 
-                  key={index} 
-                  onClick={() => addEmoji(emoji)}
-                  className="text-xl p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => applyFormat('italic').catch(err => console.error('Error applying format:', err))}
+            className={`p-2 w-10 h-10 flex items-center justify-center ${
+              activeFormats.has('italic') 
+                ? 'bg-gray-200 dark:bg-gray-600 text-blue-600 dark:text-blue-400' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+            } border-r border-gray-200 dark:border-gray-600`}
+            title={t('editor.italic', 'Italic')}
+            aria-label={t('editor.italic', 'Italic')}
+          >
+            <span className="italic">I</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => applyFormat('underline').catch(err => console.error('Error applying format:', err))}
+            className={`p-2 w-10 h-10 flex items-center justify-center ${
+              activeFormats.has('underline') 
+                ? 'bg-gray-200 dark:bg-gray-600 text-blue-600 dark:text-blue-400' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+            } border-r border-gray-200 dark:border-gray-600`}
+            title={t('editor.underline', 'Underline')}
+            aria-label={t('editor.underline', 'Underline')}
+          >
+            <span className="underline">U</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => applyFormat('normal').catch(err => console.error('Error applying format:', err))}
+            className="p-2 w-10 h-10 flex items-center justify-center rounded-r hover:bg-gray-100 dark:hover:bg-gray-600"
+            title={t('editor.normal', 'Clear formatting')}
+            aria-label={t('editor.normal', 'Clear formatting')}
+          >
+            <span className="text-gray-500">Aa</span>
+          </button>
         </div>
-        
-        {/* Placeholder Picker */}
-        <div className="relative">
-          <button 
+
+        {/* Heading group */}
+        <div className="flex items-center rounded bg-white dark:bg-gray-700 shadow-sm">
+          <button
             type="button"
-            onClick={() => {
-              setShowPlaceholderPicker(!showPlaceholderPicker);
-              setShowEmojiPicker(false);
-            }}
-            className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-mono"
-            title={t('editor.addPlaceholder')}
+            onClick={() => applyFormat('h1').catch(err => console.error('Error applying format:', err))}
+            className={`p-2 w-10 h-10 flex items-center justify-center ${
+              activeFormats.has('h1') 
+                ? 'bg-gray-200 dark:bg-gray-600 text-blue-600 dark:text-blue-400' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+            } rounded-l border-r border-gray-200 dark:border-gray-600`}
+            title={t('editor.heading1', 'Heading 1')}
+            aria-label={t('editor.heading1', 'Heading 1')}
           >
-            {'{...}'}
+            <span className="font-bold text-lg">H1</span>
           </button>
-          {showPlaceholderPicker && (
-            <div className="absolute z-10 top-8 left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-lg w-64">
-              {placeholders.map((placeholder, index) => (
-                <button 
-                  key={index} 
-                  onClick={() => addPlaceholder(placeholder.name)}
-                  className="w-full text-left p-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded mb-1 font-mono flex justify-between items-center"
-                  title={placeholder.value}
-                >
-                  <span>{placeholder.name}</span>
-                  <span className="text-xs text-gray-500 truncate max-w-[120px]">{placeholder.value}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => applyFormat('h2').catch(err => console.error('Error applying format:', err))}
+            className={`p-2 w-10 h-10 flex items-center justify-center ${
+              activeFormats.has('h2') 
+                ? 'bg-gray-200 dark:bg-gray-600 text-blue-600 dark:text-blue-400' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+            } rounded-r`}
+            title={t('editor.heading2', 'Heading 2')}
+            aria-label={t('editor.heading2', 'Heading 2')}
+          >
+            <span className="font-bold">H2</span>
+          </button>
+        </div>
+
+        {/* Insertions group */}
+        <div className="flex items-center rounded bg-white dark:bg-gray-700 shadow-sm">
+          <button
+            type="button"
+            onClick={() => applyFormat('link').catch(err => console.error('Error applying format:', err))}
+            className={`p-2 w-10 h-10 flex items-center justify-center ${
+              activeFormats.has('link') 
+                ? 'bg-gray-200 dark:bg-gray-600 text-blue-600 dark:text-blue-400' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+            } rounded-l border-r border-gray-200 dark:border-gray-600`}
+            title={t('editor.link', 'Insert link')}
+            aria-label={t('editor.link', 'Insert link')}
+          >
+            <span className="text-blue-600 dark:text-blue-400">🔗</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => applyFormat('separator').catch(err => console.error('Error applying format:', err))}
+            className="p-2 w-10 h-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 border-r border-gray-200 dark:border-gray-600"
+            title={t('editor.separator', 'Insert separator')}
+            aria-label={t('editor.separator', 'Insert separator')}
+          >
+            <span className="text-gray-600 dark:text-gray-300">―</span>
+          </button>
+          
+          {/* Emoji Picker */}
+          <div className="relative border-r border-gray-200 dark:border-gray-600">
+            <button 
+              type="button"
+              onClick={() => {
+                setShowEmojiPicker(!showEmojiPicker);
+                setShowPlaceholderPicker(false);
+              }}
+              className={`p-2 w-10 h-10 flex items-center justify-center ${
+                activeFormats.has('emoji') 
+                  ? 'bg-gray-200 dark:bg-gray-600 text-blue-600 dark:text-blue-400' 
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+              }`}
+              title={t('editor.addEmoji', 'Insert emoji')}
+              aria-label={t('editor.addEmoji', 'Insert emoji')}
+            >
+              😀
+            </button>
+            {showEmojiPicker && (
+              <div 
+                ref={emojiDropdownRef}
+                className="absolute z-10 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-lg grid grid-cols-5 gap-2 min-w-[200px]"
+              >
+                {emojis.map((emoji, index) => (
+                  <button 
+                    key={index} 
+                    onClick={() => addEmoji(emoji)}
+                    className="text-xl p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded w-8 h-8 flex items-center justify-center"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Placeholder Picker */}
+          <div className="relative">
+            <button 
+              type="button"
+              onClick={() => {
+                setShowPlaceholderPicker(!showPlaceholderPicker);
+                setShowEmojiPicker(false);
+              }}
+              className={`p-2 w-10 h-10 flex items-center justify-center ${
+                activeFormats.has('placeholder') 
+                  ? 'bg-gray-200 dark:bg-gray-600 text-blue-600 dark:text-blue-400' 
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+              } rounded-r`}
+              title={t('editor.addPlaceholder', 'Insert placeholder')}
+              aria-label={t('editor.addPlaceholder', 'Insert placeholder')}
+            >
+              <span className="font-mono text-xs">{'{...}'}</span>
+            </button>
+            {showPlaceholderPicker && (
+              <div 
+                ref={placeholderDropdownRef}
+                className="absolute z-10 top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-72 overflow-hidden flex flex-col max-h-96"
+              >
+                {/* Fixed Header */}
+                <div className="sticky top-0 bg-white dark:bg-gray-800 p-3 border-b border-gray-200 dark:border-gray-700 z-20">
+                  <h4 className="text-sm font-medium flex items-center">
+                    <span className="text-blue-600 dark:text-blue-400 mr-1">{'{...}'}</span>
+                    {t('editor.placeholders', 'Placeholders')}
+                  </h4>
+                </div>
+                
+                {/* Scrollable Content */}
+                <div className="p-3 overflow-y-auto flex-grow">
+                  <div className="space-y-2">
+                    {placeholders.map((placeholder, index) => (
+                      <button 
+                        key={index} 
+                        onClick={() => addPlaceholder(placeholder.name)}
+                        className="w-full text-left p-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md group transition-colors"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-mono text-blue-600 dark:text-blue-400 font-medium group-hover:text-blue-700 dark:group-hover:text-blue-300">
+                            {placeholder.name}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 break-all font-mono">
+                            {placeholder.value}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Fixed Footer */}
+                <div className="sticky bottom-0 bg-white dark:bg-gray-800 p-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 z-20">
+                  {t('editor.placeholderHelp', 'Click a placeholder to insert it into your text')}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="flex-grow"></div>
         
+        {/* Actions group */}
         <button 
           type="button"
           onClick={clearEditor} 
-          className="p-1.5 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
-          title={t('editor.clear')}
+          className="px-3 h-10 flex items-center bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium transition-colors shadow-sm"
+          title={t('editor.clear', 'Clear editor content')}
+          aria-label={t('editor.clear', 'Clear editor content')}
         >
-          {t('editor.clear')}
+          {t('editor.clear', 'Clear')}
         </button>
       </div>
       
@@ -502,6 +739,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
           contentEditable={true}
           className="editor-content p-3 min-h-[150px] bg-white dark:bg-gray-700 outline-none whitespace-pre-wrap"
           onInput={handleContentChange}
+          onMouseUp={handleEditorMouseUp}
           suppressContentEditableWarning={true}
           data-placeholder={placeholder}
         ></div>
