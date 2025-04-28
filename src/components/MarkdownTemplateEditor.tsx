@@ -76,7 +76,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
     { name: '{URL_DRUPAL9_MOBILE}', value: `${urls.drupal9 || 'https://drupal9.example.com'}?deviceoutput=mobile` }
   ];
 
-  const applyFormat = (format: string) => {
+  const applyFormat = async (format: string) => {
     if (!editorRef.current) return;
     
     const selection = window.getSelection();
@@ -137,15 +137,87 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         }
         break;
       case 'link':
-        const url = window.prompt(t('editor.enterLink'), 'https://');
-        if (url) {
-          if (cleanText) {
-            formattedText = `[${cleanText}](${url})`;
+        // Create a custom dialog to choose link type
+        const linkTypeDialog = document.createElement('div');
+        linkTypeDialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        linkTypeDialog.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 max-w-md w-full">
+            <h3 class="text-lg font-medium mb-3 text-gray-900 dark:text-gray-100">${t('editor.chooseLink', 'Choose Link Type')}</h3>
+            <div class="space-y-2">
+              <button id="custom-url-btn" class="w-full p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-left">
+                ${t('editor.customUrl', 'Custom URL')}
+              </button>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">${t('editor.orChoosePlaceholder', 'Or choose a placeholder:')}</div>
+              ${placeholders.map(p => `
+                <button class="placeholder-btn w-full p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-left flex justify-between items-center" data-value="${p.value}">
+                  <span class="font-mono text-xs">${p.name}</span>
+                  <span class="text-xs text-gray-500 truncate max-w-[200px]">${p.value}</span>
+                </button>
+              `).join('')}
+            </div>
+            <div class="mt-4 flex justify-end">
+              <button id="cancel-link-btn" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded mr-2">
+                ${t('common.cancel', 'Cancel')}
+              </button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(linkTypeDialog);
+        
+        // Create a Promise to handle async dialog
+        const linkSelectionPromise = new Promise<string | null>((resolve) => {
+          // Handle custom URL choice
+          document.getElementById('custom-url-btn')?.addEventListener('click', () => {
+            const url = window.prompt(t('editor.enterLink', 'Enter the URL for the link:'), 'https://');
+            resolve(url);
+            document.body.removeChild(linkTypeDialog);
+          });
+          
+          // Handle placeholder selection
+          document.querySelectorAll('.placeholder-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const target = e.currentTarget as HTMLElement;
+              const value = target.getAttribute('data-value');
+              resolve(value);
+              document.body.removeChild(linkTypeDialog);
+            });
+          });
+          
+          // Handle cancel
+          document.getElementById('cancel-link-btn')?.addEventListener('click', () => {
+            resolve(null);
+            document.body.removeChild(linkTypeDialog);
+          });
+          
+          // Handle clicking outside to cancel
+          linkTypeDialog.addEventListener('click', (e) => {
+            if (e.target === linkTypeDialog) {
+              resolve(null);
+              document.body.removeChild(linkTypeDialog);
+            }
+          });
+        });
+        
+        // Wait for user selection
+        const selectedUrl = await linkSelectionPromise;
+        if (!selectedUrl) return; // User cancelled
+        
+        // If there's selected text, use it as link text
+        if (cleanText.trim()) {
+          // Check if text looks like a URL
+          const isUrlLike = /^https?:\/\/\S+$/i.test(cleanText.trim());
+          
+          if (isUrlLike && cleanText.trim() === selectedUrl) {
+            // If selected text is the same as the URL, just use URL as both text and link
+            formattedText = `[${selectedUrl}](${selectedUrl})`;
           } else {
-            formattedText = `[${url}](${url})`;
+            // Use selected text as link text
+            formattedText = `[${cleanText}](${selectedUrl})`;
           }
         } else {
-          return;
+          // No selection or empty selection, use URL as both text and link
+          formattedText = `[${selectedUrl}](${selectedUrl})`;
         }
         break;
       case 'normal':
@@ -288,7 +360,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
       <div className="toolbar p-2 flex flex-wrap gap-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-t-md">
         <button
           type="button"
-          onClick={() => applyFormat('bold')}
+          onClick={() => applyFormat('bold').catch(err => console.error('Error applying format:', err))}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           title={t('editor.bold')}
         >
@@ -296,7 +368,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('italic')}
+          onClick={() => applyFormat('italic').catch(err => console.error('Error applying format:', err))}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           title={t('editor.italic')}
         >
@@ -304,7 +376,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('underline')}
+          onClick={() => applyFormat('underline').catch(err => console.error('Error applying format:', err))}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           title={t('editor.underline')}
         >
@@ -312,7 +384,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('normal')}
+          onClick={() => applyFormat('normal').catch(err => console.error('Error applying format:', err))}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           title={t('editor.normal')}
         >
@@ -321,7 +393,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         <span className="w-px bg-gray-300 dark:bg-gray-600 mx-1"></span>
         <button
           type="button"
-          onClick={() => applyFormat('h1')}
+          onClick={() => applyFormat('h1').catch(err => console.error('Error applying format:', err))}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           title={t('editor.heading1')}
         >
@@ -329,7 +401,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('h2')}
+          onClick={() => applyFormat('h2').catch(err => console.error('Error applying format:', err))}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           title={t('editor.heading2')}
         >
@@ -338,7 +410,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         <span className="w-px bg-gray-300 dark:bg-gray-600 mx-1"></span>
         <button
           type="button"
-          onClick={() => applyFormat('link')}
+          onClick={() => applyFormat('link').catch(err => console.error('Error applying format:', err))}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           title={t('editor.link')}
         >
@@ -346,7 +418,7 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('separator')}
+          onClick={() => applyFormat('separator').catch(err => console.error('Error applying format:', err))}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
           title={t('editor.separator')}
         >
