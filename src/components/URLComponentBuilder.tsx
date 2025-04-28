@@ -1540,11 +1540,12 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                                     : 'text-gray-400 dark:text-gray-600 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
                             }`}
                             onClick={() => {
-                                console.log("Save button clicked");
-                                console.log("Has unsaved changes:", hasUnsavedChanges);
-                                console.log("All rules valid:", allRulesValid);
-                                console.log("Current pattern:", pattern);
-                                console.log("Formatted pattern:", formatPatternForSettings(pattern));
+                                // Remove excessive logging
+                                // console.log("Save button clicked");
+                                // console.log("Has unsaved changes:", hasUnsavedChanges);
+                                // console.log("All rules valid:", allRulesValid);
+                                // console.log("Current pattern:", pattern);
+                                // console.log("Formatted pattern:", formatPatternForSettings(pattern));
                                 
                                 if (hasUnsavedChanges && allRulesValid) {
                                     handleSavePattern();

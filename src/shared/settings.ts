@@ -22,6 +22,7 @@ export interface SettingsStorage {
   urlStructure: string[]
   allowManualTicketInput: boolean
   showAdvancedSettings: boolean
+  markdownTemplate: string
 }
 
 // Import the environment variable
@@ -45,6 +46,20 @@ export const DEFAULT_SETTINGS: SettingsStorage = {
   urlStructure: ["ticketType", ".", "issuePrefix", "-", "[0-9]+", "baseUrl"],
   allowManualTicketInput: true,
   showAdvancedSettings: SHOW_ADVANCED_SETTINGS,
+  markdownTemplate: `🌐💻 Frontend Environments
+- **🛠️ Back Office Tool** → [{URL_BO}]({URL_BO})
+- **📱 Mobile Version** → [{URL_MOBILE}]({URL_MOBILE})
+- **🖥️ Desktop Version** → [{URL_DESKTOP}]({URL_DESKTOP})
+---
+📝📚 CMS Environments
+💧7️⃣ ## **Drupal 7**
+- **Base CMS** → [{URL_DRUPAL7}]({URL_DRUPAL7})
+- **Desktop View** → [{URL_DRUPAL7}?deviceoutput=desktop]({URL_DRUPAL7}?deviceoutput=desktop)
+- **Mobile View** → [{URL_DRUPAL7}?deviceoutput=mobile]({URL_DRUPAL7}?deviceoutput=mobile)
+💧9️⃣ ## **Drupal 9**
+- **Desktop View** → [{URL_DRUPAL9}?deviceoutput=desktop]({URL_DRUPAL9}?deviceoutput=desktop)
+- **Mobile View** → [{URL_DRUPAL9}?deviceoutput=mobile]({URL_DRUPAL9}?deviceoutput=mobile)
+`,
 }
 
 // Add a default sample ticket ID
