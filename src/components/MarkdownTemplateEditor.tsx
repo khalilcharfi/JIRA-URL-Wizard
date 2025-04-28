@@ -380,8 +380,31 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(content);
-    alert(t('common.markdownCopied'));
+    // Get the raw content
+    let markdownContent = content;
+    
+    // For actual clipboard copying, we want to keep the placeholder names
+    // This ensures that when pasted into JIRA, the placeholders are preserved
+    // No placeholders substitution is needed for the raw markdown content
+    
+    navigator.clipboard.writeText(markdownContent);
+    alert(t('common.markdownCopied', 'Markdown copied to clipboard'));
+  };
+
+  // Add a function to convert markdown with real URL values for external use
+  const getMarkdownWithRealUrls = (): string => {
+    let markdownWithRealUrls = content;
+    
+    // Replace all placeholders with their actual URL values
+    placeholders.forEach(placeholder => {
+      const placeholderRegex = new RegExp(
+        placeholder.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 
+        'g'
+      );
+      markdownWithRealUrls = markdownWithRealUrls.replace(placeholderRegex, placeholder.value);
+    });
+    
+    return markdownWithRealUrls;
   };
 
   // Add useRef for the dropdown element
@@ -758,13 +781,27 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
       <div className="mt-4 p-3 border rounded-md bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300 flex justify-between items-center">
           <span>{t('common.preview')}:</span>
-          <button
-            type="button"
-            onClick={copyToClipboard}
-            className="inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 px-2 py-1 text-xs border focus:ring-blue-500 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-offset-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 dark:focus:ring-offset-gray-900"
-          >
-            {t('editor.copyMarkdown')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={copyToClipboard}
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 px-2 py-1 text-xs border focus:ring-blue-500 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-offset-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 dark:focus:ring-offset-gray-900"
+              title={t('editor.copyWithPlaceholders', 'Copy with placeholders like {URL_DESKTOP}')}
+            >
+              {t('editor.copyMarkdown', 'Copy Markdown')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(getMarkdownWithRealUrls());
+                alert(t('common.markdownWithUrlsCopied', 'Markdown with real URLs copied to clipboard'));
+              }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 px-2 py-1 text-xs border focus:ring-green-500 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-offset-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:border-gray-500 dark:focus:ring-offset-gray-900"
+              title={t('editor.copyWithRealUrls', 'Copy with actual URLs instead of placeholders')}
+            >
+              {t('editor.copyWithRealUrls', 'Copy with Real URLs')}
+            </button>
+          </div>
         </h4>
         <div className="prose prose-sm max-w-none dark:prose-invert bg-white dark:bg-gray-700 p-3 rounded border border-gray-200 dark:border-gray-600">
           <div dangerouslySetInnerHTML={{ __html: renderPreview(content) }} />
@@ -827,10 +864,23 @@ const MarkdownTemplateEditor: React.FC<MarkdownTemplateEditorProps> = ({
           font-family: monospace;
           font-size: 0.95em;
           word-break: break-all;
+          position: relative;
+          cursor: help;
+          border: 1px solid #e2e8f0;
+          transition: all 0.2s ease;
+        }
+        .example-placeholder:hover {
+          background: #eef2ff;
+          border-color: #93c5fd;
         }
         .dark .example-placeholder {
           background: #1e293b;
           color: #60a5fa;
+          border-color: #334155;
+        }
+        .dark .example-placeholder:hover {
+          background: #172554;
+          border-color: #3b82f6;
         }
       `}</style>
     </div>
