@@ -1913,6 +1913,7 @@ const IndexOptions = () => {
                         />
                     </section>
 
+                    {/* Commented out Markdown Template section
                     <section id="markdown-template" className="mb-10">
                         <div id="markdown-template-header" className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header border-t border-gray-100 dark:border-gray-700 pt-3">
                             <h3 id="markdown-template-heading" className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
@@ -1942,6 +1943,7 @@ const IndexOptions = () => {
                             className="mb-4"
                         />
                     </section>
+                    */}
                 </div>
             </details>
           </div>
