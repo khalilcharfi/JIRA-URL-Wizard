@@ -53,63 +53,76 @@ export const generateMarkdownLinks = (urls: SettingsStorage['urls']): string => 
     return '';
   }
 
+  // --- User's requested markdown template structure ---
+  // ## 🌐💻 Frontend Environments
+  // - 🛠️ Back Office Tool → [https://bo.fahrradversicherung.check24-int.de]
+  // - 📱 Mobile Version → [https://m.fahrradversicherung.check24-int.de?deviceoutput=mobile]
+  // - 🖥️ Desktop Version → [https://desktop.fahrradversicherung.check24-int.de?deviceoutput=desktop]
+  //
+  // ## 📝📚 CMS Environments
+  //
+  // 💧7️⃣ **Drupal 7**
+  // - Base CMS → [https://ffmfvk-2822.cms1.sach.vv.check24-int.de/fahrradversicherung]
+  // - Desktop View → [https://ffmfvk-2822.cms1.sach.vv.check24-int.de/fahrradversicherung?deviceoutput=desktop]
+  // - Mobile View → [https://ffmfvk-2822.cms1.sach.vv.check24-int.de/fahrradversicherung?deviceoutput=mobile]
+  //
+  // 💧9️⃣ **Drupal 9**
+  // - Desktop View → [https://cms2.sach.vv.check24-int.de/fahrradversicherung?deviceoutput=desktop]
+  // - Mobile View → [https://cms2.sach.vv.check24-int.de/fahrradversicherung?deviceoutput=mobile]
+
   // Frontend links
   const frontendItems = [
     { label: '🛠️ Back Office Tool', url: urls.bo || '' },
-    { label: '📱 Mobile Version', url: urls.mobile ? appendQueryParam(urls.mobile, 'deviceoutput', 'mobile') : '' },
-    { label: '🖥️ Desktop Version', url: urls.desktop ? appendQueryParam(urls.desktop, 'deviceoutput', 'desktop') : '' }
+    { label: '📱 Mobile Version', url: urls.mobile || '' },
+    { label: '🖥️ Desktop Version', url: urls.desktop || '' }
   ];
-  
-  const generatedFrontendLinks = generateLinks(frontendItems, true); // Generate links first
-  const frontendSection = generatedFrontendLinks.length > 0 ? // Check if links were generated
-    `${SECTION_TITLES.FRONTEND.MARKDOWN}\n${generatedFrontendLinks.join('\n')}` : '';
+  const frontendLinks = frontendItems
+    .filter(item => item.url)
+    .map(item => `- ${item.label} → [${ensureHttps(item.url)}]`)
+    .join('\n');
+  const frontendSection = frontendLinks
+    ? `## 🌐💻 Frontend Environments\n\n${frontendLinks}`
+    : '';
 
-  // CMS - Drupal 7 links
+  // Drupal 7 links
   const drupal7BaseUrl = urls.drupal7 || '';
   const drupal7BasePath = drupal7BaseUrl ? `${drupal7BaseUrl}` : '';
-  const drupal7ContentPath = drupal7BaseUrl ? `${drupal7BaseUrl}` : '';
-  
   const drupal7Items = [
     { label: 'Base CMS', url: drupal7BasePath },
-    { 
-      label: 'Desktop View', 
-      url: drupal7ContentPath ? appendQueryParam(drupal7ContentPath, 'deviceoutput', 'desktop') : '' 
-    },
-    { 
-      label: 'Mobile View', 
-      url: drupal7ContentPath ? appendQueryParam(drupal7ContentPath, 'deviceoutput', 'mobile') : '' 
-    }
+    { label: 'Desktop View', url: drupal7BasePath },
+    { label: 'Mobile View', url: drupal7BasePath }
   ];
-  
-  const drupal7Section = drupal7BaseUrl ? 
-    `${SECTION_TITLES.DRUPAL7.MARKDOWN}\n${generateLinks(drupal7Items, true).join('\n')}` : '';
+  const drupal7Links = drupal7Items
+    .filter(item => item.url)
+    .map(item => `- ${item.label} → [${ensureHttps(item.url)}]`)
+    .join('\n');
+  const drupal7Section = drupal7Links
+    ? `💧7️⃣ **Drupal 7**\n\n${drupal7Links}`
+    : '';
 
-  // CMS - Drupal 9 links
+  // Drupal 9 links
   const drupal9BaseUrl = urls.drupal9 || '';
-  const drupal9ContentPath = drupal9BaseUrl ? `${drupal9BaseUrl}` : '';
-  
+  const drupal9BasePath = drupal9BaseUrl ? `${drupal9BaseUrl}` : '';
   const drupal9Items = [
-    { 
-      label: 'Desktop View', 
-      url: drupal9ContentPath ? appendQueryParam(drupal9ContentPath, 'deviceoutput', 'desktop') : '' 
-    },
-    { 
-      label: 'Mobile View', 
-      url: drupal9ContentPath ? appendQueryParam(drupal9ContentPath, 'deviceoutput', 'mobile') : '' 
-    }
+    { label: 'Desktop View', url: drupal9BasePath },
+    { label: 'Mobile View', url: drupal9BasePath }
   ];
-  
-  const drupal9Section = drupal9BaseUrl ? 
-    `${SECTION_TITLES.DRUPAL9.MARKDOWN}\n${generateLinks(drupal9Items, true).join('\n')}` : '';
+  const drupal9Links = drupal9Items
+    .filter(item => item.url)
+    .map(item => `- ${item.label} → [${ensureHttps(item.url)}]`)
+    .join('\n');
+  const drupal9Section = drupal9Links
+    ? `💧9️⃣ **Drupal 9**\n\n${drupal9Links}`
+    : '';
 
-  // Combine CMS sections
-  const cmsSubsections = [drupal7Section, drupal9Section].filter(Boolean);
-  const cmsSection = cmsSubsections.length > 0 ? 
-    `${SECTION_TITLES.CMS.MARKDOWN}\n${cmsSubsections.join('\n')}` : '';
+  // CMS section
+  const cmsSections = [drupal7Section, drupal9Section].filter(Boolean).join('\n\n');
+  const cmsSection = cmsSections
+    ? `## 📝📚 CMS Environments\n\n${cmsSections}`
+    : '';
 
-  // Combine all sections
-  const sections = [frontendSection, cmsSection].filter(Boolean);
-  return sections.join('\n---\n');
+  // Combine all sections, separated by two newlines
+  return [frontendSection, cmsSection].filter(Boolean).join('\n\n');
 };
 
 // Main function to generate plain text formatted links
