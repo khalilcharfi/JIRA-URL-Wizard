@@ -40,6 +40,7 @@ interface URLComponentBuilderProps {
     urls: Record<string, string>;
     urlStructure?: string[];
     onSavePattern?: (pattern: string[]) => void;
+    onBuildUrlFunctionReady?: (buildUrlFn: (baseUrl: string | undefined, pattern: string[]) => string) => void;
 }
 
 interface Rule {
@@ -658,7 +659,8 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     ticketTypes = [],
     urls = {},
     urlStructure = [],
-    onSavePattern
+    onSavePattern,
+    onBuildUrlFunctionReady
 }) => {
     const { t } = useTranslation();
     
@@ -1525,6 +1527,13 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
             document.head.removeChild(style);
         };
     }, []);
+
+    // Expose buildUrlForBase function to parent component
+    useEffect(() => {
+        if (onBuildUrlFunctionReady) {
+            onBuildUrlFunctionReady(buildUrlForBase);
+        }
+    }, [buildUrlForBase, onBuildUrlFunctionReady]);
 
     return (
         <div className="space-y-5">

@@ -5,24 +5,24 @@ export interface JiraPattern {
 }
 
 export interface SettingsStorage {
-  theme: "light" | "dark" | "system"
-  prefixes: string[]
-  ticketTypes: string[]
   urls: {
-    mobile: string
-    desktop: string
-    bo: string
-    drupal7: string
-    drupal9: string
-  }
-  jiraPatterns: JiraPattern[]
-  integrateQrImage: boolean
-  useMarkdownCopy: boolean
-  language: string
-  urlStructure: string[]
-  allowManualTicketInput: boolean
-  showAdvancedSettings: boolean
-  markdownTemplate: string
+    bo: string;
+    mobile: string;
+    desktop: string;
+    drupal7: string;
+    drupal9: string;
+  };
+  ticketTypes: string[];
+  prefixes: string[];
+  urlStructure: string[];
+  theme?: 'light' | 'dark' | 'system';
+  jiraPatterns?: string[];
+  integrateQrImage?: boolean;
+  useMarkdownCopy?: boolean;
+  showCopiedNotification?: boolean;
+  showPreviewOnHover?: boolean;
+  enableAdvancedUrlPatterns?: boolean;
+  autoSavePatterns?: boolean;
 }
 
 // Import the environment variable
