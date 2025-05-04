@@ -49,80 +49,52 @@ const SECTION_TITLES = {
 
 // Main function to generate Markdown formatted links
 export const generateMarkdownLinks = (urls: SettingsStorage['urls']): string => {
-  if (!urls || typeof urls !== 'object') {
-    return '';
-  }
+  if (!urls || typeof urls !== 'object') return '';
 
-  // --- User's requested markdown template structure ---
-  // ## 🌐💻 Frontend Environments
-  // - 🛠️ Back Office Tool → [https://bo.fahrradversicherung.check24-int.de]
-  // - 📱 Mobile Version → [https://m.fahrradversicherung.check24-int.de?deviceoutput=mobile]
-  // - 🖥️ Desktop Version → [https://desktop.fahrradversicherung.check24-int.de?deviceoutput=desktop]
-  //
-  // ## 📝📚 CMS Environments
-  //
-  // 💧7️⃣ **Drupal 7**
-  // - Base CMS → [https://ffmfvk-2822.cms1.sach.vv.check24-int.de/fahrradversicherung]
-  // - Desktop View → [https://ffmfvk-2822.cms1.sach.vv.check24-int.de/fahrradversicherung?deviceoutput=desktop]
-  // - Mobile View → [https://ffmfvk-2822.cms1.sach.vv.check24-int.de/fahrradversicherung?deviceoutput=mobile]
-  //
-  // 💧9️⃣ **Drupal 9**
-  // - Desktop View → [https://cms2.sach.vv.check24-int.de/fahrradversicherung?deviceoutput=desktop]
-  // - Mobile View → [https://cms2.sach.vv.check24-int.de/fahrradversicherung?deviceoutput=mobile]
+  // Use Unicode escape sequences for emojis
+  const emojis = {
+    frontend: "\u{1F310}",        // 🌐
+    backOffice: "\u{1F6E0}\u{FE0F}", // 🛠️
+    mobile: "\u{1F4F1}",          // 📱
+    desktop: "\u{1F5A5}\u{FE0F}", // 🖥️
+    cms: "\u{1F9E9}",             // 🧩
+    drupal7: "\u{1F9D3}",         // 🧓
+    drupal9: "\u{1F195}"          // 🆕
+  };
 
-  // Frontend links
-  const frontendItems = [
-    { label: '🛠️ Back Office Tool', url: urls.bo || '' },
-    { label: '📱 Mobile Version', url: urls.mobile || '' },
-    { label: '🖥️ Desktop Version', url: urls.desktop || '' }
-  ];
-  const frontendLinks = frontendItems
-    .filter(item => item.url)
-    .map(item => `- ${item.label} → [${ensureHttps(item.url)}]`)
-    .join('\n');
-  const frontendSection = frontendLinks
-    ? `## 🌐💻 Frontend Environments\n\n${frontendLinks}`
-    : '';
+  // Frontend table with Unicode escape sequence emojis
+  const frontendRows = [
+    urls.bo ? `| ${emojis.backOffice} Back Office    | [${urls.bo}](${ensureHttps(urls.bo)}) |` : '',
+    urls.mobile ? `| ${emojis.mobile} Mobile Version | [${urls.mobile}](${ensureHttps(urls.mobile)}) |` : '',
+    urls.desktop ? `| ${emojis.desktop} Desktop        | [${urls.desktop}](${ensureHttps(urls.desktop)}) |` : ''
+  ].filter(Boolean);
 
-  // Drupal 7 links
-  const drupal7BaseUrl = urls.drupal7 || '';
-  const drupal7BasePath = drupal7BaseUrl ? `${drupal7BaseUrl}` : '';
-  const drupal7Items = [
-    { label: 'Base CMS', url: drupal7BasePath },
-    { label: 'Desktop View', url: drupal7BasePath },
-    { label: 'Mobile View', url: drupal7BasePath }
-  ];
-  const drupal7Links = drupal7Items
-    .filter(item => item.url)
-    .map(item => `- ${item.label} → [${ensureHttps(item.url)}]`)
-    .join('\n');
-  const drupal7Section = drupal7Links
-    ? `💧7️⃣ **Drupal 7**\n\n${drupal7Links}`
-    : '';
+  const frontendTable = frontendRows.length > 0 ? [
+    `## ${emojis.frontend} Frontend`,
+    '',
+    '| Environment       | URL                                                                 |',
+    '|------------------|----------------------------------------------------------------------|',
+    ...frontendRows,
+    ''
+  ].join('\n') : '';
 
-  // Drupal 9 links
-  const drupal9BaseUrl = urls.drupal9 || '';
-  const drupal9BasePath = drupal9BaseUrl ? `${drupal9BaseUrl}` : '';
-  const drupal9Items = [
-    { label: 'Desktop View', url: drupal9BasePath },
-    { label: 'Mobile View', url: drupal9BasePath }
-  ];
-  const drupal9Links = drupal9Items
-    .filter(item => item.url)
-    .map(item => `- ${item.label} → [${ensureHttps(item.url)}]`)
-    .join('\n');
-  const drupal9Section = drupal9Links
-    ? `💧9️⃣ **Drupal 9**\n\n${drupal9Links}`
-    : '';
+  // CMS table with Unicode escape sequence emojis
+  const cmsRows = [
+    urls.drupal7 ? `| ${emojis.drupal7} **Drupal 7** | [${urls.drupal7}](${ensureHttps(urls.drupal7)}) |` : '',
+    urls.drupal9 ? `| ${emojis.drupal9} **Drupal 9** | [${urls.drupal9}](${ensureHttps(urls.drupal9)}) |` : ''
+  ].filter(Boolean);
 
-  // CMS section
-  const cmsSections = [drupal7Section, drupal9Section].filter(Boolean).join('\n\n');
-  const cmsSection = cmsSections
-    ? `## 📝📚 CMS Environments\n\n${cmsSections}`
-    : '';
+  const cmsTable = cmsRows.length > 0 ? [
+    `## ${emojis.cms} CMS`,
+    '',
+    '| CMS Version   | URL                                                                 |',
+    '|---------------|----------------------------------------------------------------------|',
+    ...cmsRows,
+    ''
+  ].join('\n') : '';
 
-  // Combine all sections, separated by two newlines
-  return [frontendSection, cmsSection].filter(Boolean).join('\n\n');
+  // Combine sections with a separator
+  return [frontendTable, '---', cmsTable].filter(Boolean).join('\n');
 };
 
 // Main function to generate plain text formatted links
