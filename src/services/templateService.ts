@@ -243,13 +243,6 @@ const processUrl = (
   } else if (urlStructure && urlStructure.length > 0) {
     // fallback to urlUtils if pattern/buildUrlFn not available but urlStructure is
     let ticketPrefix = settings?.ticketPrefix?.trim();
-    // If ticketPrefix is empty and drupal7Prefix exists, set ticketPrefix to drupal7Prefix
-    if (!ticketPrefix && (settings as any)?.drupal7Prefix) {
-      ticketPrefix = (settings as any).drupal7Prefix;
-      // Remove drupal7Prefix from settings for the rest of the logic
-      delete (settings as any).drupal7Prefix;
-      settings.ticketPrefix = ticketPrefix;
-    }
     // Fallback to prefixes[0] if still empty
     if (!ticketPrefix && settings?.prefixes?.length > 0) {
       ticketPrefix = settings.prefixes[0];
