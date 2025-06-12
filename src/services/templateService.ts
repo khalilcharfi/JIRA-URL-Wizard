@@ -1,17 +1,63 @@
 import type { SettingsStorage } from '../shared/settings';
 import type { UniqueIdentifier } from '@dnd-kit/core';
-import { DEFAULT_SETTINGS } from '../shared/settings';
+import type { JiraPattern } from '../shared/settings';
+
+// Extended SettingsStorage interface to include ticketPrefix and other optional fields
+interface ExtendedSettingsStorage extends SettingsStorage {
+  allowManualTicketInput?: boolean;
+  jiraPatterns?: JiraPattern[];
+  language?: string;
+  markdownTemplate?: string;
+  prefixes: string[];
+  showAdvancedSettings?: boolean;
+  theme?: 'light' | 'dark' | 'system';
+  integrateQrImage?: boolean;
+  useMarkdownCopy?: boolean;
+}
+
+// Types for better type safety
+interface TicketInfo {
+  issuePrefix: string;
+  issueNumber: string;
+  ticketType?: string;
+}
+
+interface ProcessedUrls {
+  bo: string;
+  mobile: string;
+  desktop: string;
+  drupal7: string;
+  drupal9: string;
+}
+
+interface ProcessUrlOptions {
+  isDrupal7?: boolean;
+  buildUrlFn?: (baseUrl: string | undefined, pattern: string[]) => string;
+  pattern?: UniqueIdentifier[];
+  settings?: ExtendedSettingsStorage;
+  urlStructure?: string[];
+}
 
 // URL processing utility functions
 const urlUtils = {
+  /**
+   * Ensures URL has HTTPS protocol
+   */
   ensureHttps: (url: string): string => 
-    /^(http|https):\/\//.test(url) ? url : `https://${url}`,
+    /^https?:\/\//.test(url) ? url : `https://${url}`,
     
+  /**
+   * Appends query parameter to URL
+   */
   appendQueryParam: (url: string, param: string, value: string): string => {
+    if (!url || !param || !value) return url;
     const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}${param}=${value}`;
+    return `${url}${separator}${encodeURIComponent(param)}=${encodeURIComponent(value)}`;
   },
   
+  /**
+   * Adds prefix to URL hostname
+   */
   addPrefixToUrl: (url: string, prefix: string): string => {
     if (!url || !prefix) return url;
     
@@ -22,109 +68,133 @@ const urlUtils = {
       urlObj.hostname = `${prefix}.${urlObj.hostname}`;
       return urlObj.toString();
     } catch {
-      // Fallback regex approach
-      const protocolMatch = urlWithProtocol.match(/^(https?:\/\/)(.*)/);
-      return protocolMatch ? `${protocolMatch[1]}${prefix}.${protocolMatch[2]}` : urlWithProtocol;
+      // Fallback for invalid URLs
+      const match = urlWithProtocol.match(/^(https?:\/\/)(.*)/);
+      return match ? `${match[1]}${prefix}.${match[2]}` : urlWithProtocol;
     }
   },
   
-  // Function to handle JIRA ticket prepending using URL structure pattern
-  buildUrlWithStructure: (url: string, ticketInfo: { issuePrefix?: string, issueNumber?: string, ticketType?: string }, urlStructure?: string[]): string => {
-    if (!url || !ticketInfo.issuePrefix || !ticketInfo.issueNumber) return url;
-    
-    // Use provided structure or fallback to a simple default
-    const structure = urlStructure || ["issuePrefix", "-", "[0-9]+", ".", "baseUrl"];
-    
-    // Format ticket components
-    const prefix = ticketInfo.issuePrefix.trim().toUpperCase();
-    const number = ticketInfo.issueNumber.toString().trim();
-    const ticketType = (ticketInfo.ticketType || '').trim().toLowerCase();
-    
-    // Validate number format
-    if (!/^\d+$/.test(number)) return url;
-    
+  /**
+   * Builds URL with ticket structure pattern
+   */
+  buildUrlWithStructure: (
+    url: string, 
+    ticketInfo: TicketInfo, 
+    urlStructure: string[] = ["issuePrefix", "-", "[0-9]+", ".", "baseUrl"]
+  ): string => {
+    if (!url) {
+      return url;
+    }
+
+    // If issuePrefix is present but issueNumber is missing, use issuePrefix as the subdomain
+    if (ticketInfo.issuePrefix && !ticketInfo.issueNumber) {
+      const urlWithProtocol = urlUtils.ensureHttps(url);
+      let subdomain = ticketInfo.issuePrefix.toLowerCase();
+      // Remove consecutive dots from subdomain
+      subdomain = subdomain.replace(/\.+/g, ".");
+      subdomain = subdomain.replace(/^\.|\.$/g, ""); // Remove leading/trailing dot
+      try {
+        const urlObj = new URL(urlWithProtocol);
+        if (urlObj.hostname.startsWith(subdomain + ".")) {
+          return urlWithProtocol;
+        }
+        urlObj.hostname = `${subdomain}.${urlObj.hostname}`;
+        return urlObj.toString();
+      } catch {
+        const match = urlWithProtocol.match(/^(https?:\/\/)(.*)/);
+        return match ? `${match[1]}${subdomain}.${match[2]}` : urlWithProtocol;
+      }
+    }
+
+    const { issuePrefix, issueNumber, ticketType = '' } = ticketInfo;
+
+    // Validate inputs
+    if (!issuePrefix || !issueNumber) {
+      return url;
+    }
+
+    if (!/^\d+$/.test(issueNumber)) {
+      console.warn(`Invalid issue number format: ${issueNumber}`);
+      return url;
+    }
+
     const urlWithProtocol = urlUtils.ensureHttps(url);
-    
+    let subdomain = urlUtils.buildSubdomain(urlStructure, {
+      issuePrefix: issuePrefix.toLowerCase(),
+      issueNumber,
+      ticketType: ticketType.toLowerCase()
+    });
+
+    // Remove consecutive dots from subdomain
+    subdomain = subdomain.replace(/\.+/g, ".");
+    subdomain = subdomain.replace(/^\.|\.$/g, ""); // Remove leading/trailing dot
+
     try {
       const urlObj = new URL(urlWithProtocol);
-      
-      // Build the subdomain according to the structure
-      let subdomain = '';
-      
-      for (const part of structure) {
-        if (part === 'issuePrefix') {
-          subdomain += prefix.toLowerCase();
-        } else if (part === '[0-9]+') {
-          subdomain += number;
-        } else if (part === 'ticketType' && ticketType) {
-          subdomain += ticketType;
-        } else if (part === 'baseUrl') {
-          // This is the actual domain, not part of subdomain
-          break;
-        } else {
-          subdomain += part;
-        }
-      }
-      
-      // Check if ticket is already in hostname to avoid duplication
-      if (urlObj.hostname.includes(subdomain.toLowerCase())) {
+      if (urlObj.hostname.includes(subdomain)) {
         return urlWithProtocol;
       }
-      
-      urlObj.hostname = `${subdomain.toLowerCase()}.${urlObj.hostname}`;
+      urlObj.hostname = `${subdomain}.${urlObj.hostname}`;
       return urlObj.toString();
     } catch {
-      // Fallback regex approach
-      const protocolMatch = urlWithProtocol.match(/^(https?:\/\/)(.*)/);
-      
-      if (!protocolMatch) return urlWithProtocol;
-      
-      // Build the subdomain
-      let subdomain = '';
-      for (const part of structure) {
-        if (part === 'issuePrefix') {
-          subdomain += prefix.toLowerCase();
-        } else if (part === '[0-9]+') {
-          subdomain += number;
-        } else if (part === 'ticketType' && ticketType) {
-          subdomain += ticketType;
-        } else if (part === 'baseUrl') {
-          // This is the actual domain, not part of subdomain
-          break;
-        } else {
-          subdomain += part;
-        }
-      }
-      
-      return `${protocolMatch[1]}${subdomain.toLowerCase()}.${protocolMatch[2]}`;
+      const match = urlWithProtocol.match(/^(https?:\/\/)(.*)/);
+      return match ? `${match[1]}${subdomain}.${match[2]}` : urlWithProtocol;
     }
   },
   
-  // Parse ticket prefix into components (for backward compatibility)
-  parseTicketPrefix: (ticketPrefix: string): { issuePrefix: string, issueNumber: string, ticketType?: string } => {
-    // Try to match the expected JIRA format (e.g., FVK-123)
+  /**
+   * Builds subdomain from structure pattern
+   */
+  buildSubdomain: (
+    structure: string[], 
+    components: { issuePrefix: string; issueNumber: string; ticketType: string }
+  ): string => {
+    return structure.reduce((subdomain, part) => {
+      switch (part) {
+        case 'issuePrefix':
+          return subdomain + components.issuePrefix;
+        case '[0-9]+':
+          return subdomain + components.issueNumber;
+        case 'ticketType':
+          return components.ticketType ? subdomain + components.ticketType : subdomain;
+        case 'baseUrl':
+          return subdomain; // End of subdomain parts
+        default:
+          return subdomain + part;
+      }
+    }, '');
+  },
+  
+  /**
+   * Parses ticket prefix into components (JIRA format: ABC-123)
+   */
+  parseTicketPrefix: (ticketPrefix: string): TicketInfo => {
+    if (!ticketPrefix) {
+      return { issuePrefix: '', issueNumber: '', ticketType: '' };
+    }
+    
     const match = ticketPrefix.match(/^([A-Za-z]+)-(\d+)$/);
     
     if (match) {
       return {
-        issuePrefix: match[1],
+        issuePrefix: match[1].toUpperCase(),
         issueNumber: match[2],
-        // Default ticket type is empty, will be populated if available
         ticketType: ''
       };
     }
     
     // Fallback for non-standard formats
+    console.warn(`Non-standard ticket format: ${ticketPrefix}`);
     return {
-      issuePrefix: ticketPrefix,
+      issuePrefix: ticketPrefix.toUpperCase(),
       issueNumber: '',
       ticketType: ''
     };
   }
-};
+} as const;
 
-// UI constants
-const UI = {
+// UI constants - moved to separate object for better organization
+const UI_CONFIG = {
   EMOJIS: {
     FRONTEND: "🌐",
     BACK_OFFICE: "🛠️",
@@ -152,154 +222,177 @@ const UI = {
       PLAIN: "💧9️⃣ Drupal 9:"
     }
   }
-};
+} as const;
 
 /**
- * Process URL with pattern and prefixes
+ * Processes a single URL with pattern and prefixes
  */
 const processUrl = (
   baseUrl: string | undefined, 
-  options: {
-    isDrupal7?: boolean,
-    buildUrlFn?: (baseUrl: string | undefined, pattern: string[]) => string,
-    pattern?: UniqueIdentifier[],
-    settings?: SettingsStorage,
-    urlStructure?: string[]
-  } = {}
+  options: ProcessUrlOptions = {}
 ): string => {
   const { buildUrlFn, pattern, settings, urlStructure } = options;
   
-  // Get settings
-  const ticketPrefix = settings?.ticketPrefix || '';  
+  if (!baseUrl) return '';
   
-  let resultUrl = "";
-  
-  // Apply pattern if provided
-  if (buildUrlFn && pattern && baseUrl) {
-    resultUrl = buildUrlFn(baseUrl, pattern.map(id => String(id)));
-  } else {
-    resultUrl = baseUrl ? urlUtils.ensureHttps(baseUrl) : '';
-  }
-  
-  // Add ticket prefix to URL using structure pattern if present
-  if (resultUrl && ticketPrefix) {
-    // Get the ticket components
-    const ticketComponents = urlUtils.parseTicketPrefix(ticketPrefix);
-    
-    // Get the ticket type from settings if available
-    if (settings?.ticketTypes && settings.ticketTypes.length > 0) {
-      // Use first ticket type as default for now
-      ticketComponents.ticketType = settings.ticketTypes[0];
+  let resultUrl = baseUrl;
+
+  // Always use buildUrlFn and pattern if available, otherwise fallback
+  if (buildUrlFn && pattern && pattern.length > 0) {
+    resultUrl = buildUrlFn(baseUrl, pattern.map(String));
+  } else if (urlStructure && urlStructure.length > 0) {
+    // fallback to urlUtils if pattern/buildUrlFn not available but urlStructure is
+    let ticketPrefix = settings?.ticketPrefix?.trim();
+    // If ticketPrefix is empty and drupal7Prefix exists, set ticketPrefix to drupal7Prefix
+    if (!ticketPrefix && (settings as any)?.drupal7Prefix) {
+      ticketPrefix = (settings as any).drupal7Prefix;
+      // Remove drupal7Prefix from settings for the rest of the logic
+      delete (settings as any).drupal7Prefix;
+      settings.ticketPrefix = ticketPrefix;
     }
-    
-    // Use explicitly provided urlStructure
-    return urlUtils.buildUrlWithStructure(resultUrl, ticketComponents, urlStructure);
+    // Fallback to prefixes[0] if still empty
+    if (!ticketPrefix && settings?.prefixes?.length > 0) {
+      ticketPrefix = settings.prefixes[0];
+    }
+    if (ticketPrefix) {
+      const ticketComponents = urlUtils.parseTicketPrefix(ticketPrefix);
+      if (settings?.ticketTypes?.length) {
+        ticketComponents.ticketType = settings.ticketTypes[0];
+      }
+      resultUrl = urlUtils.buildUrlWithStructure(baseUrl, ticketComponents, urlStructure);
+    } else {
+      resultUrl = urlUtils.ensureHttps(baseUrl);
+    }
+  } else {
+    resultUrl = urlUtils.ensureHttps(baseUrl);
   }
-  
   return resultUrl;
 };
 
 /**
- * Process all URLs from settings
+ * Processes all URLs from settings
  */
 const processAllUrls = (
-  urls: SettingsStorage['urls'],
+  urls: ExtendedSettingsStorage['urls'],
   buildUrlFn?: (baseUrl: string | undefined, pattern: string[]) => string,
   pattern?: UniqueIdentifier[],
-  settings?: SettingsStorage,
+  settings?: ExtendedSettingsStorage,
   urlStructure?: string[]
-) => {
-  if (!urls || typeof urls !== 'object') {
-    return {
-      bo: '', mobile: '', desktop: '', drupal7: '', drupal9: ''
-    };
-  }
-
-  // Extract ticket number for consistent usage across all URLs
-  let ticketNumber = '';
-  if (settings?.ticketPrefix) {
-    const ticketComponents = urlUtils.parseTicketPrefix(settings.ticketPrefix);
-    ticketNumber = ticketComponents.issueNumber;
-  }
-
-  // Use extracted ticket number for each URL
-  const processUrlWithTicket = (url: string | undefined) => {
-    return processUrl(url, { 
-      buildUrlFn, 
-      pattern, 
-      settings: settings ? {
-        ...settings,
-        // Ensure the ticket number is used consistently
-        ticketPrefix: ticketNumber ? (settings.ticketPrefix || '') : ''
-      } : undefined, 
-      urlStructure 
-    });
+): ProcessedUrls => {
+  const defaultUrls: ProcessedUrls = {
+    bo: '', mobile: '', desktop: '', drupal7: '', drupal9: ''
   };
 
+  if (!urls || typeof urls !== 'object') {
+    return defaultUrls;
+  }
+
+  const options: ProcessUrlOptions = { buildUrlFn, pattern, settings, urlStructure };
+
   return {
-    bo: processUrlWithTicket(urls.bo),
-    mobile: processUrlWithTicket(urls.mobile),
-    desktop: processUrlWithTicket(urls.desktop),
-    drupal7: processUrlWithTicket(urls.drupal7),
-    drupal9: processUrlWithTicket(urls.drupal9)
+    bo: processUrl(urls.bo, options),
+    mobile: processUrl(urls.mobile, options),
+    desktop: processUrl(urls.desktop, options),
+    drupal7: processUrl(urls.drupal7, options),
+    drupal9: processUrl(urls.drupal9, options)
   };
 };
 
 /**
- * Generate markdown formatted links
+ * Creates markdown table row
+ */
+const createMarkdownRow = (emoji: string, label: string, url: string): string => {
+  return `| ${emoji} ${label} | [${url}](${url}) |`;
+};
+
+/**
+ * Creates markdown table with header
+ */
+const createMarkdownTable = (
+  title: string, 
+  emoji: string, 
+  headers: [string, string], 
+  rows: string[]
+): string => {
+  if (rows.length === 0) return '';
+  
+  return [
+    `## ${emoji} ${title}`,
+    '',
+    `| ${headers[0]} | ${headers[1]} |`,
+    `|${'-'.repeat(headers[0].length + 1)}|${'-'.repeat(headers[1].length + 1)}|`,
+    ...rows,
+    ''
+  ].join('\n');
+};
+
+/**
+ * Generates markdown formatted links
  */
 export const generateMarkdownLinks = (
-  urls: SettingsStorage['urls'], 
+  urls: ExtendedSettingsStorage['urls'], 
   buildUrlFn?: (baseUrl: string | undefined, pattern: string[]) => string,
   pattern?: UniqueIdentifier[],
-  settings?: SettingsStorage,
-  urlStructure: string[] = ["issuePrefix", "-", "[0-9]+", ".", "baseUrl"]
+  settings?: ExtendedSettingsStorage,
+  urlStructure?: string[]
 ): string => {
   const processedUrls = processAllUrls(urls, buildUrlFn, pattern, settings, urlStructure);
   
   // Generate frontend table
   const frontendRows = [
-    processedUrls.bo ? `| ${UI.EMOJIS.BACK_OFFICE} Back Office    | [${processedUrls.bo}](${processedUrls.bo}) |` : '',
-    processedUrls.mobile ? `| ${UI.EMOJIS.MOBILE} Mobile Version | [${processedUrls.mobile}](${processedUrls.mobile}) |` : '',
-    processedUrls.desktop ? `| ${UI.EMOJIS.DESKTOP} Desktop        | [${processedUrls.desktop}](${processedUrls.desktop}) |` : ''
-  ].filter(Boolean);
+    processedUrls.bo && createMarkdownRow(UI_CONFIG.EMOJIS.BACK_OFFICE, 'Back Office', processedUrls.bo),
+    processedUrls.mobile && createMarkdownRow(UI_CONFIG.EMOJIS.MOBILE, 'Mobile Version', processedUrls.mobile),
+    processedUrls.desktop && createMarkdownRow(UI_CONFIG.EMOJIS.DESKTOP, 'Desktop', processedUrls.desktop)
+  ].filter(Boolean) as string[];
   
-  const frontendTable = frontendRows.length > 0 ? 
-    `## ${UI.EMOJIS.FRONTEND} ${UI.SECTIONS.FRONTEND.MARKDOWN}\n\n` +
-    `| Environment       | URL                                                                 |\n` +
-    `|------------------|----------------------------------------------------------------------|\n` +
-    `${frontendRows.join('\n')}\n` : '';
+  const frontendTable = createMarkdownTable(
+    UI_CONFIG.SECTIONS.FRONTEND.MARKDOWN,
+    UI_CONFIG.EMOJIS.FRONTEND,
+    ['Environment', 'URL'],
+    frontendRows
+  );
 
   // Generate CMS table
   const cmsRows = [
-    processedUrls.drupal7 ? `| ${UI.EMOJIS.DRUPAL7} **${UI.SECTIONS.DRUPAL7.MARKDOWN}** | [${processedUrls.drupal7}](${processedUrls.drupal7}) |` : '',
-    processedUrls.drupal9 ? `| ${UI.EMOJIS.DRUPAL9} **${UI.SECTIONS.DRUPAL9.MARKDOWN}** | [${processedUrls.drupal9}](${processedUrls.drupal9}) |` : ''
-  ].filter(Boolean);
+    processedUrls.drupal7 && createMarkdownRow(UI_CONFIG.EMOJIS.DRUPAL7, `**${UI_CONFIG.SECTIONS.DRUPAL7.MARKDOWN}**`, processedUrls.drupal7),
+    processedUrls.drupal9 && createMarkdownRow(UI_CONFIG.EMOJIS.DRUPAL9, `**${UI_CONFIG.SECTIONS.DRUPAL9.MARKDOWN}**`, processedUrls.drupal9)
+  ].filter(Boolean) as string[];
   
-  const cmsTable = cmsRows.length > 0 ? 
-    `## ${UI.EMOJIS.CMS} ${UI.SECTIONS.CMS.MARKDOWN}\n\n` +
-    `| CMS Version   | URL                                                                 |\n` +
-    `|---------------|----------------------------------------------------------------------|\n` +
-    `${cmsRows.join('\n')}\n` : '';
+  const cmsTable = createMarkdownTable(
+    UI_CONFIG.SECTIONS.CMS.MARKDOWN,
+    UI_CONFIG.EMOJIS.CMS,
+    ['CMS Version', 'URL'],
+    cmsRows
+  );
 
-  // Combine sections with a separator
+  // Combine sections
   const sections = [frontendTable, cmsTable].filter(Boolean);
-  return sections.length > 0 ? sections.join('\n---\n') : '';
+  return sections.join('---\n');
 };
 
 /**
- * Generate plain text formatted links
+ * Creates plain text section
+ */
+const createPlainTextSection = (title: string, items: Array<{ label: string; url: string }>): string => {
+  if (items.length === 0) return '';
+  
+  return [
+    title,
+    ...items.map(item => `- ${item.label}: ${item.url}`)
+  ].join('\n');
+};
+
+/**
+ * Generates plain text formatted links
  */
 export const generatePlainTextLinks = (
-  urls: SettingsStorage['urls'],
+  urls: ExtendedSettingsStorage['urls'],
   buildUrlFn?: (baseUrl: string | undefined, pattern: string[]) => string,
   pattern?: UniqueIdentifier[],
-  settings?: SettingsStorage,
-  urlStructure: string[] = ["issuePrefix", "-", "[0-9]+", ".", "baseUrl"]
+  settings?: ExtendedSettingsStorage,
+  urlStructure?: string[]
 ): string => {
   const processedUrls = processAllUrls(urls, buildUrlFn, pattern, settings, urlStructure);
-
-  // Build sections only if they have content
   const sections: string[] = [];
 
   // Frontend section
@@ -310,10 +403,7 @@ export const generatePlainTextLinks = (
   ].filter(item => item.url);
   
   if (frontendItems.length > 0) {
-    sections.push(
-      `${UI.SECTIONS.FRONTEND.PLAIN}\n` +
-      frontendItems.map(item => `- ${item.label}: ${item.url}`).join('\n')
-    );
+    sections.push(createPlainTextSection(UI_CONFIG.SECTIONS.FRONTEND.PLAIN, frontendItems));
   }
 
   // CMS sections
@@ -321,34 +411,33 @@ export const generatePlainTextLinks = (
 
   // Drupal 7 section
   if (processedUrls.drupal7) {
-    cmsSubsections.push(
-      `${UI.SECTIONS.DRUPAL7.PLAIN}\n` +
-      [
-        `- Base CMS: ${processedUrls.drupal7}`,
-        `- Desktop View: ${urlUtils.appendQueryParam(processedUrls.drupal7, 'deviceoutput', 'desktop')}`,
-        `- Mobile View: ${urlUtils.appendQueryParam(processedUrls.drupal7, 'deviceoutput', 'mobile')}`
-      ].join('\n')
-    );
+    const drupal7Items = [
+      { label: 'Base CMS', url: processedUrls.drupal7 },
+      { label: 'Desktop View', url: urlUtils.appendQueryParam(processedUrls.drupal7, 'deviceoutput', 'desktop') },
+      { label: 'Mobile View', url: urlUtils.appendQueryParam(processedUrls.drupal7, 'deviceoutput', 'mobile') }
+    ];
+    
+    cmsSubsections.push(createPlainTextSection(UI_CONFIG.SECTIONS.DRUPAL7.PLAIN, drupal7Items));
   }
 
   // Drupal 9 section
   if (processedUrls.drupal9) {
-    cmsSubsections.push(
-      `${UI.SECTIONS.DRUPAL9.PLAIN}\n` +
-      [
-        `- Desktop View: ${urlUtils.appendQueryParam(processedUrls.drupal9, 'deviceoutput', 'desktop')}`,
-        `- Mobile View: ${urlUtils.appendQueryParam(processedUrls.drupal9, 'deviceoutput', 'mobile')}`
-      ].join('\n')
-    );
+    const drupal9Items = [
+      { label: 'Desktop View', url: urlUtils.appendQueryParam(processedUrls.drupal9, 'deviceoutput', 'desktop') },
+      { label: 'Mobile View', url: urlUtils.appendQueryParam(processedUrls.drupal9, 'deviceoutput', 'mobile') }
+    ];
+    
+    cmsSubsections.push(createPlainTextSection(UI_CONFIG.SECTIONS.DRUPAL9.PLAIN, drupal9Items));
   }
 
-  // Add CMS section if we have any subsections
+  // Add CMS section if we have subsections
   if (cmsSubsections.length > 0) {
-    sections.push(
-      `${UI.SECTIONS.CMS.PLAIN}\n` +
-      cmsSubsections.join('\n\n')
-    );
+    sections.push([UI_CONFIG.SECTIONS.CMS.PLAIN, ...cmsSubsections].join('\n\n'));
   }
 
   return sections.join('\n\n');
 };
+
+// Export utilities for external use
+export { urlUtils, UI_CONFIG };
+export type { ExtendedSettingsStorage };

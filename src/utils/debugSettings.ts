@@ -74,7 +74,7 @@ export const formatSettingsForDisplay = (): { category: string, settings: { key:
     {
       category: 'Ticket',
       settings: [
-        { key: 'ticketPrefix', label: 'Current Ticket Prefix', value: settings.ticketPrefix },
+        { key: 'ticketPrefix', label: 'Ticket Prefix', value: settings.ticketPrefix },
         { key: 'ticketTypes', label: 'Ticket Types', value: settings.ticketTypes.join(', ') },
         { key: 'prefixes', label: 'Prefixes', value: settings.prefixes.join(', ') },
         { key: 'allowManualTicketInput', label: 'Allow Manual Ticket Input', value: settings.allowManualTicketInput },
@@ -84,7 +84,6 @@ export const formatSettingsForDisplay = (): { category: string, settings: { key:
       category: 'URL Structure',
       settings: [
         { key: 'urlStructure', label: 'URL Structure Pattern', value: settings.urlStructure.join(' + ') },
-        { key: 'drupal7Prefix', label: 'Drupal 7 Prefix', value: settings.drupal7Prefix },
         { key: 'enableAdvancedUrlPatterns', label: 'Enable Advanced URL Patterns', value: settings.enableAdvancedUrlPatterns },
       ]
     },

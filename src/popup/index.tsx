@@ -843,14 +843,14 @@ const JiraUrlWizard = () => {
     let textToCopy = '';
     if (settings.useMarkdownCopy) {
       // Generate Markdown Text
-      textToCopy = generateMarkdownLinks(urls, undefined, undefined, settings);
+      textToCopy = generateMarkdownLinks(urls, undefined, undefined, settings, settings.urlStructure);
     } else {
       // Generate Plain Text
-      textToCopy = generatePlainTextLinks(urls, undefined, undefined, settings);
+      textToCopy = generatePlainTextLinks(urls, undefined, undefined, settings, settings.urlStructure);
     }
 
     copyToClipboard(textToCopy, settings.useMarkdownCopy ? "Environment links (Markdown) copied!" : "Environment links (Plain Text) copied!");
-  }, [copyToClipboard, settings?.urls, settings.useMarkdownCopy]);
+  }, [copyToClipboard, settings?.urls, settings.useMarkdownCopy, settings.urlStructure]);
 
   const handleCopyUrl = useCallback(() => {
     copyToClipboard(currentFullUrl, "URL Copied!");

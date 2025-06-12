@@ -32,13 +32,13 @@ const MarkdownLinkGenerator: React.FC<MarkdownLinkGeneratorProps> = ({
   useEffect(() => {
     if (buildUrlFn && urls) {
       // Generate outputs using the current pattern and build function
-      const markdown = generateMarkdownLinks(urls, buildUrlFn, pattern as UniqueIdentifier[], settings);
-      const plainText = generatePlainTextLinks(urls, buildUrlFn, pattern as UniqueIdentifier[], settings);
+      const markdown = generateMarkdownLinks(urls, buildUrlFn, pattern as UniqueIdentifier[], settings, urlStructure);
+      const plainText = generatePlainTextLinks(urls, buildUrlFn, pattern as UniqueIdentifier[], settings, urlStructure);
       
       setMarkdownOutput(markdown);
       setPlainTextOutput(plainText);
     }
-  }, [pattern, buildUrlFn, urls, settings]);
+  }, [pattern, buildUrlFn, urls, settings, urlStructure]);
 
   // Handler for saving pattern
   const handleSavePattern = (newPattern: string[]) => {

@@ -27,8 +27,7 @@ export interface SettingsStorage {
   allowManualTicketInput?: boolean;
   showAdvancedSettings?: boolean;
   markdownTemplate?: string;
-  ticketPrefix?: string;  // Current ticket prefix for URL generation
-  drupal7Prefix?: string; // Drupal 7 environment prefix
+  ticketPrefix?: string; // Ticket prefix for ALL environments
 }
 
 // Import the environment variable
@@ -52,8 +51,7 @@ export const DEFAULT_SETTINGS: SettingsStorage = {
   urlStructure: ["ticketType", ".", "issuePrefix", "-", "[0-9]+", "baseUrl"],
   allowManualTicketInput: true,
   showAdvancedSettings: SHOW_ADVANCED_SETTINGS,
-  ticketPrefix: "",
-  drupal7Prefix: "ffmfvk-2822",
+  ticketPrefix: "ffmfvk-2822",
   markdownTemplate: `🌐💻 Frontend Environments
 - **🛠️ Back Office Tool** → [{URL_BO}]({URL_BO})
 - **📱 Mobile Version** → [{URL_MOBILE}]({URL_MOBILE})
