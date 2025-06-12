@@ -843,10 +843,10 @@ const JiraUrlWizard = () => {
     let textToCopy = '';
     if (settings.useMarkdownCopy) {
       // Generate Markdown Text
-      textToCopy = generateMarkdownLinks(urls);
+      textToCopy = generateMarkdownLinks(urls, undefined, undefined, settings);
     } else {
       // Generate Plain Text
-      textToCopy = generatePlainTextLinks(urls);
+      textToCopy = generatePlainTextLinks(urls, undefined, undefined, settings);
     }
 
     copyToClipboard(textToCopy, settings.useMarkdownCopy ? "Environment links (Markdown) copied!" : "Environment links (Plain Text) copied!");

@@ -10,6 +10,7 @@ interface MarkdownLinkGeneratorProps {
   urls: SettingsStorage['urls'];
   urlStructure?: string[];
   onSavePattern?: (pattern: string[]) => void;
+  settings?: SettingsStorage;
 }
 
 const MarkdownLinkGenerator: React.FC<MarkdownLinkGeneratorProps> = ({
@@ -17,7 +18,8 @@ const MarkdownLinkGenerator: React.FC<MarkdownLinkGeneratorProps> = ({
   ticketTypes,
   urls,
   urlStructure,
-  onSavePattern
+  onSavePattern,
+  settings
 }) => {
   const [markdownOutput, setMarkdownOutput] = useState<string>('');
   const [plainTextOutput, setPlainTextOutput] = useState<string>('');
@@ -30,13 +32,13 @@ const MarkdownLinkGenerator: React.FC<MarkdownLinkGeneratorProps> = ({
   useEffect(() => {
     if (buildUrlFn && urls) {
       // Generate outputs using the current pattern and build function
-      const markdown = generateMarkdownLinks(urls, buildUrlFn, pattern as UniqueIdentifier[]);
-      const plainText = generatePlainTextLinks(urls, buildUrlFn, pattern as UniqueIdentifier[]);
+      const markdown = generateMarkdownLinks(urls, buildUrlFn, pattern as UniqueIdentifier[], settings);
+      const plainText = generatePlainTextLinks(urls, buildUrlFn, pattern as UniqueIdentifier[], settings);
       
       setMarkdownOutput(markdown);
       setPlainTextOutput(plainText);
     }
-  }, [pattern, buildUrlFn, urls]);
+  }, [pattern, buildUrlFn, urls, settings]);
 
   // Handler for saving pattern
   const handleSavePattern = (newPattern: string[]) => {

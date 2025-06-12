@@ -16,13 +16,19 @@ export interface SettingsStorage {
   prefixes: string[];
   urlStructure: string[];
   theme?: 'light' | 'dark' | 'system';
-  jiraPatterns?: string[];
+  jiraPatterns?: JiraPattern[];
   integrateQrImage?: boolean;
   useMarkdownCopy?: boolean;
   showCopiedNotification?: boolean;
   showPreviewOnHover?: boolean;
   enableAdvancedUrlPatterns?: boolean;
   autoSavePatterns?: boolean;
+  language?: string;
+  allowManualTicketInput?: boolean;
+  showAdvancedSettings?: boolean;
+  markdownTemplate?: string;
+  ticketPrefix?: string;  // Current ticket prefix for URL generation
+  drupal7Prefix?: string; // Drupal 7 environment prefix
 }
 
 // Import the environment variable
@@ -46,6 +52,8 @@ export const DEFAULT_SETTINGS: SettingsStorage = {
   urlStructure: ["ticketType", ".", "issuePrefix", "-", "[0-9]+", "baseUrl"],
   allowManualTicketInput: true,
   showAdvancedSettings: SHOW_ADVANCED_SETTINGS,
+  ticketPrefix: "",
+  drupal7Prefix: "ffmfvk-2822",
   markdownTemplate: `🌐💻 Frontend Environments
 - **🛠️ Back Office Tool** → [{URL_BO}]({URL_BO})
 - **📱 Mobile Version** → [{URL_MOBILE}]({URL_MOBILE})
