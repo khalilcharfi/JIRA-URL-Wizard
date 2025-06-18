@@ -40,6 +40,7 @@ interface URLComponentBuilderProps {
     urls: Record<string, string>;
     urlStructure?: string[];
     onSavePattern?: (pattern: string[]) => void;
+    onBuildUrlFunctionReady?: (buildUrlFn: (baseUrl: string | undefined, pattern: string[]) => string) => void;
 }
 
 interface Rule {
@@ -658,7 +659,8 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
     ticketTypes = [],
     urls = {},
     urlStructure = [],
-    onSavePattern
+    onSavePattern,
+    onBuildUrlFunctionReady
 }) => {
     const { t } = useTranslation();
     
@@ -1526,6 +1528,13 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         };
     }, []);
 
+    // Expose buildUrlForBase function to parent component
+    useEffect(() => {
+        if (onBuildUrlFunctionReady) {
+            onBuildUrlFunctionReady(buildUrlForBase);
+        }
+    }, [buildUrlForBase, onBuildUrlFunctionReady]);
+
     return (
         <div className="space-y-5">
             <section>
@@ -1540,11 +1549,12 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                                     : 'text-gray-400 dark:text-gray-600 border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-60'
                             }`}
                             onClick={() => {
-                                console.log("Save button clicked");
-                                console.log("Has unsaved changes:", hasUnsavedChanges);
-                                console.log("All rules valid:", allRulesValid);
-                                console.log("Current pattern:", pattern);
-                                console.log("Formatted pattern:", formatPatternForSettings(pattern));
+                                // Remove excessive logging
+                                // console.log("Save button clicked");
+                                // console.log("Has unsaved changes:", hasUnsavedChanges);
+                                // console.log("All rules valid:", allRulesValid);
+                                // console.log("Current pattern:", pattern);
+                                // console.log("Formatted pattern:", formatPatternForSettings(pattern));
                                 
                                 if (hasUnsavedChanges && allRulesValid) {
                                     handleSavePattern();

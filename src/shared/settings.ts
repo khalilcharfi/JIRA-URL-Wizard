@@ -5,23 +5,29 @@ export interface JiraPattern {
 }
 
 export interface SettingsStorage {
-  theme: "light" | "dark" | "system"
-  prefixes: string[]
-  ticketTypes: string[]
   urls: {
-    mobile: string
-    desktop: string
-    bo: string
-    drupal7: string
-    drupal9: string
-  }
-  jiraPatterns: JiraPattern[]
-  integrateQrImage: boolean
-  useMarkdownCopy: boolean
-  language: string
-  urlStructure: string[]
-  allowManualTicketInput: boolean
-  showAdvancedSettings: boolean
+    bo: string;
+    mobile: string;
+    desktop: string;
+    drupal7: string;
+    drupal9: string;
+  };
+  ticketTypes: string[];
+  prefixes: string[];
+  urlStructure: string[];
+  theme?: 'light' | 'dark' | 'system';
+  jiraPatterns?: JiraPattern[];
+  integrateQrImage?: boolean;
+  useMarkdownCopy?: boolean;
+  showCopiedNotification?: boolean;
+  showPreviewOnHover?: boolean;
+  enableAdvancedUrlPatterns?: boolean;
+  autoSavePatterns?: boolean;
+  language?: string;
+  allowManualTicketInput?: boolean;
+  showAdvancedSettings?: boolean;
+  markdownTemplate?: string;
+  ticketPrefix?: string; // Ticket prefix for ALL environments
 }
 
 // Import the environment variable
@@ -45,6 +51,21 @@ export const DEFAULT_SETTINGS: SettingsStorage = {
   urlStructure: ["ticketType", ".", "issuePrefix", "-", "[0-9]+", "baseUrl"],
   allowManualTicketInput: true,
   showAdvancedSettings: SHOW_ADVANCED_SETTINGS,
+  ticketPrefix: "ffmfvk-2822",
+  markdownTemplate: `🌐💻 Frontend Environments
+- **🛠️ Back Office Tool** → [{URL_BO}]({URL_BO})
+- **📱 Mobile Version** → [{URL_MOBILE}]({URL_MOBILE})
+- **🖥️ Desktop Version** → [{URL_DESKTOP}]({URL_DESKTOP})
+---
+📝📚 CMS Environments
+💧7️⃣ ## **Drupal 7**
+- **Base CMS** → [{URL_DRUPAL7}]({URL_DRUPAL7})
+- **Desktop View** → [{URL_DRUPAL7}?deviceoutput=desktop]({URL_DRUPAL7}?deviceoutput=desktop)
+- **Mobile View** → [{URL_DRUPAL7}?deviceoutput=mobile]({URL_DRUPAL7}?deviceoutput=mobile)
+💧9️⃣ ## **Drupal 9**
+- **Desktop View** → [{URL_DRUPAL9}?deviceoutput=desktop]({URL_DRUPAL9}?deviceoutput=desktop)
+- **Mobile View** → [{URL_DRUPAL9}?deviceoutput=mobile]({URL_DRUPAL9}?deviceoutput=mobile)
+`,
 }
 
 // Add a default sample ticket ID

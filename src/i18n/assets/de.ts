@@ -33,6 +33,17 @@ export default {
     settingsSaved: "Einstellungen erfolgreich gespeichert",
     settingsError: "Fehler beim Speichern der Einstellungen",
     settingsExported: "Einstellungen erfolgreich exportiert",
+    markdownCopied: "Markdown-Inhalt in die Zwischenablage kopiert",
+    plainTextCopied: "Text in die Zwischenablage kopiert",
+    on: "An",
+    off: "Aus",
+    patternCannotBeEmpty: "Muster darf nicht leer sein",
+    invalidRegexSyntax: "Ungültige Regex-Syntax",
+    patternUpdated: "Muster aktualisiert",
+    patternRemoved: "Muster entfernt",
+    patternStatus: "Muster {{status}}",
+    confirmReset: "Möchten Sie wirklich alle Einstellungen auf den letzten gespeicherten Stand zurücksetzen (oder auf die Standardeinstellungen, falls noch nie gespeichert)? Alle nicht gespeicherten Änderungen gehen verloren.",
+    changesReset: "Änderungen zurückgesetzt",
   },
   
   // Validation messages
@@ -191,7 +202,9 @@ export default {
     patterns: "Regex-Muster",
     dragComponents: "Ziehen Sie Komponenten hierher, um Ihr URL-Muster zu erstellen",
     unsavedChanges: "Sie haben ungespeicherte Änderungen.",
-    validationRules: "Validierungsregeln"
+    validationRules: "Validierungsregeln",
+    markdownTemplateTitle: "Markdown-Vorlage",
+    markdownTemplateInfo: "Passen Sie an, wie Ihre Links beim Exportieren formatiert werden. Verwenden Sie Platzhalter wie {URL_DESKTOP}, die durch tatsächliche URLs ersetzt werden."
   },
   
   // Validation Rules
@@ -229,7 +242,6 @@ export default {
   // Messages
   messages: {
     confirmDelete: "Möchten Sie dieses Element wirklich löschen?",
-    confirmReset: "Möchten Sie wirklich alle Einstellungen auf den letzten gespeicherten Stand zurücksetzen (oder auf die Standardeinstellungen, falls noch nie gespeichert)? Alle nicht gespeicherten Änderungen gehen verloren.",
     importSuccess: "Einstellungen erfolgreich importiert",
     importError: "Fehler beim Importieren der Einstellungen",
     exportSuccess: "Einstellungen erfolgreich exportiert!",
@@ -237,13 +249,11 @@ export default {
     invalidFile: "Ungültiges Dateiformat",
     invalidRegex: "Ungültige Regex-Syntax. Muster nicht gespeichert.",
     emptyPattern: "Muster darf nicht leer sein.",
-    patternUpdated: "Muster aktualisiert. Denken Sie daran, die Gesamteinstellungen zu speichern.",
     confirmRemovePattern: "Möchten Sie dieses Muster wirklich entfernen?",
     patternRemoved: "Muster entfernt. Denken Sie daran, die Gesamteinstellungen zu speichern.",
     patternToggled: "Muster {{status}}. Denken Sie daran, die Gesamteinstellungen zu speichern.",
     urlChangesReset: "URL-Änderungen zurückgesetzt",
     urlChangesSaved: "URL-Änderungen erfolgreich gespeichert!",
-    changesReset: "Änderungen zurückgesetzt",
     importSettingsLabel: "Einstellungsdatei importieren",
     importSettingsTitle: "Einstellungen importieren",
     exportSettingsTitle: "Einstellungen exportieren",
@@ -263,7 +273,6 @@ export default {
     errorImportingSettings: "Fehler beim Importieren der Einstellungen:",
     addNewPattern: "Neues Muster hinzufügen",
     editPatternTitle: "Muster bearbeiten",
-    saveChanges: "Änderungen speichern",
     cancelChanges: "Abbrechen",
     removePattern: "Muster entfernen",
     noUrlAvailable: "Keine URL im aktuellen Tab verfügbar",
@@ -308,7 +317,6 @@ export default {
     addComponentsToGenerateUrl: "Fügen Sie Komponenten hinzu, um eine URL zu generieren",
     examplePreview: "Beispielvorschau",
     dynamicFields: "Dynamische Felder",
-    separators: "Trennzeichen",
     regexPatterns: "Regex-Muster",
     dragHandle: "Ziehgriff",
     removeComponent: "Komponente entfernen",
@@ -460,5 +468,25 @@ export default {
     mobileDesc: "Mobil optimierte Web-Oberfläche",
     desktopDesc: "Desktop-Webschnittstelle",
     drupal9Desc: "Aktuelles CMS-System für die Inhaltsverwaltung"
-  }
+  },
+  
+  // Editor related
+  editor: {
+    bold: "Fett",
+    italic: "Kursiv",
+    underline: "Unterstrichen",
+    heading1: "Überschrift 1",
+    heading2: "Überschrift 2",
+    link: "Link",
+    unlink: "Link entfernen",
+    undo: "Rückgängig",
+    redo: "Wiederherstellen",
+    enterLink: "Link-URL eingeben:",
+    supportedPlaceholders: "Unterstützte Platzhalter",
+    copyMarkdown: "Als Markdown kopieren",
+    copyPlainText: "Als Klartext kopieren",
+    template: "Vorlage",
+    markdownTemplate: "Markdown-Vorlage",
+    markdownTemplateDesc: "Passen Sie an, wie Ihre Links beim Kopieren formatiert werden. Verwenden Sie Platzhalter wie {URL_DESKTOP}, die durch tatsächliche URLs ersetzt werden."
+  },
 };

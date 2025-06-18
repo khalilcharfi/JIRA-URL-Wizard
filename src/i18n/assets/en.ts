@@ -33,6 +33,17 @@ export default {
     settingsSaved: "Settings saved successfully",
     settingsError: "Failed to save settings",
     settingsExported: "Settings exported successfully",
+    markdownCopied: "Markdown content copied to clipboard",
+    plainTextCopied: "Text copied to clipboard",
+    on: "On",
+    off: "Off",
+    patternCannotBeEmpty: "Pattern cannot be empty",
+    invalidRegexSyntax: "Invalid regex syntax",
+    patternUpdated: "Pattern updated",
+    patternRemoved: "Pattern removed",
+    patternStatus: "Pattern {{status}}",
+    confirmReset: "Are you sure you want to reset all settings to the last saved state (or defaults if never saved)? All unsaved changes will be lost.",
+    changesReset: "Changes reset",
   },
   
   // Validation messages
@@ -200,7 +211,9 @@ export default {
     patterns: "Regex Patterns",
     dragComponents: "Drag components here to build your URL pattern",
     unsavedChanges: "You have unsaved changes.",
-    validationRules: "Validation Rules"
+    validationRules: "Validation Rules",
+    markdownTemplateTitle: "Markdown Template",
+    markdownTemplateInfo: "Customize how your links are formatted when exported. Use placeholders like {URL_DESKTOP} which will be replaced with actual URLs."
   },
   
   // Validation Rules
@@ -460,5 +473,25 @@ export default {
     enable: "Enable this pattern",
     cancel: "Cancel",
     save: "Save Changes"
-  }
+  },
+  
+  // Editor related
+  editor: {
+    bold: "Bold",
+    italic: "Italic",
+    underline: "Underline",
+    heading1: "Heading 1",
+    heading2: "Heading 2",
+    link: "Link",
+    unlink: "Remove Link",
+    undo: "Undo",
+    redo: "Redo",
+    enterLink: "Enter link URL:",
+    supportedPlaceholders: "Supported placeholders",
+    copyMarkdown: "Copy as Markdown",
+    copyPlainText: "Copy as Plain Text",
+    template: "Template",
+    markdownTemplate: "Markdown Template",
+    markdownTemplateDesc: "Customize how your links are formatted when copied. Use placeholders like {URL_DESKTOP} which will be replaced with actual URLs."
+  },
 };
