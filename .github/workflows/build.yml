@@ -1,84 +1,74 @@
+# To run this workflow locally with act, use:
+#   act -j build -P ubuntu-22.04=catthehacker/ubuntu:act-latest
+# This image includes Python and build tools required for native Node.js modules.
+
 name: Build, Package, and Release Extension
 
 on:
   push:
-    branches: [master] # Trigger on pushes to master
-    tags: ['v*']      # Trigger on pushes of tags like v1.0, v1.1.0, etc.
+    tags: ['v*'] # Only trigger release flow on version tags
   pull_request:
-    branches: [master] # Also trigger on PRs to master (won't release)
-  workflow_dispatch:   # Allow manual trigger
+    branches: [master]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        node-version: [20.x] # Use Node.js 20 LTS
-
+        node-version: [20.x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for version calculation
-
+          fetch-depth: 0
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
           version: 10
-          run_install: false # Don't run install automatically
-
-      - name: Setup Node.js ${{ matrix.node-version }}
+          run_install: false
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm' # Cache pnpm dependencies
-
+          cache: 'pnpm'
       - name: Check Node.js version
         run: node -v
-
       - name: Check pnpm version
         run: pnpm -v
-
-      - name: Install image optimization tools
+      - name: Install build-essential, Python, and image optimization tools (skip if not available)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pngquant optipng jpegoptim webp gifsicle strace
-          npm install -g svgo # svgo often installed via npm
-
-      - name: Configure build script approval
-        run: |
-          # Avoid build script approval prompts
-          echo "@swc/core
-          esbuild
-          lmdb
-          sharp" > .pnpmignore
-
+          set -e
+          if command -v apt-get >/dev/null 2>&1; then
+            if command -v sudo >/dev/null 2>&1; then
+              sudo apt-get update || true
+              sudo apt-get install -y build-essential python3 make g++ pngquant optipng jpegoptim webp gifsicle strace || true
+            else
+              apt-get update || true
+              apt-get install -y build-essential python3 make g++ pngquant optipng jpegoptim webp gifsicle strace || true
+            fi
+          else
+            echo "Skipping apt-get based tools installation (not available on this runner)"
+          fi
+          if command -v npm >/dev/null 2>&1; then
+            npm install -g svgo || true
+          else
+            echo "Skipping svgo install (npm not available)"
+          fi
+        shell: bash
       - name: Install dependencies
-        run: pnpm install --no-optional
-
-      - name: Install sharp
-        run: pnpm add -D sharp
-
+        run: pnpm install --frozen-lockfile --no-optional
       - name: Determine version
         id: version
         run: |
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             VERSION=${GITHUB_REF#refs/tags/v}
           else
             VERSION=$(node -p "require('./package.json').version")-$(date +'%Y%m%d')-${GITHUB_SHA::7}
           fi
-          echo "Determined version: $VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Build for Chrome
         run: |
-          echo "Installing direct webpack dependencies"
-          pnpm add -D ts-loader style-loader css-loader terser-webpack-plugin
-
-          echo "Increasing system limits to prevent segmentation fault"
-          ulimit -c unlimited
-          ulimit -s unlimited
-
           echo "Running safer build process..."
           pnpm build:safe || {
             echo "Safe build failed, falling back to basic approach"
@@ -104,114 +94,82 @@ jobs:
             echo '<!DOCTYPE html><html><body>Popup</body></html>' > build/chrome-mv3-prod/popup.html
             echo "Created fallback build artifacts"
           }
-
           if [ -f "scripts/optimize.js" ]; then
             echo "Running post-build optimization script..."
             node scripts/optimize.js
           fi
-
           echo "Chrome build completed with artifacts in build/chrome-mv3-prod/"
         env:
           LOG_LEVEL: verbose
-          NODE_OPTIONS: "--no-node-snapshot --max-old-space-size=8192" # Removed --optimize-for-size
-
+          NODE_OPTIONS: "--no-node-snapshot --max-old-space-size=8192"
       - name: Debug Chrome Build
         run: |
           echo "Chrome build contents (build/chrome-mv3-prod/):"
           ls -la build/chrome-mv3-prod/ || echo "Chrome build directory not found"
-
       - name: Build for Firefox
         run: pnpm build:firefox || (echo "Firefox build failed - ensure 'build:firefox' script exists in package.json" && exit 1)
-
       - name: Debug Firefox Build
         run: |
           echo "Firefox build contents (build/firefox-mv3-prod/):"
           ls -la build/firefox-mv3-prod/ || echo "Firefox build directory not found"
-
       - name: Build for Edge
         run: pnpm build:edge || (echo "Edge build failed - ensure 'build:edge' script exists in package.json" && exit 1)
-
       - name: Debug Edge Build
         run: |
           echo "Edge build contents (build/edge-mv3-prod/):"
           ls -la build/edge-mv3-prod/ || echo "Edge build directory not found"
-
       - name: Package all extensions
         run: pnpm package:all || (echo "Packaging failed - ensure 'package:all' script exists in package.json" && exit 1)
-
       - name: Debug Package Results
         run: |
           echo "Listing packaged ZIP files in build/:"
           find build -maxdepth 1 -name "*.zip" -exec ls -lh {} \; || echo "No ZIP files found in build/"
-
       - name: Upload Chrome extension artifact
         uses: actions/upload-artifact@v4
         with:
           name: jira-url-wizard-chrome-v${{ steps.version.outputs.VERSION }}
           path: build/chrome-mv3-prod
-
       - name: Upload Firefox extension artifact
         uses: actions/upload-artifact@v4
         with:
           name: jira-url-wizard-firefox-v${{ steps.version.outputs.VERSION }}
           path: build/firefox-mv3-prod
-
       - name: Upload Edge extension artifact
         uses: actions/upload-artifact@v4
         with:
           name: jira-url-wizard-edge-v${{ steps.version.outputs.VERSION }}
           path: build/edge-mv3-prod
-
       - name: Upload packaged extension ZIPs
         uses: actions/upload-artifact@v4
         with:
           name: jira-url-wizard-packages-v${{ steps.version.outputs.VERSION }}
           path: build/*.zip
 
-  create-release:
+  release:
+    # Only run on version tags (production releases)
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: build
-    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-
     steps:
-      - name: Recalculate version for release naming
-        id: release_version
-        run: |
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-            echo "RELEASE_TAG=v$VERSION" >> $GITHUB_OUTPUT
-            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-            echo "PRERELEASE=false" >> $GITHUB_OUTPUT
-          else
-            VERSION=$(node -p "require('./package.json').version")-$(date +'%Y%m%d')-${GITHUB_SHA::7}
-            echo "RELEASE_TAG=master-build-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-            echo "PRERELEASE=true" >> $GITHUB_OUTPUT
-          fi
-          echo "Release Version: $VERSION"
-          echo "Release Tag: $(cat $GITHUB_OUTPUT | grep RELEASE_TAG | cut -d '=' -f2)"
-
       - name: Download packaged artifacts
         uses: actions/download-artifact@v4
         with:
-          name: jira-url-wizard-packages-v${{ steps.release_version.outputs.VERSION }}
+          name: jira-url-wizard-packages-v${{ needs.build.outputs.VERSION }}
           path: ./release-packages
-
       - name: List downloaded files
         run: ls -lR ./release-packages
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1 # Updated to v1 (correct version)
+      - name: Create GitHub Release and attach ZIPs
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.release_version.outputs.RELEASE_TAG }}
-          name: Release ${{ steps.release_version.outputs.VERSION }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body: |
-            Automated release for version ${{ steps.release_version.outputs.VERSION }}.
+            Automated release for ${{ github.ref_name }}.
             Triggered by: ${{ github.event_name }} to ${{ github.ref }}
           draft: false
-          prerelease: ${{ steps.release_version.outputs.PRERELEASE }}
+          prerelease: false
           files: ./release-packages/*.zip
