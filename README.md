@@ -477,6 +477,32 @@ For testing or when you need more control over the publishing process, you can m
    CHROME_REFRESH_TOKEN=your_refresh_token
    ```
 
+## Environment Variables
+
+The extension supports several environment variables to control features and behavior:
+
+### Feature Flags
+- `PLASMO_PUBLIC_SHOW_MARKDOWN_EDITOR`: Set to `"true"` to enable the markdown editor component in the options page (default: `"false"`)
+- `PLASMO_PUBLIC_SHOW_ADVANCED_SETTINGS`: Set to `"true"` to show advanced settings sections (default: `"false"`)
+
+### Default Values
+- `PLASMO_PUBLIC_DEFAULT_THEME`: Default theme setting (`"light"`, `"dark"`, or `"system"`)
+- `PLASMO_PUBLIC_DEFAULT_URLS`: JSON string of default URL configurations
+- `PLASMO_PUBLIC_DEFAULT_JIRA_PATTERNS`: JSON string of default JIRA patterns
+- `PLASMO_PUBLIC_DEFAULT_SAMPLE_TICKET_ID`: Default sample ticket ID for testing
+- `PLASMO_PUBLIC_TOAST_TIMEOUT_MS`: Timeout for toast notifications in milliseconds (default: `3000`)
+
+Example `.env` file:
+```
+PLASMO_PUBLIC_DEFAULT_THEME=light
+PLASMO_PUBLIC_DEFAULT_URLS=''
+PLASMO_PUBLIC_DEFAULT_JIRA_PATTERNS=''
+PLASMO_PUBLIC_DEFAULT_SAMPLE_TICKET_ID=123
+PLASMO_PUBLIC_TOAST_TIMEOUT_MS=3000
+PLASMO_PUBLIC_SHOW_ADVANCED_SETTINGS=true
+PLASMO_PUBLIC_SHOW_MARKDOWN_EDITOR=true
+```
+
 2. Build and package the extension:
    ```bash
    pnpm build && pnpm package

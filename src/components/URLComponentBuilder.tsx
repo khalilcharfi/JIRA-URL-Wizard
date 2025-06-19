@@ -64,6 +64,10 @@ const PERMANENT_COMPONENT_BASE_IDS = new Set(['issue-prefix', 'base-url']);
 
 // Helper functions
 const getBaseComponentData = (itemId: UniqueIdentifier, allComponents: ComponentData[]): ComponentData | undefined => {
+    if (!allComponents || !Array.isArray(allComponents)) {
+        return undefined;
+    }
+    
     const itemIdStr = typeof itemId === 'string' ? itemId : String(itemId); 
     const baseId = itemIdStr.startsWith('sep-') ? itemIdStr.substring(0, itemIdStr.lastIndexOf('-'))
         : itemIdStr.startsWith('regex-') ? itemIdStr.substring(0, itemIdStr.lastIndexOf('-'))
@@ -688,6 +692,77 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         [initialComponents, separatorComponents, regexComponents]
     );
     
+    const buildUrlForBase = useCallback((
+        baseUrlValue: string | undefined, 
+        currentPattern: string[],
+        components: ComponentData[],
+        currentPrefixes: string[],
+        currentTicketTypes: string[]
+    ) => {
+        if (!components || !Array.isArray(components)) {
+            return 'Error: Components not available';
+        }
+        
+        let url = '';
+        const finalBaseUrl = baseUrlValue || 'https://your-jira.example.com';
+
+        currentPattern.forEach(itemId => {
+            const component = getBaseComponentData(itemId, components);
+            if (component) {
+                switch (component.type) {
+                    case 'ticket-type':
+                        url += currentTicketTypes[0] || 'TYPE';
+                        break;
+                    case 'issue-prefix':
+                        url += currentPrefixes[0] || 'PREFIX';
+                        break;
+                    case 'base-url':
+                        let formattedBaseUrl = finalBaseUrl;
+                        if (!/^https?:\/\//i.test(formattedBaseUrl)) {
+                            formattedBaseUrl = `https://${formattedBaseUrl}`;
+                        }
+                        formattedBaseUrl = formattedBaseUrl.replace(/\/$/, "");
+
+                        if (!url) {
+                            url += formattedBaseUrl;
+                        } else {
+                            url += formattedBaseUrl.replace(/^https?:\/\//, ''); 
+                        }
+                        break;
+                    case 'separator':
+                        url += component.text;
+                        break;
+                    case 'regex':
+                        if (component.id === 'regex-numeric') url += '12345';
+                        else if (component.id === 'regex-alphanumeric') url += 'ABC123';
+                        else url += '[REGEX]';
+                        break;
+                }
+            } else {
+                console.warn("Component data not found for ID:", itemId);
+                url += `[${itemId}]`;
+            }
+        });
+
+        const firstPatternComp = getBaseComponentData(currentPattern[0], components);
+        if (url && !url.startsWith('http') && firstPatternComp?.type !== 'base-url') {
+            return `https://${url}`;
+        }
+
+        return url || '';
+    }, []);
+
+    // Create a bound version of buildUrlForBase for internal use
+    const boundBuildUrlForBase = useCallback((baseUrl: string | undefined, pattern: string[]) => {
+        return buildUrlForBase(baseUrl, pattern, allAvailableComponents, prefixes, ticketTypes);
+    }, [buildUrlForBase, allAvailableComponents, prefixes, ticketTypes]);
+
+    useEffect(() => {
+        if (onBuildUrlFunctionReady) {
+            onBuildUrlFunctionReady(boundBuildUrlForBase);
+        }
+    }, [onBuildUrlFunctionReady, boundBuildUrlForBase]);
+    
     // Convert urlStructure from settings to pattern IDs
     const initialPattern = useMemo(() => {
         return mapSettingsToInternalPattern(urlStructure);
@@ -1085,71 +1160,21 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         return true;
     }, []);
 
-    const buildUrlForBase = useCallback((baseUrlValue: string | undefined, currentPattern: string[]) => {
-        let url = '';
-        const finalBaseUrl = baseUrlValue || 'https://your-jira.example.com';
-
-        currentPattern.forEach(itemId => {
-            const component = getBaseComponentData(itemId, allAvailableComponents);
-            if (component) {
-                switch (component.type) {
-                    case 'ticket-type':
-                        url += ticketTypes[0] || 'TYPE';
-                        break;
-                    case 'issue-prefix':
-                        url += prefixes[0] || 'PREFIX';
-                        break;
-                    case 'base-url':
-                        let formattedBaseUrl = finalBaseUrl;
-                        if (!/^https?:\/\//i.test(formattedBaseUrl)) {
-                            formattedBaseUrl = `https://${formattedBaseUrl}`;
-                        }
-                        formattedBaseUrl = formattedBaseUrl.replace(/\/$/, "");
-
-                        if (!url) {
-                            url += formattedBaseUrl;
-                        } else {
-                            url += formattedBaseUrl.replace(/^https?:\/\//, ''); 
-                        }
-                        break;
-                    case 'separator':
-                        url += component.text;
-                        break;
-                    case 'regex':
-                        if (component.id === 'regex-numeric') url += '12345';
-                        else if (component.id === 'regex-alphanumeric') url += 'ABC123';
-                        else url += '[REGEX]';
-                        break;
-                }
-            } else {
-                console.warn("Component data not found for ID:", itemId);
-                url += `[${itemId}]`;
-            }
-        });
-
-        const firstPatternComp = getBaseComponentData(currentPattern[0], allAvailableComponents);
-        if (url && !url.startsWith('http') && firstPatternComp?.type !== 'base-url') {
-            return `https://${url}`;
-        }
-
-        return url || '';
-    }, [prefixes, ticketTypes, allAvailableComponents]);
-
     const validateConstructedUrls = useCallback(() => {
         const results: Record<string, boolean> = {};
         const currentPatternStringArray = pattern.map(id => String(id));
 
         if (Object.keys(urls).length === 0) {
-            const fallbackUrl = buildUrlForBase(undefined, currentPatternStringArray);
+            const fallbackUrl = buildUrlForBase(undefined, currentPatternStringArray, allAvailableComponents, prefixes, ticketTypes);
             results['fallback'] = validateUrl(fallbackUrl);
         } else {
             Object.entries(urls).forEach(([key, value]) => {
-                const constructedUrl = buildUrlForBase(value, currentPatternStringArray);
+                const constructedUrl = buildUrlForBase(value, currentPatternStringArray, allAvailableComponents, prefixes, ticketTypes);
                 results[key] = validateUrl(constructedUrl);
             });
         }
         setUrlValidationResults(results);
-    }, [urls, pattern, validateUrl, buildUrlForBase]);
+    }, [urls, pattern, validateUrl, buildUrlForBase, allAvailableComponents, prefixes, ticketTypes]);
 
     // Effect hooks
     useEffect(() => {
@@ -1528,13 +1553,6 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
         };
     }, []);
 
-    // Expose buildUrlForBase function to parent component
-    useEffect(() => {
-        if (onBuildUrlFunctionReady) {
-            onBuildUrlFunctionReady(buildUrlForBase);
-        }
-    }, [buildUrlForBase, onBuildUrlFunctionReady]);
-
     return (
         <div className="space-y-5">
             <section>
@@ -1694,14 +1712,20 @@ const URLComponentBuilder: React.FC<URLComponentBuilderProps> = ({
                             {t('sections.urlPreview')}
                         </h3>
                         
-                        <URLPreview
-                            urls={urls}
-                            buildUrlForBase={buildUrlForBase}
-                            pattern={pattern}
-                            urlValidationResults={urlValidationResults}
-                            validationResults={validationResults}
-                            validationRules={validationRules}
-                        />
+                        {allAvailableComponents.length > 0 ? (
+                            <URLPreview
+                                urls={urls}
+                                buildUrlForBase={boundBuildUrlForBase}
+                                pattern={pattern}
+                                urlValidationResults={urlValidationResults}
+                                validationResults={validationResults}
+                                validationRules={validationRules}
+                            />
+                        ) : (
+                            <div className="rounded-md p-3 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                                <div className="text-sm text-gray-500 dark:text-gray-400">Initializing URL preview...</div>
+                            </div>
+                        )}
                         
                         <DragOverlay dropAnimation={dropAnimation} style={{ zIndex: 40 }}>
                             {activeId && activeComponent ? (

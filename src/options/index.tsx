@@ -2,7 +2,7 @@ import 'src/style.css'
 import React, { useCallback, useEffect, useMemo, useState, useRef } from "react"
 import InfoPopup from "~src/components/InfoPopup";
 import URLComponentBuilder from "~src/components/URLComponentBuilder";
-import { DEFAULT_TOAST_TIMEOUT_MS } from "~src/utils/config";
+import { DEFAULT_TOAST_TIMEOUT_MS, SHOW_MARKDOWN_EDITOR } from "~src/utils/config";
 // Import the shared settings definitions
 import { DEFAULT_SETTINGS } from "~src/shared/settings"
 import type { SettingsStorage, JiraPattern } from "~src/shared/settings"
@@ -515,6 +515,9 @@ type UrlKey = 'mobile' | 'desktop' | 'bo' | 'drupal7' | 'drupal9';
 const IndexOptions = () => {
   const { t } = useTranslation(); // Add translation hook at the top level
   
+  // Debug logging for markdown editor visibility
+  console.log('SHOW_MARKDOWN_EDITOR in IndexOptions:', SHOW_MARKDOWN_EDITOR);
+  
   // Use standard useState for managing settings
   const [settings, setSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
   const [tempSettings, setTempSettings] = useState<SettingsStorage>(DEFAULT_SETTINGS);
@@ -535,6 +538,14 @@ const IndexOptions = () => {
   const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false);
   const [baseUrlChanges, setBaseUrlChanges] = useState<boolean>(false);
   const [showPreviewDemo, setShowPreviewDemo] = useState(false);
+  
+  // State for URL builder function to pass to markdown editor
+  const [buildUrlForBase, setBuildUrlForBase] = useState<((baseUrl: string | undefined, pattern: string[]) => string) | null>(null);
+  
+  // Debug log to track when buildUrlForBase changes
+  useEffect(() => {
+    console.log('DEBUG: buildUrlForBase state changed', !!buildUrlForBase);
+  }, [buildUrlForBase]);
 
   // Effect to load settings initially
   useEffect(() => {
@@ -1910,40 +1921,46 @@ const IndexOptions = () => {
                                     urlStructure: pattern
                                 }));
                             }}
+                            onBuildUrlFunctionReady={(buildFn) => {
+                                setBuildUrlForBase(() => buildFn);
+                            }}
                         />
                     </section>
 
-                    {/* Commented out Markdown Template section
-                    <section id="markdown-template" className="mb-10">
-                        <div id="markdown-template-header" className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header border-t border-gray-100 dark:border-gray-700 pt-3">
-                            <h3 id="markdown-template-heading" className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                                <span>{t('sections.markdownTemplateTitle')}</span>
-          
-                                <InfoPopup
-                                    text={t('sections.markdownTemplateInfo')}
-                                    darkMode={document.documentElement.classList.contains('dark')}
-                                />
-       <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
-  Beta
-</span>
-                            </h3>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            {t('editor.markdownTemplateDesc')}
-                        </p>
-                        <MarkdownTemplateEditor
-                            initialContent={tempSettings.markdownTemplate}
-                            onChange={(html, markdown) => {
-                                setTempSettings(prev => ({
-                                    ...prev,
-                                    markdownTemplate: markdown
-                                }));
-                            }}
-                            placeholder={`${t('editor.template')}... ${t('editor.supportedPlaceholders')}: {URL_DESKTOP}, {URL_MOBILE}, {URL_BO}...`}
-                            className="mb-4"
-                        />
-                    </section>
-                    */}
+                    {/* Conditionally render Markdown Template section based on environment variable */}
+                    {SHOW_MARKDOWN_EDITOR && (
+                        <section id="markdown-template" className="mb-10">
+                            <div id="markdown-template-header" className="flex flex-wrap justify-between items-center gap-3 mb-5 options-section__header border-t border-gray-100 dark:border-gray-700 pt-3">
+                                <h3 id="markdown-template-heading" className="text-lg font-medium options-section__heading flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                    <span>{t('sections.markdownTemplateTitle')}</span>
+              
+                                    <InfoPopup
+                                        text={t('sections.markdownTemplateInfo')}
+                                        darkMode={document.documentElement.classList.contains('dark')}
+                                    />
+           <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
+      Beta
+    </span>
+                                </h3>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                {t('editor.markdownTemplateDesc')}
+                            </p>
+                            <MarkdownTemplateEditor
+                                initialContent={tempSettings.markdownTemplate}
+                                onChange={(html, markdown) => {
+                                    setTempSettings(prev => ({
+                                        ...prev,
+                                        markdownTemplate: markdown
+                                    }));
+                                }}
+                                placeholder={`${t('editor.template')}... ${t('editor.supportedPlaceholders')}: {URL_DESKTOP}, {URL_MOBILE}, {URL_BO}...`}
+                                className="mb-4"
+                                buildUrlForBase={buildUrlForBase || undefined}
+                                pattern={tempSettings.urlStructure || []}
+                            />
+                        </section>
+                    )}
                 </div>
             </details>
           </div>
